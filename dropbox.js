@@ -10,8 +10,9 @@
  * Make a unified services for other cloud storage libs
  * 
  * Test:
- * start here http://localhost:5000/connect/ 
+ * start here http://localhost:5000/ 
  * and follow the links...
+ * http://localhost:5000/connect/ 
  * http://localhost:5000/login/
  * http://localhost:5000/account/display_name/
  * http://localhost:5000/logout/
@@ -69,6 +70,10 @@ var app = express();
 
 app.use(express.cookieParser());
 
+app.get('/', function(request, response) {
+	response.send("Welcome, <a href='../connect/'>start here</a>.");
+});
+
 app.get('/connect/', function(request, response) {
 	console.dir(request.cookies.request_token);
 	if (request.cookies.request_token) 
@@ -78,7 +83,6 @@ app.get('/connect/', function(request, response) {
 	  response.send("Now connected, visit <a href='"+request_token.authorize_url+"'>"+request_token.authorize_url+"</a><br />And then <a href='../login/'>continue here</a>.");
 	});
 });
-
 
 app.get('/login/', function(request, response){
 	console.dir(request.cookies.request_token);
