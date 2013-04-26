@@ -10,7 +10,8 @@
  * Make a unified services for other cloud storage libs
  * 
  * Test:
- * http://localhost:5000/connect/
+ * start here http://localhost:5000/connect/ 
+ * and follow the links...
  * http://localhost:5000/login/
  * http://localhost:5000/account/display_name/
  * http://localhost:5000/logout/
@@ -71,10 +72,10 @@ app.use(express.cookieParser());
 app.get('/connect/', function(request, response) {
 	console.dir(request.cookies.request_token);
 	if (request.cookies.request_token) 
-		response.send(request.cookies.request_token.authorize_url);
+		response.send("Allready connected, <a href='../login/'>continue here</a>.");
 	else connect(dboxapp, function (request_token) {
 	  response.cookie("request_token", request_token);
-	  response.send(request_token.authorize_url);
+	  response.send("Now connected, visit <a href='"+request_token.authorize_url+"'>"+request_token.authorize_url+"</a><br />And then <a href='../login/'>continue here</a>.");
 	});
 });
 
@@ -82,11 +83,11 @@ app.get('/connect/', function(request, response) {
 app.get('/login/', function(request, response){
 	console.dir(request.cookies.request_token);
 	if (request.cookies.access_token){
-		response.send("ok from cookie");
+		response.send("Allready logged in, <a href='../account/display_name/'>continue here</a>. Or <a href='../logout/'>logout</a>.");
 	}
 	else login(request.cookies.request_token, function  (access_token) {	
 		response.cookie("access_token", access_token);
-		response.send("ok");
+		response.send("Now logged in, <a href='../account/display_name/'>continue here</a>. Or <a href='../logout/'>logout</a>.");
 	});
 });
 
@@ -98,10 +99,10 @@ app.get('/logout/', function(request, response){
 	){
 		response.clearCookie("request_token");
 		response.clearCookie("access_token");
-		response.send("ok");
+		response.send("Now logged out, <a href='../connect/'>continue here</a>.");
 	}
 	else{
-		response.send("was not logged in");
+		response.send("Was not logged in. <a href='../connect/'>continue here</a>.");
 	}
 });
 
