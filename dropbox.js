@@ -6,8 +6,10 @@
  * 
  * Next step: 
  * Output json and handle errors
- * Manipulate files
+ * Finish to implement te commands to manipulate files
  * Make a unified services for other cloud storage libs
+ * 
+ * 
  * 
  * Test:
  * start here http://localhost:5000/ 
@@ -16,7 +18,8 @@
  * http://localhost:5000/login/
  * http://localhost:5000/logout/
  * http://localhost:5000/account/
- * http://localhost:5000/exec/ls/
+ * http://localhost:5000/exec/ls-l/
+ * http://localhost:5000/exec/ls-r/
  * http://localhost:5000/exec/mkdir/my-new-dir-name/
  * 
  * Uses:
@@ -38,20 +41,16 @@ var dboxapp   = dbox.app({"root" : config.root, "app_key": config.app_key, "app_
 
 function connect (dboxapp, cbk) {
 	dboxapp.requesttoken(function(status, request_token){
-	  	console.dir(request_token)
 		cbk(request_token);
 	});
 }
 function login (request_token, cbk) {
 	dboxapp.accesstoken(request_token, function(status, access_token){
-	  console.log(status)
-	  console.dir(access_token)
 	  cbk(access_token);
 	})
 }
 function getClient (access_token, cbk) {
 	var client = dboxapp.client(access_token)
-	  console.log("client: "+client)
 	  cbk(client);
 }
 
@@ -61,40 +60,41 @@ var express = require("express");
 var app = express();
 
 app.use(express.cookieParser());
+app.use(express.cookieSession({ secret: 'plum plum plum' }));
 
 app.get('/', function(request, response) {
 	response.send("Welcome, <a href='../connect/'>start here</a>.");
 });
 
 app.get('/connect/', function(request, response) {
-	console.dir(request.cookies.request_token);
-	if (request.cookies.request_token) 
+	console.dir(request.session.request_token);
+	if (request.session.request_token) 
 		response.send("Allready connected, <a href='../login/'>continue here</a>.");
 	else connect(dboxapp, function (request_token) {
-	  response.cookie("request_token", request_token);
+	  request.session.request_token = request_token;
 	  response.send("Now connected, visit <a href='"+request_token.authorize_url+"'>"+request_token.authorize_url+"</a><br />And then <a href='../login/'>continue here</a>.");
 	});
 });
 
 app.get('/login/', function(request, response){
-	console.dir(request.cookies.request_token);
-	if (request.cookies.access_token){
-		response.send("Allready logged in, <a href='../account/display_name/'>continue here</a>. Or <a href='../logout/'>logout</a>.");
+	console.dir(request.session.request_token);
+	if (request.session.access_token){
+		response.send("Allready logged in, <a href='../account/'>continue here</a>. Or <a href='../logout/'>logout</a>.");
 	}
-	else login(request.cookies.request_token, function  (access_token) {	
-		response.cookie("access_token", access_token);
-		response.send("Now logged in, <a href='../account/display_name/'>continue here</a>. Or <a href='../logout/'>logout</a>.");
+	else login(request.session.request_token, function  (access_token) {	
+		request.session.access_token = access_token;
+		response.send("Now logged in, <a href='../account/'>continue here</a>. Or <a href='../logout/'>logout</a>.");
 	});
 });
 
 app.get('/logout/', function(request, response){
-	console.dir(request.cookies.request_token);
-	console.dir(request.cookies.access_token);
-	if (request.cookies.request_token 
-		|| request.cookies.access_token
+	console.dir(request.session.request_token);
+	console.dir(request.session.access_token);
+	if (request.session.request_token 
+		|| request.session.access_token
 	){
-		response.clearCookie("request_token");
-		response.clearCookie("access_token");
+		request.session.request_token = undefined;
+		request.session.access_token = undefined;
 		response.send("Now logged out, <a href='../connect/'>continue here</a>.");
 	}
 	else{
@@ -103,7 +103,7 @@ app.get('/logout/', function(request, response){
 });
 
 app.get('/account/', function(request, response){
-	getClient(request.cookies.access_token, function (client) {
+	getClient(request.session.access_token, function (client) {
 		client.account(function(status, reply){
 			console.log("account : "+status);
 			console.dir(reply);
@@ -115,10 +115,13 @@ app.get('/account/', function(request, response){
 app.use(function(request, response, next){
 	var url = require('url');
 	var url_parts = url.parse(request.url, true);
-	var url_arr = url_parts.path.split("/");
+	var path = url_parts.path;
+	// URL decode path
+	path = decodeURIComponent(path.replace(/\+/g, ' '));
+	// split to be able to manipulate each folder
+	var url_arr = path.split("/");
 	// remove the first empty "" from the path
 	url_arr.shift(); 
-	console.log("get url "+url_arr);
 	// check that it is an exec command
 	if (url_arr.length > 2 && url_arr[0]=="exec"){
 		// remove the "exec" from the path
@@ -130,10 +133,9 @@ app.use(function(request, response, next){
 		url_arr.shift(); 
 		// retrieve the path
 		var path = "/" + url_arr.join("/");
-		console.log("path="+path);
 		switch (command){
 			case "ls-l":
-				getClient(request.cookies.access_token, function (client) {
+				getClient(request.session.access_token, function (client) {
 					client.readdir(path, {
 							details: true,
 							recursive: false
@@ -146,7 +148,7 @@ app.use(function(request, response, next){
 					});
 				return;
 			case "ls-r":
-				getClient(request.cookies.access_token, function (client) {
+				getClient(request.session.access_token, function (client) {
 					client.readdir(path, {
 							details: false,
 							recursive: true
@@ -160,7 +162,7 @@ app.use(function(request, response, next){
 				return;
 			case "rm":
 				if (!path || path == "" || path == "/") break;
-				getClient(request.cookies.access_token, function (client) {
+				getClient(request.session.access_token, function (client) {
 					client.rm(path, function(status, reply){
 					    console.log(status)
 					    console.log(reply)
@@ -169,7 +171,7 @@ app.use(function(request, response, next){
 				})
 				return;
 			case "mkdir":
-				getClient(request.cookies.access_token, function (client) {
+				getClient(request.session.access_token, function (client) {
 					client.mkdir(path, function(status, reply){
 					    console.log(status)
 					    console.log(reply)
