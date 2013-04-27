@@ -1,3 +1,11 @@
+/**
+ * Service connector for the dropbox api
+ * 
+ * Uses:
+ * https://github.com/sintaxi/node-dbox
+ * 
+ */
+
 // config
 
 var config  = require("./config");
@@ -70,5 +78,23 @@ exports.mkdir = function (path, access_token, cbk) {
 		})
 	});
 }
-
-
+exports.cp = function (src, dst, access_token, cbk) {
+	exports.getClient(access_token, function (client) {
+		client.cp(src, dst, function(status, reply){
+			if (reply.error)
+				cbk({success:false}, reply);
+			else
+				cbk({success:true}, reply);
+		})
+	});
+}
+exports.mv = function (src, dst, access_token, cbk) {
+	exports.getClient(access_token, function (client) {
+		client.mv(src, dst, function(status, reply){
+			if (reply.error)
+				cbk({success:false}, reply);
+			else
+				cbk({success:true}, reply);
+		})
+	});
+}

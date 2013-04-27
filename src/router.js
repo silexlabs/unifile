@@ -23,7 +23,7 @@ exports.route = function (url_arr, request, cbk) {
 				}
 			case "connect":
 				if (request.session.request_token){
-					cbk({status:{success:true, message:"Allready connected, <a href='../login/'>continue here</a>. ."}});
+					cbk({status:{success:true, message:"Allready connected."}});
 				}
 				else service.connect(function  (status, request_token) {	
 					request.session.request_token = request_token;
@@ -32,7 +32,7 @@ exports.route = function (url_arr, request, cbk) {
 				return true;
 			case "login":
 				if (request.session.access_token){
-					cbk({status:{success:true, message:"Allready logged in, <a href='../account/'>continue here</a>. Or <a href='../logout/'>logout</a>."}});
+					cbk({status:{success:true, message:"Allready logged in."}});
 				}
 				else service.login(request.session.request_token, function  (status, access_token) {
 					console.dir(access_token);
@@ -46,10 +46,10 @@ exports.route = function (url_arr, request, cbk) {
 				){
 					request.session.request_token = undefined;
 					request.session.access_token = undefined;
-					cbk({status:{success:true, message:"Now logged out, <a href='../connect/'>continue here</a>."}});
+					cbk({status:{success:true, message:"Now logged out."}});
 				}
 				else{
-					cbk({status:{success:true, message:"Was not logged in. <a href='../connect/'>continue here</a>."}});
+					cbk({status:{success:true, message:"Was not logged in."}});
 				}
 				return true;
 			case "account":
@@ -94,6 +94,24 @@ function exec (command, path, request, cbk) {
 			return true;
 		case "mkdir":
 			service.mkdir(path, request.session.access_token, 
+				function(status, reply){
+					cbk({status:status, data:reply});
+				})
+			return true;
+		case "cp":
+			var path_arr = path.split(":");
+			var src = path_arr[0];
+			var dest = path_arr[1];
+			service.cp(src, dest, request.session.access_token, 
+				function(status, reply){
+					cbk({status:status, data:reply});
+				})
+			return true;
+		case "mv":
+			var path_arr = path.split(":");
+			var src = path_arr[0];
+			var dest = path_arr[1];
+			service.cp(src, dest, request.session.access_token, 
 				function(status, reply){
 					cbk({status:status, data:reply});
 				})
