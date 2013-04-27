@@ -5,6 +5,7 @@
  * It is able to connect, then the user accepts the app, then login and get account info
  * 
  * Next step: 
+ * Store the client in the session
  * Output json and handle errors
  * Finish to implement te commands to manipulate files
  * Make a unified services for other cloud storage libs
