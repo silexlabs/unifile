@@ -1,1 +1,1 @@
-web: node dropbox.js
+web: node src/gateway.js
