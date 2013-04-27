@@ -98,3 +98,23 @@ exports.mv = function (src, dst, access_token, cbk) {
 		})
 	});
 }
+exports.put = function (path, data, access_token, cbk) {
+	exports.getClient(access_token, function (client) {
+		client.put(path, data, function(status, reply){
+			if (reply.error)
+				cbk({success:false}, reply);
+			else
+				cbk({success:true}, reply);
+		})
+	});
+}
+exports.cat = function (path, access_token, cbk) {
+	exports.getClient(access_token, function (client) {
+		client.get(path, function(status, reply, metadata){
+			if (reply.error)
+				cbk({success:false}, reply, reply.toString(), metadata);
+			else
+				cbk({success:true}, reply, reply.toString(), metadata);
+		})
+	});
+}

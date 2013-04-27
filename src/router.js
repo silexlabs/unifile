@@ -98,6 +98,25 @@ function exec (command, path, request, cbk) {
 					cbk({status:status, data:reply});
 				})
 			return true;
+		case "cat":
+			service.cat(path, request.session.access_token, 
+				function(status, raw, text_content, metadata){
+					cbk({status:status, raw:raw, data:text_content, metadata:metadata});
+				})
+			return true;
+		case "put":
+			var data;
+			if (request.body && request.body.data) data = request.body.data;
+			else{
+				var path_arr = path.split(":");
+				path = path_arr[0];
+				data = path_arr[1];
+			}
+			service.put(path, data, request.session.access_token, 
+				function(status, reply){
+					cbk({status:status, data:reply});
+				})
+			return true;
 		case "cp":
 			var path_arr = path.split(":");
 			var src = path_arr[0];
