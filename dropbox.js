@@ -5,7 +5,7 @@
  * It is able to connect, then the user accepts the app, then login and get account info
  * 
  * Next step: 
- * Output json
+ * Output json and handle errors
  * Manipulate files
  * Make a unified services for other cloud storage libs
  * 
@@ -14,18 +14,25 @@
  * and follow the links...
  * http://localhost:5000/connect/ 
  * http://localhost:5000/login/
- * http://localhost:5000/account/display_name/
  * http://localhost:5000/logout/
+ * http://localhost:5000/account/
+ * http://localhost:5000/exec/ls/
+ * http://localhost:5000/exec/mkdir/my-new-dir-name/
  * 
  * Uses:
  * https://github.com/sintaxi/node-dbox
  * http://expressjs.com/api.html
  * 
- * 
  */
 
-var dbox  = require("dbox")
-var dboxapp   = dbox.app({ "app_key": "rvz6kvs9394dx8a", "app_secret": "b0stxoj0zsxy14m" })
+// config
+
+var config  = require("./config");
+var dbox  = require("dbox");
+//var dboxapp   = dbox.app({ "app_key": "svr5id53hug36a7", "app_secret": "mpbhr91louaqk6o" })
+//var dboxapp   = dbox.app({"root" : "dropbox", "app_key": "rvz6kvs9394dx8a", "app_secret": "b0stxoj0zsxy14m" })
+
+var dboxapp   = dbox.app({"root" : config.root, "app_key": config.app_key, "app_secret": config.app_secret })
 
 // ******* Internal Methods
 
@@ -44,24 +51,9 @@ function login (request_token, cbk) {
 }
 function getClient (access_token, cbk) {
 	var client = dboxapp.client(access_token)
-	  console.dir(client)
+	  console.log("client: "+client)
 	  cbk(client);
 }
-/*
-function getInfo (access_token, cbk) {
-client.readdir('/', function(status, reply){
-    console.log(reply)
-})
-/*
-	getClient(access_token, function (client) {
-		client.account(function(status, reply){
-			console.log("account : "+status);
-			console.dir(reply);
-			cbk(reply);
-		})
-	})
-}
-/**/
 
 // ******* Rooter and exposed services
 
@@ -110,15 +102,84 @@ app.get('/logout/', function(request, response){
 	}
 });
 
-app.param('name');
-app.get('/account/:name', function(request, response){
+app.get('/account/', function(request, response){
 	getClient(request.cookies.access_token, function (client) {
 		client.account(function(status, reply){
 			console.log("account : "+status);
 			console.dir(reply);
-			response.send(request.params.name+"="+reply[request.params.name]);
+			response.send(reply);
 		})
 	})
+});
+
+app.use(function(request, response, next){
+	var url = require('url');
+	var url_parts = url.parse(request.url, true);
+	var url_arr = url_parts.path.split("/");
+	// remove the first empty "" from the path
+	url_arr.shift(); 
+	console.log("get url "+url_arr);
+	// check that it is an exec command
+	if (url_arr.length > 2 && url_arr[0]=="exec"){
+		// remove the "exec" from the path
+		url_arr.shift(); 
+		// retrieve command
+		var command = url_arr[0];
+		console.log("command: "+command);
+		// remove the command from the path
+		url_arr.shift(); 
+		// retrieve the path
+		var path = "/" + url_arr.join("/");
+		console.log("path="+path);
+		switch (command){
+			case "ls-l":
+				getClient(request.cookies.access_token, function (client) {
+					client.readdir(path, {
+							details: true,
+							recursive: false
+						},
+						function(status, reply){
+						    console.log(status)
+						    console.log(reply)
+							response.send(reply);
+						})
+					});
+				return;
+			case "ls-r":
+				getClient(request.cookies.access_token, function (client) {
+					client.readdir(path, {
+							details: false,
+							recursive: true
+						},
+						function(status, reply){
+						    console.log(status)
+						    console.log(reply)
+							response.send(reply);
+						})
+					});
+				return;
+			case "rm":
+				if (!path || path == "" || path == "/") break;
+				getClient(request.cookies.access_token, function (client) {
+					client.rm(path, function(status, reply){
+					    console.log(status)
+					    console.log(reply)
+						response.send(reply);
+					})
+				})
+				return;
+			case "mkdir":
+				getClient(request.cookies.access_token, function (client) {
+					client.mkdir(path, function(status, reply){
+					    console.log(status)
+					    console.log(reply)
+						response.send(reply);
+					})
+				})
+				return;
+		}
+	}
+	next();
 });
 
 // ******* Server "loop"
@@ -127,3 +188,4 @@ var port = process.env.PORT || 5000;
 app.listen(port, function() {
   console.log("Listening on " + port);
 });
+
