@@ -108,7 +108,7 @@ exports.put = function (path, data, access_token, cbk) {
 		})
 	});
 }
-exports.cat = function (path, access_token, cbk) {
+exports.get = function (path, access_token, cbk) {
 	exports.getClient(access_token, function (client) {
 		client.get(path, function(status, reply, metadata){
 			if (reply.error)

@@ -37,6 +37,16 @@ app.use(express.cookieParser());
 app.use(express.cookieSession({ secret: 'plum plum plum' }));
 
 
+// load services
+
+var serviceNamesArr = ["dropbox"];
+
+var services = [];
+var idx;
+for (idx = 0; idx < serviceNamesArr.length; idx++){
+	services[serviceNamesArr[idx]] = require("./services/"+serviceNamesArr[idx]);
+}
+
 // prepare url and call the router
 
 app.use(function(request, response, next){
@@ -49,17 +59,33 @@ app.use(function(request, response, next){
 	var url_arr = path.split("/");
 	// remove the first empty "" from the path
 	url_arr.shift(); 
-
-	var routed = router.route(url_arr, request, function (reply) {
-		response.send(reply)
-	});
-	if (!routed)
-		next();
+	// get and remove the service name
+	var serviceName = url_arr.shift(); 
+	var service = services[serviceName];
+	if (service){
+		var routed = router.route(service, url_arr, request, function (reply) {
+			response.send(reply)
+		});
+		if (!routed)
+			displayRoutes(request, response);
+	}
+	else{
+		console.error("Unknown service ");
+		//next();
+		displayRoutes(request, response);
+	}
 });
 
 app.get('/', function(request, response) {
-	response.send("Welcome, <a href='../connect/'>start here</a>.");
+	displayRoutes(request, response);
 });
+
+function displayRoutes(request, response){
+	response.send({
+		status:{success:false, message:"Nothing here. Returns a list of routes."}, 
+		links: serviceNamesArr
+	});
+}
 
 // ******* Server "loop"
 
