@@ -51,6 +51,8 @@ app.use(function(request, response, next){
 	var url_arr = path.split("/");
 	// remove the first empty "" from the path
 	url_arr.shift(); 
+	// remove the api version number
+	url_arr.shift(); 
 	// get and remove the service name
 	var serviceName = url_arr.shift(); 
 	var servicePath = "./services/" + serviceName + ".js";

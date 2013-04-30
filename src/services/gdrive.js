@@ -7,7 +7,7 @@
  * Uses:
  * https://github.com/google/google-api-nodejs-client
  * 
- * the app must be decalred 
+ * the app must be decalred in https://code.google.com/apis/console/
  * and have a callback url set to [node server url]/gdrive/auth_callback/
  */
 
