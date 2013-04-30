@@ -29,23 +29,15 @@
  */
 
 
-var router = require("./router");
-
 var express = require("express");
 var app = express();
+console.log("Starting");
+
+// start session
 app.use(express.cookieParser());
 app.use(express.cookieSession({ secret: 'plum plum plum' }));
 
-
-// load services
-
-var serviceNamesArr = ["dropbox"];
-
-var services = [];
-var idx;
-for (idx = 0; idx < serviceNamesArr.length; idx++){
-	services[serviceNamesArr[idx]] = require("./services/"+serviceNamesArr[idx]);
-}
+var router = require("./router");
 
 // prepare url and call the router
 
@@ -61,18 +53,34 @@ app.use(function(request, response, next){
 	url_arr.shift(); 
 	// get and remove the service name
 	var serviceName = url_arr.shift(); 
-	var service = services[serviceName];
-	if (service){
-		var routed = router.route(service, url_arr, request, function (reply) {
-			response.send(reply)
-		});
-		if (!routed)
-			displayRoutes(request, response);
+	var servicePath = "./services/" + serviceName + ".js";
+	try{
+		console.log("load "+servicePath);
+		
+		var service = require(servicePath);
+		service.init(app, express);
+
+		if (service){
+			var routed = router.route(service, url_arr, request, function (reply) {
+				console.log("------");
+				console.log("Returns");
+				console.dir(reply);
+				console.log("------");
+				response.send(reply)
+			});
+			if (!routed){
+				console.error("Unknown service "+serviceName);
+				next();
+			}
+		}
+		else{
+			console.error("Unknown service "+serviceName);
+			next();
+		}
 	}
-	else{
-		console.error("Unknown service ");
-		//next();
-		displayRoutes(request, response);
+	catch(e){
+		console.error("Error loading service "+serviceName+": "+e);
+		next();
 	}
 });
 
@@ -83,12 +91,11 @@ app.get('/', function(request, response) {
 function displayRoutes(request, response){
 	response.send({
 		status:{success:false, message:"Nothing here. Returns a list of routes."}, 
-		links: serviceNamesArr
+		links: ["dropbox", "gdrive"]
 	});
 }
 
 // ******* Server "loop"
-
 var port = process.env.PORT || 5000;
 app.listen(port, function() {
   console.log("Listening on " + port);

@@ -2,8 +2,12 @@
   "name": "Silex",
   "version": "0.0.1",
   "dependencies": {
-    "express": "3.1.x",
-    "dbox": "0.6.1"
+    "express": "3.2.x",
+    "dbox": "0.6.x",
+    "node-oauth": "0.1.x",
+    "googleapis": "0.2.x",
+    "oauth": "",
+    "logger": ""
   },
   "engines": {
     "node": "0.10.x",

@@ -1,71 +1,56 @@
 
 
 exports.route = function (service, url_arr, request, cbk) {
+	console.log("route service="+service+", url_arr="+url_arr+", request="+request);
 	if (service){
-		if(url_arr.length > 0){
+		console.log("route "+url_arr[0]+" - "+url_arr.length);
+		if(url_arr.length > 0 && url_arr[0] != ""){
 			switch (url_arr[0]){
-				// commands
 				case "exec":
-					if (url_arr.length > 1){
+					if (url_arr.length > 2){
 						// remove the "exec" from the path
 						url_arr.shift(); 
 						// retrieve command
 						var command = url_arr[0];
 						console.log("command: "+command);
 						// remove the command from the path
-						url_arr.shift(); 
+						url_arr.shift();
+
 						// retrieve the path
 						var path = "/" + url_arr.join("/");
 						// executes the command
+						console.log("call exec service "+service+", command "+command+", path "+path);
 						return exec(service, command, path, request, cbk);
 					}
 				case "connect":
-					if (request.session.request_token){
-						cbk({status:{success:true, message:"Allready connected."}});
-					}
-					else service.connect(function  (status, request_token) {	
-						request.session.request_token = request_token;
-						cbk({status:status, data:request_token.authorize_url});
+					service.connect(request, function  (status, authorize_url) {	
+						cbk({status:status, authorize_url:authorize_url});
 					});
 					return true;
 				case "login":
-					if (request.session.access_token){
-						cbk({status:{success:true, message:"Allready logged in."}});
-					}
-					else service.login(request.session.request_token, function  (status, access_token) {
-						console.dir(access_token);
-						request.session.access_token = access_token;
+					service.login(request, function  (status) {
 						cbk({status:status});
 					});
 					return true;
 				case "logout":
-					if (request.session.request_token 
-						|| request.session.access_token
-					){
-						request.session.request_token = undefined;
-						request.session.access_token = undefined;
-						cbk({status:{success:true, message:"Now logged out."}});
-					}
-					else{
-						cbk({status:{success:true, message:"Was not logged in."}});
-					}
+					service.logout(request, function  (status) {
+						cbk({status:status});
+					});
 					return true;
 				case "account":
-					if (request.session.request_token 
-						&& request.session.access_token
-					){
-						service.getAccountInfo(request.session.access_token, 
-							function(status, reply){
-								console.log("account : "+status);
-								console.dir(reply);
-								cbk({status:status, data:reply});
-							})
-						return true;
-					}
-					break;
+					service.getAccountInfo(request, 
+						function(status, reply){
+							console.log("account : "+status);
+							console.dir(reply);
+							cbk({status:status, data:reply});
+						})
+					return true;
 			}
+			console.error("Unknown route "+url_arr[0]);
+			return false;
 		}
 		else{
+			console.log("Nothing here. Returns a list of routes.");
 			cbk({
 				status:{success:false, message:"Nothing here. Returns a list of routes."}, 
 				links: ["connect", "login", "logout", "account", "exec"]
@@ -76,34 +61,40 @@ exports.route = function (service, url_arr, request, cbk) {
 }
 
 function exec (service, command, path, request, cbk) {
+	console.log("exec: "+command+", "+path);
 	switch (command){
 		case "ls-l":
-			service.ls_l(path, request.session.access_token, 
+			service.ls_l(path, 
+				request, 
 				function(status, reply){
 					cbk({status:status, data:reply});
 				});
 			return true;
 		case "ls-r":
-			service.ls_r(path, request.session.access_token, 
+			service.ls_r(path, 
+				request, 
 				function(status, reply){
 					cbk({status:status, data:reply});
 				})
 			return true;
 		case "rm":
 			if (!path || path == "" || path == "/") break;
-			service.rm(path, request.session.access_token, 
+			service.rm(path, 
+				request, 
 				function(status, reply){
 					cbk({status:status, data:reply});
 				});
 			return true;
 		case "mkdir":
-			service.mkdir(path, request.session.access_token, 
+			service.mkdir(path, 
+				request, 
 				function(status, reply){
 					cbk({status:status, data:reply});
 				})
 			return true;
 		case "get":
-			service.get(path, request.session.access_token, 
+			service.get(path, 
+				request, 
 				function(status, raw, text_content, metadata){
 					cbk({status:status, raw:raw, data:text_content, metadata:metadata});
 				})
@@ -116,7 +107,8 @@ function exec (service, command, path, request, cbk) {
 				path = path_arr[0];
 				data = path_arr[1];
 			}
-			service.put(path, data, request.session.access_token, 
+			service.put(path, data, 
+				request, 
 				function(status, reply){
 					cbk({status:status, data:reply});
 				})
@@ -125,7 +117,8 @@ function exec (service, command, path, request, cbk) {
 			var path_arr = path.split(":");
 			var src = path_arr[0];
 			var dest = path_arr[1];
-			service.cp(src, dest, request.session.access_token, 
+			service.cp(src, dest, 
+				request, 
 				function(status, reply){
 					cbk({status:status, data:reply});
 				})
@@ -134,7 +127,8 @@ function exec (service, command, path, request, cbk) {
 			var path_arr = path.split(":");
 			var src = path_arr[0];
 			var dest = path_arr[1];
-			service.cp(src, dest, request.session.access_token, 
+			service.cp(src, dest, 
+				request, 
 				function(status, reply){
 					cbk({status:status, data:reply});
 				})
