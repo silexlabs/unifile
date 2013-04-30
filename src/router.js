@@ -1,6 +1,20 @@
+var services = {
+	dropbox : require("./services/dropbox.js"), 
+	gdrive : require("./services/gdrive.js"), 
+};
 
+/**
+ * init the service global vars
+ */
+exports.init = function (app, express) {
+	console.log("init router "+services);
+	for(var service in services){
+		services[service].init(app, express);
+	}
+}
 
-exports.route = function (service, url_arr, request, cbk) {
+exports.route = function (serviceName, url_arr, request, cbk) {
+	var service = services[serviceName];
 	console.log("route service="+service+", url_arr="+url_arr+", request="+request);
 	if (service){
 		console.log("route "+url_arr[0]+" - "+url_arr.length);

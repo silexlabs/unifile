@@ -38,6 +38,7 @@ app.use(express.cookieParser());
 app.use(express.cookieSession({ secret: 'plum plum plum' }));
 
 var router = require("./router");
+router.init(app, express);
 
 // prepare url and call the router
 
@@ -55,19 +56,9 @@ app.use(function(request, response, next){
 	url_arr.shift(); 
 	// get and remove the service name
 	var serviceName = url_arr.shift(); 
-	var servicePath = "./services/" + serviceName + ".js";
 	try{
-		console.log("load "+servicePath);
-		
-		var service = require(servicePath);
-		service.init(app, express);
-
-		if (service){
-			var routed = router.route(service, url_arr, request, function (reply) {
-				console.log("------");
-				console.log("Returns");
-				console.dir(reply);
-				console.log("------");
+		if (serviceName){
+			var routed = router.route(serviceName, url_arr, request, function (reply) {
 				response.send(reply)
 			});
 			if (!routed){

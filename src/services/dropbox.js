@@ -30,22 +30,24 @@ exports.init = function (app, express) {
  *		authorize_url	: "https://www.dropbox.com/1/oauth/authorize?oauth_token=NMCS862sIG1P5m6P"
  */
 exports.connect = function (request, cbk) {
-	dboxapp.requesttoken(function(status, request_token){
-		if (status!=200){
-			console.log("status: "+status);
-			cbk(
-				{success:false}, 
-				undefined
-			);
-		}
-		else{
-			request.session.dropbox_request_token = request_token;
-			request.session.dropbox_authorize_url = request_token.authorize_url;
-			cbk(
-				{success:true}, 
-				request_token.authorize_url
-			);
-		}
+	exports.logout(request, function () {
+		dboxapp.requesttoken(function(status, request_token){
+			if (status!=200){
+				console.log("status: "+status);
+				cbk(
+					{success:false}, 
+					undefined
+				);
+			}
+			else{
+				request.session.dropbox_request_token = request_token;
+				request.session.dropbox_authorize_url = request_token.authorize_url;
+				cbk(
+					{success:true}, 
+					request_token.authorize_url
+				);
+			}
+		});
 	});
 }
 /**
@@ -110,23 +112,12 @@ exports.getClient = function (request) {
  * Load the data associated with the current user account
  * Call the provided callback with this data
  *		status		: {"success": true},
- *		data 		: {
- *				  "status": {
- *				    "success": true
- *				  },
- *				  "data": {
- *				    "referral_link": "https://www.dropbox.com/referrals/NTEzMDU1OTM1Mzk?src=app9-292538",
- *				    "display_name": "alex hoyau",
- *				    "uid": 130559353,
- *				    "country": "FR",
- *				    "quota_info": {
- *				      "shared": 0,
- *				      "quota": 2147483648,
- *				      "normal": 4368357
- *				    },
- *				    "email": "billy321@im-paris.fr"
- *				  }
- *				}
+ *		data 		{
+ * 						display_name: "Alexandre Hoyau",
+ * 						quota_info: {
+ * 						available: "5368709120",
+ * 						used: "144201723"
+ * 					}
  */
 exports.getAccountInfo = function (request, cbk) {
 	if (!request.session.dropbox_access_token){
@@ -143,6 +134,30 @@ exports.getAccountInfo = function (request, cbk) {
 
 // ******* commands
 
+/**
+ * {
+ *   "status": {
+ *     "success": true
+ *   },
+ *   "data": [
+ *     {
+ *       "revision": 80,
+ *       "rev": "500c8e7ebf",
+ *       "thumb_exists": false,
+ *       "bytes": 0,
+ *       "modified": "Thu, 03 Jan 2013 14:24:53 +0000",
+ *       "path": "/Apps",
+ *       "is_dir": true,
+ *       "icon": "folder",
+ *       "root": "dropbox",
+ *       "size": "0 bytes"
+ *     },
+ *     
+ *     ...
+ *   ]
+ * }
+ * 
+ */
 exports.ls_l = function (path, request, cbk) {
 	if (!request.session.dropbox_access_token){
 		cbk({success:false, message:"User not connected yet. You need to call the \"login\" service first."});
@@ -166,6 +181,27 @@ exports.ls_l = function (path, request, cbk) {
 		})
 	}
 }
+/**
+ * @return {
+ *   "status": {
+ *     "success": true
+ *   },
+ *   "data": [
+ *     "/Apps",
+ *     "/Photos",
+ *     "/test",
+ *     "/Apps/Silex",
+ *     "/Photos/Sample Album",
+ *     "/test/temp.txt.html",
+ *     "/test/temp.txt.txt",
+ *     "/Photos/Sample Album/Boston City Flow.jpg",
+ *     "/Photos/Sample Album/test.png",
+ *     "/Apps/Silex/assets",
+ *     "/Apps/Silex/scripts",
+ *     "/Apps/Silex/your-file-68.html",
+ *   ]
+ * }
+ */
 exports.ls_r = function (path, request, cbk) {
 	if (!request.session.dropbox_access_token){
 		cbk({success:false, message:"User not connected yet. You need to call the \"login\" service first."});
