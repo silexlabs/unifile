@@ -77,26 +77,19 @@ exports.route = function (serviceName, url_arr, request, cbk) {
 function exec (service, command, path, request, cbk) {
 	console.log("exec: "+command+", "+path);
 	switch (command){
-		case "ls-l":
-			service.ls_l(path, 
+		case "ls":
+			service.ls(path, 
 				request, 
 				function(status, reply){
 					cbk({status:status, data:reply});
 				});
 			return true;
-		case "ls-r":
-			service.ls_r(path, 
-				request, 
-				function(status, reply){
-					cbk({status:status, data:reply});
-				})
-			return true;
 		case "rm":
 			if (!path || path == "" || path == "/") break;
 			service.rm(path, 
 				request, 
-				function(status, reply){
-					cbk({status:status, data:reply});
+				function(status){
+					cbk({status:status});
 				});
 			return true;
 		case "mkdir":
@@ -150,7 +143,7 @@ function exec (service, command, path, request, cbk) {
 	}
 	cbk({
 		status:{success:false, message:"Nothing here. Returns a list of routes."}, 
-		links: ["ls-l", "ls-r", "rm", "mkdir", "get", "put", "cp", "mv"]
+		links: ["ls", "rm", "mkdir", "get", "put", "cp", "mv"]
 	});
 	return false;
 }

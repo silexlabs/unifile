@@ -135,6 +135,8 @@ exports.getAccountInfo = function (request, cbk) {
 // ******* commands
 
 /**
+ * List the files of a given folder
+ * @result 	an object like this one:
  * {
  *   "status": {
  *     "success": true
@@ -158,7 +160,7 @@ exports.getAccountInfo = function (request, cbk) {
  * }
  * 
  */
-exports.ls_l = function (path, request, cbk) {
+exports.ls = function (path, request, cbk) {
 	if (!request.session.dropbox_access_token){
 		cbk({success:false, message:"User not connected yet. You need to call the \"login\" service first."});
 	}
@@ -201,7 +203,6 @@ exports.ls_l = function (path, request, cbk) {
  *     "/Apps/Silex/your-file-68.html",
  *   ]
  * }
- */
 exports.ls_r = function (path, request, cbk) {
 	if (!request.session.dropbox_access_token){
 		cbk({success:false, message:"User not connected yet. You need to call the \"login\" service first."});
@@ -225,6 +226,15 @@ exports.ls_r = function (path, request, cbk) {
 		})
 	}
 }
+ */
+
+/**
+ * delete a file or folder
+ * @return	an object with this attribute
+ * {
+ *   "status": {"success": true}
+ * }
+ */
 exports.rm = function (path, request, cbk) {
 	if (!request.session.dropbox_access_token){
 		cbk({success:false, message:"User not connected yet. You need to call the \"login\" service first."});
@@ -234,12 +244,11 @@ exports.rm = function (path, request, cbk) {
 			if (status!=200){
 				console.log("status: "+status);
 				cbk(
-					{success:false}, 
-					undefined
+					{success:false}
 				);
 			}
 			else{
-				cbk({success:true}, reply);
+				cbk({success:true});
 			}
 		})
 	}
