@@ -1,8 +1,7 @@
+#Use
 
-Use
 
-
-**Auth**
+##Auth
 
 Install and run the node.js server or test online on http://silex-v2.herokuapp.com/
 
@@ -13,14 +12,14 @@ Follow the links, and find a SaaS cloud storage service, then go to its "connect
 It will return a "authorize_url", which you will open in a new browser window. Then back to the previous window, open the "login" method, e.g.
 * http://silex-v2.herokuapp.com/v1.0/dropbox/login/
 
-**Services**
+##Services
 
 After authenticating to a cloud storage service, you can call these methods
 
 * logout/
 * account/
 
-**Commands**
+##Commands
 
 After authenticating to a cloud storage service, you can use these commands
 
