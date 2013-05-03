@@ -67,7 +67,8 @@ app.use(function(request, response, next){
 			}
 		}
 		else{
-			console.error("Unknown service "+serviceName);
+			// happens all the time when looking for the favicon
+			//console.error("Unknown service "+serviceName);
 			next();
 		}
 	}
@@ -77,16 +78,8 @@ app.use(function(request, response, next){
 	}
 });
 
-app.get('/', function(request, response) {
-	displayRoutes(request, response);
-});
-
-function displayRoutes(request, response){
-	response.send({
-		status:{success:false, message:"Nothing here. Returns a list of routes."}, 
-		links: ["dropbox", "gdrive"]
-	});
-}
+// display the routes for teting
+require("./display-routes.js").init(app);
 
 // ******* Server "loop"
 var port = process.env.PORT || 5000;
