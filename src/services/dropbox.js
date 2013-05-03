@@ -322,9 +322,9 @@ exports.get = function (path, request, cbk) {
 		exports.getClient(request).get(path, function(status, reply, metadata){
 			console.log("status: "+status);
 			if (reply.error)
-				cbk({success:false}, reply, reply.toString(), metadata);
+				cbk({success:false}, reply.toString(), metadata);
 			else
-				cbk({success:true}, reply, reply.toString(), metadata);
+				cbk(reply.toString());
 		})
 	}
 }

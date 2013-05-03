@@ -102,8 +102,8 @@ function exec (service, command, path, request, cbk) {
 		case "get":
 			service.get(path, 
 				request, 
-				function(status, text_content, metadata){
-					cbk({status:status, metadata:metadata, data:text_content, raw:raw});
+				function(status_or_text_content){
+					cbk(status_or_text_content);
 				})
 			return true;
 		case "put":

@@ -323,11 +323,12 @@ exports.ls = function (path, request, cbk) {
 function toFilesArray (gdriveFiles) {
 	var files = [];
 	for (var idx = 0; idx<gdriveFiles.items.length; idx++){
+		console.log("is_dir "+gdriveFiles.items[idx].mimeType+" - "+(gdriveFiles.items[idx].mimeType=="application/vnd.google-apps.folder"));
 		files.push({
 			name: gdriveFiles.items[idx].title,
 			bytes : gdriveFiles.items[idx].quotaBytesUsed,
 			modified : "Thu, 03 Jan 2013 14:24:53 +0000",
-			is_dir : gdriveFiles.items[idx].kind=="drive#folder",
+			is_dir : (gdriveFiles.items[idx].mimeType=="application/vnd.google-apps.folder"),
 		});
 	}
 	return files;
@@ -504,7 +505,7 @@ function deleteFile (file, request, cbk) {
 		console.log("Now delete "+file.title+ " - "+file.id);
 		try{
 			client
-			.drive.files.delete(file.id)
+			.drive.files.delete({"fileId":file.id})
 			.withAuthClient(oauth2Client)
 			.execute(function (a, b, c) {
 				console.log("File deleted "+file.title);
@@ -516,6 +517,8 @@ function deleteFile (file, request, cbk) {
 		}
 	});
 }
+
+
 exports.mkdir = function (path, request, cbk) {
 	if (!request.session.gdrive_token){
 		cbk({success:false, message:"User not connected yet. You need to call the 'login' service first."});
@@ -586,18 +589,16 @@ exports.put = function (path, data, request, cbk) {
 	}
 }
 exports.get = function (path, request, cbk) {
-	if (!request.session.gdrive_token){
-		cbk({success:false, message:"User not connected yet. You need to call the 'login' service first."});
+	if (!request.session.dropbox_access_token){
+		cbk({success:false, message:"User not connected yet. You need to call the \"login\" service first."});
 	}
 	else{
-		exports.getClient(request, function (client) {
-			client.get(path, function(status, reply, metadata){
-				console.log("status: "+status);
-				if (reply.error)
-					cbk({success:false}, reply, reply.toString(), metadata);
-				else
-					cbk({success:true}, reply, reply.toString(), metadata);
-			})
-		});
+		exports.getClient(request).get(path, function(status, reply, metadata){
+			console.log("status: "+status);
+			if (reply.error)
+				cbk({success:false}, reply.toString(), metadata);
+			else
+				cbk(reply.toString());
+		})
 	}
 }
