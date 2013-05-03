@@ -1,1 +1,1 @@
-web: node src/gateway.js
+web: node lib/gateway.js
