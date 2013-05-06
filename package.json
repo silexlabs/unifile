@@ -8,6 +8,7 @@
     "googleapis": "0.2.x",
     "oauth": "",
     "logger": ""
+    "path": ""
   },
   "engines": {
     "node": "0.10.x",
