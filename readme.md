@@ -62,13 +62,12 @@ After authenticating to a cloud storage service, you can use these commands
 
 
 to do
-- finish gdocs commands
+- debug get/put/cat
 - pagination for ls commands
-- appliquer les best practices 
+- best practices for the api
   http://www.startupcto.com/backend-tech/building-an-api-best-practices
-- route info in the results, ou plutot test dans le chemin => navigation comme dans des dossiers d'un serveur web
-  http://adamwhitcroft.com/apaxy/
-  http://www.linickx.com/files/
-  http://antisleep.com/indices/
-  http://www.webmasterworld.com/apache/3589651.htm
-- facebook and twitter
+- mimic unix commands : /v1.0/gdrive/exec/?cmd="cd /example1/test/ ; cp img1.jpg img2.jpg ; ls"
+- make a Terminal in javascript to test the services
+- add a new service : an example of social network, like facebook, g+ or twitter?
+
+
