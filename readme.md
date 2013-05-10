@@ -65,6 +65,7 @@ to do
 - 2 fichiers de conf pour ne pas commiter les secrets
 - debug get/put/cat
 - pagination for ls commands
+- security: make the "allowCrossDomain" function look for the api key and det if the domain is allowed
 - best practices for the api
   http://www.startupcto.com/backend-tech/building-an-api-best-practices
 - mimic unix commands : /v1.0/gdrive/exec/?cmd="cd /example1/test/ ; cp img1.jpg img2.jpg ; ls"
