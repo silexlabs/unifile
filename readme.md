@@ -62,6 +62,7 @@ After authenticating to a cloud storage service, you can use these commands
 
 
 to do
+- 2 fichiers de conf pour ne pas commiter les secrets
 - debug get/put/cat
 - pagination for ls commands
 - best practices for the api
