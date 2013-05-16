@@ -1,4 +1,3 @@
-
 #Short story
 
 ##Dropbox
@@ -20,6 +19,20 @@ Execute commands
 * move (rename) a file or directory: http://unifile.herokuapp.com/v1.0/dropbox/mv/path/to/src/:/path/to/dst/
 * access a file: http://unifile.herokuapp.com/v1.0/dropbox/get/path/to/file.txt
 * write data to a file: http://unifile.herokuapp.com/v1.0/dropbox/get/path/to/file.txt:hello world!
+
+##Google drive
+
+Connect to your drive 
+* http://unifile.herokuapp.com/v1.0/gdrive/connect/
+* open the url given by the previous call
+* http://unifile.herokuapp.com/v1.0/gdrive/login/
+
+Get your account info and logout
+* http://unifile.herokuapp.com/v1.0/gdrive/account/
+* http://unifile.herokuapp.com/v1.0/gdrive/logout/
+
+Execute commands: simply replace dropbox by gdrive in the above examples
+
 
 #User guide
 
