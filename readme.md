@@ -1,5 +1,27 @@
-#Use
 
+#Short story
+
+##Dropbox
+
+Connect to your dropbox 
+* http://unifile.herokuapp.com/v1.0/dropbox/connect/
+* open the url given by the previous call
+* http://unifile.herokuapp.com/v1.0/dropbox/login/
+
+Get your account info and logout
+* http://unifile.herokuapp.com/v1.0/dropbox/account/
+* http://unifile.herokuapp.com/v1.0/dropbox/logout/
+
+Execute commands
+* list a directory: http://unifile.herokuapp.com/v1.0/dropbox/ls/path/to/folder/
+* remove a file or directory: http://unifile.herokuapp.com/v1.0/dropbox/rm/path/to/folder-or-file/
+* create a directory: http://unifile.herokuapp.com/v1.0/dropbox/mkdir/path/to/folder/
+* copy a file or directory: http://unifile.herokuapp.com/v1.0/dropbox/cp/path/to/src/:/path/to/dst/
+* move (rename) a file or directory: http://unifile.herokuapp.com/v1.0/dropbox/mv/path/to/src/:/path/to/dst/
+* access a file: http://unifile.herokuapp.com/v1.0/dropbox/get/path/to/file.txt
+* write data to a file: http://unifile.herokuapp.com/v1.0/dropbox/get/path/to/file.txt:hello world!
+
+#User guide
 
 ##Auth
 
