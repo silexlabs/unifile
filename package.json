@@ -7,7 +7,7 @@
     "node-oauth": "0.1.x",
     "googleapis": "0.2.x",
     "oauth": "",
-    "logger": ""
+    "logger": "",
     "path": ""
   },
   "engines": {
