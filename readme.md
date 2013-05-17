@@ -12,13 +12,13 @@ Get your account info and logout
 * http://unifile.herokuapp.com/v1.0/dropbox/logout/
 
 Execute commands
-* list a directory: http://unifile.herokuapp.com/v1.0/dropbox/ls/path/to/folder/
-* remove a file or directory: http://unifile.herokuapp.com/v1.0/dropbox/rm/path/to/folder-or-file/
-* create a directory: http://unifile.herokuapp.com/v1.0/dropbox/mkdir/path/to/folder/
-* copy a file or directory: http://unifile.herokuapp.com/v1.0/dropbox/cp/path/to/src/:/path/to/dst/
-* move (rename) a file or directory: http://unifile.herokuapp.com/v1.0/dropbox/mv/path/to/src/:/path/to/dst/
-* access a file: http://unifile.herokuapp.com/v1.0/dropbox/get/path/to/file.txt
-* write data to a file: http://unifile.herokuapp.com/v1.0/dropbox/get/path/to/file.txt:hello world!
+* list a directory: http://unifile.herokuapp.com/v1.0/dropbox/exec/ls/path/to/folder/
+* remove a file or directory: http://unifile.herokuapp.com/v1.0/dropbox/exec/rm/path/to/folder-or-file/
+* create a directory: http://unifile.herokuapp.com/v1.0/dropbox/exec/mkdir/path/to/folder/
+* copy a file or directory: http://unifile.herokuapp.com/v1.0/dropbox/exec/cp/path/to/src/:/path/to/dst/
+* move (rename) a file or directory: http://unifile.herokuapp.com/v1.0/dropbox/exec/mv/path/to/src/:/path/to/dst/
+* access a file: http://unifile.herokuapp.com/v1.0/dropbox/exec/get/path/to/file.txt
+* write data to a file: http://unifile.herokuapp.com/v1.0/dropbox/exec/put/path/to/file.txt:hello world!
 
 ##Google drive
 
@@ -61,39 +61,39 @@ After authenticating to a cloud storage service, you can use these commands
 * ls
   list directory contents
   params: the path of the directory
-  example: http://unifile.herokuapp.com/v1.0/dropbox/ls/
-  /v1.0/dropbox/ls/path/to/folder/
-  example: http://unifile.herokuapp.com/v1.0/dropbox/ls/path/to/folder/
+  example: http://unifile.herokuapp.com/v1.0/dropbox/exec/ls/
+  /v1.0/dropbox/exec/ls/path/to/folder/
+  example: http://unifile.herokuapp.com/v1.0/dropbox/exec/ls/path/to/folder/
 * rm
   remove files or directories
   params: the path of the directory
-  /v1.0/dropbox/rm/path/to/folder-or-file/
-  example: http://unifile.herokuapp.com/v1.0/dropbox/rm/path/to/folder-or-file/
+  /v1.0/dropbox/exec/rm/path/to/folder-or-file/
+  example: http://unifile.herokuapp.com/v1.0/dropbox/exec/rm/path/to/folder-or-file/
 * mkdir
   create a directory
   params: the path of the directory
-  /v1.0/dropbox/mkdir/path/to/folder/
-  example: http://unifile.herokuapp.com/v1.0/dropbox/mkdir/path/to/folder/
+  /v1.0/dropbox/exec/mkdir/path/to/folder/
+  example: http://unifile.herokuapp.com/v1.0/dropbox/exec/mkdir/path/to/folder/
 * cp
   copy files and directories
   params: path of the source file/folder and of the destination file/folder
-  /v1.0/dropbox/cp/path/to/src/:/path/to/dst/
-  example: http://unifile.herokuapp.com/v1.0/dropbox/cp/path/to/src/:/path/to/dst/
+  /v1.0/dropbox/exec/cp/path/to/src/:/path/to/dst/
+  example: http://unifile.herokuapp.com/v1.0/dropbox/exec/cp/path/to/src/:/path/to/dst/
 * mv
   move (rename) files and directories
   params: path of the source file/folder and of the destination file/folder
-  /v1.0/dropbox/mv/path/to/src/:/path/to/dst/
-  example: http://unifile.herokuapp.com/v1.0/dropbox/mv/path/to/src/:/path/to/dst/
+  /v1.0/dropbox/exec/mv/path/to/src/:/path/to/dst/
+  example: http://unifile.herokuapp.com/v1.0/dropbox/exec/mv/path/to/src/:/path/to/dst/
 * get
   print the content of a file
   params: the path of the file
-  /v1.0/dropbox/get/path/to/file.txt
-  example: http://unifile.herokuapp.com/v1.0/dropbox/get/path/to/file.txt
+  /v1.0/dropbox/exec/get/path/to/file.txt
+  example: http://unifile.herokuapp.com/v1.0/dropbox/exec/get/path/to/file.txt
 * put
   write data to a file
   params: the path of the file, and the data as POST data or in GET after ":"
-  /v1.0/dropbox/get/path/to/file.txt:hello world!
-  example: http://unifile.herokuapp.com/v1.0/dropbox/get/path/to/file.txt:hello world!
+  /v1.0/dropbox/exec/put/path/to/file.txt:hello world!
+  example: http://unifile.herokuapp.com/v1.0/dropbox/exec/put/path/to/file.txt:hello world!
 
 
 to do
