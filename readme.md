@@ -1,8 +1,12 @@
+#License
+
+license: GPL v2
+
 #Short story
 
 ##Dropbox
 
-Connect to your dropbox 
+Connect to your dropbox
 * http://unifile.silexlabs.org/v1.0/dropbox/connect/
 * open the url given by the previous call
 * http://unifile.silexlabs.org/v1.0/dropbox/login/
@@ -22,7 +26,7 @@ Execute commands
 
 ##Google drive
 
-Connect to your drive 
+Connect to your drive
 * http://unifile.silexlabs.org/v1.0/gdrive/connect/
 * open the url given by the previous call
 * http://unifile.silexlabs.org/v1.0/gdrive/login/
@@ -48,15 +52,15 @@ Here is how to contribute
 
 ##Add a service
 
-The services in unifile are cloud storage services, e.g. Dropbox and google drive. 
+The services in unifile are cloud storage services, e.g. Dropbox and google drive.
 
 Each service is a Node.js class implementing a given set of functions, e.g. ls, rm, cp...
 
-If you wish to add a service, 
+If you wish to add a service,
 
 * add your .js file in lib/services/ (duplicate the lib/services/dropbox.js file in order to have all the required methods)
 * edit core/router.js to make your service reachable
-* if you use an external node.js library, add the dependency in package.json 
+* if you use an external node.js library, add the dependency in package.json
 
 Here is a list of services which could be useful
 

@@ -1,1 +1,1 @@
-web: node lib/gateway.js
+web: node lib/app.js
