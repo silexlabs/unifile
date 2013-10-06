@@ -2,6 +2,15 @@
  * route name for unifile api
  */
 exports.apiRoot = "/api";
+
+/**
+ * list all services
+ */
+exports.services = [
+	'dropbox', 
+	'www'
+];
+
 /**
  * the production or debug state of the app
  * catch all errors in production mode, in order to prevent crashes
@@ -64,7 +73,7 @@ exports.dropbox =
  * gdrive app config
  * the app must be decalred
  * and have a callback url set to [node server url]/v1.0/gdrive/auth_callback/
- */
+ *
 exports.gdrive =
 {
 	auth_uri : "https://accounts.google.com/o/oauth2/auth",
@@ -107,21 +116,6 @@ exports.routes = {
 				}
 			},
 			"dropbox/":{
-				"connect/":{},
-				"login/":{},
-				"logout/":{},
-				"account/":{},
-				"exec/":{
-					"ls/":{},
-					"rm/":{},
-					"mkdir/":{},
-					"cp/":{},
-					"mv/":{},
-					"get/":{},
-					"put/":{}
-				}
-			},
-			"gdrive/":{
 				"connect/":{},
 				"login/":{},
 				"logout/":{},
