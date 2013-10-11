@@ -2,6 +2,21 @@
  * route name for unifile api
  */
 exports.apiRoot = "/api";
+
+/**
+ * list all services
+ */
+exports.services = [
+	'dropbox', 
+	'www'
+];
+
+/**
+ * the production or debug state of the app
+ * catch all errors in production mode, in order to prevent crashes
+ * values can be 'debug' or 'production'
+ */
+exports.debugLevel = 'debug';
 /**
  * other config files to considere (if they exist)
  */
@@ -21,7 +36,7 @@ exports.staticFolders = [
 /**
  * www service config (the local server)
  */
-exports.www = 
+exports.www =
 {
 	root : "../../www",
 	auth_form_route: "/api/v1.0/www-auth",
@@ -47,7 +62,7 @@ exports.www =
 /**
  * dropbox app config
  */
-exports.dropbox = 
+exports.dropbox =
 {
 	root : "dropbox",
 	app_key : "ngk5t8312eo4agh",
@@ -56,10 +71,10 @@ exports.dropbox =
 
 /**
  * gdrive app config
- * the app must be decalred 
+ * the app must be decalred
  * and have a callback url set to [node server url]/v1.0/gdrive/auth_callback/
- */
-exports.gdrive = 
+ *
+exports.gdrive =
 {
 	auth_uri : "https://accounts.google.com/o/oauth2/auth",
 	client_secret : "8H5OatS9dhhnKlDL5pnVZ0Kr",
@@ -101,21 +116,6 @@ exports.routes = {
 				}
 			},
 			"dropbox/":{
-				"connect/":{},
-				"login/":{},
-				"logout/":{},
-				"account/":{},
-				"exec/":{
-					"ls/":{},
-					"rm/":{},
-					"mkdir/":{},
-					"cp/":{},
-					"mv/":{},
-					"get/":{},
-					"put/":{}
-				}
-			},
-			"gdrive/":{
 				"connect/":{},
 				"login/":{},
 				"logout/":{},

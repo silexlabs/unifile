@@ -1,6 +1,11 @@
 {
-  "name": "Silex",
+  "name": "unifile",
+  "description": "Express middleware to provide a common API for cloud storage services. ",
   "version": "0.0.1",
+  "author": "Alex Hoyau aka lexoyo",
+  "contributors": [
+    "Thomas Fetiveau aka zabojad"
+  ],
   "dependencies": {
     "express": "3.2.x",
     "dbox": "0.6.x",
@@ -10,6 +15,27 @@
     "logger": "",
     "path": ""
   },
+  "devDependencies": {
+    "express": "~3.2.6",
+    "mocha": "~1.11.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/silexlabs/unifile.git"
+  },
+  "keywords": [
+    "express",
+    "cloud",
+    "cms",
+    "rest",
+    "dropbox",
+    "google-drive",
+    "storage",
+    "filepicker",
+    "api"
+  ],
+  "main": "./lib/index.js",
+  "license": "MIT",
   "engines": {
     "node": "0.10.x",
     "npm": "1.2.x"
