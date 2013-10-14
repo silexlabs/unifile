@@ -1,42 +1,95 @@
+#Unifile, unified access to cloud services.
+
+Express middleware to provide REST API for accessing cloud storage services.
+
+#Motivation
+
+In 2013, team has developed the v2 of [Silex](http://www.silex.me/), free and open source website builder for designers. Since Silex is a web app, running in the browser, we faced a choice: either we make people download and install Silex, or we host it in the cloud. But Silex Labs non profit organization can not afford paying hosting for our users.
+
+So we have decided that Silex would edit the user's files on the user's Dropbox. It is not acceptable for a free project to force people to store their data on a service such as Dropbox, so we decided to make it an option. We have added the ability for Silex to edit files on the server on which it is installed. And then other services came to our minds.
+
+We hope that other communities will benefit this way to use their cloud services before they install the web app locally.
+
+#How to install
+
+With node installed ([download](http://nodejs.org/download)), clone unifile on your computer
+
+$ git clone https://github.com/silexlabs/unifile.git
+$ cd unifile
+
+
+Then you can use nodejs's npm to install the dependencies, in this case just type:
+
+$ npm install
+
+This uses unifiles 'package.json' file to install the needed node modules.
+
+Now run unifile server
+
+$ node lib/app.js
+
+And start making calls with wget or your browser. For example...
+
+http://localhost:6805/api/
+
+... will list the available services:
+
+    [
+        {
+            "name": "dropbox",
+            "display_name": "Dropbox",
+            "image_small": "unifile-assets/services/dropbox.png",
+            "description": "Edit html files from your Dropbox.",
+            "visible": true,
+            "isLoggedIn": true,
+            "isConnected": true,
+            "user": {
+                "display_name": "Alex Hoyau",
+                "quota_info": {
+                    "available": 5234491392,
+                    "used": 4528634951
+                }
+            }
+        },
+        {
+            "name": "www",
+            "display_name": "Web server",
+            "image_small": "unifile-assets/services/www.png",
+            "description": "Edit files on the server where Silex is installed.",
+            "visible": true,
+            "isLoggedIn": false,
+            "isConnected": false
+        }
+    ]
+
+#REST APIs
+
+Let's take the example of the Dropbox service
+
+Connect to the service
+
+Basic login and such
+
+    GET    /api/v1.0/dropbox/connect/       returns an URL, which you will open and authorize unifile to access the service (this is an oauth2 authorization mechanism)
+    GET   /api/v1.0/dropbox/login/          now your have access to the service
+
+    GET   /api/v1.0/dropbox/account/        Get your account info, with your display_name at least
+    GET   /api/v1.0/dropbox/logout/         Log out from the service (connect and login will be required)
+
+Execute commands
+
+    GET    /api/v1.0/dropbox/exec/ls/path/to/folder/                 list a directory
+    GET    /api/v1.0/dropbox/exec/rm/path/to/folder-or-file/         remove a file or directory
+    GET    /api/v1.0/dropbox/exec/mkdir/path/to/folder/              create a directory
+    GET    /api/v1.0/dropbox/exec/cp/path/to/src/:/path/to/dst/      copy a file or directory
+    GET    /api/v1.0/dropbox/exec/mv/path/to/src/:/path/to/dst/      move (rename) a file or directory
+    GET    /api/v1.0/dropbox/exec/get/path/to/file.txt               access a file
+    GET    /api/v1.0/dropbox/exec/put/path/to/file.txt:{string}      write data to a file
+    POST    /api/v1.0/dropbox/exec/put/path/to/file.txt              write data to a file
+
 #License
 
 license: GPL v2
-
-#Short story
-
-##Dropbox
-
-Connect to your dropbox
-* http://unifile.silexlabs.org/v1.0/dropbox/connect/
-* open the url given by the previous call
-* http://unifile.silexlabs.org/v1.0/dropbox/login/
-
-Get your account info and logout
-* http://unifile.silexlabs.org/v1.0/dropbox/account/
-* http://unifile.silexlabs.org/v1.0/dropbox/logout/
-
-Execute commands
-* list a directory: http://unifile.silexlabs.org/v1.0/dropbox/exec/ls/path/to/folder/
-* remove a file or directory: http://unifile.silexlabs.org/v1.0/dropbox/exec/rm/path/to/folder-or-file/
-* create a directory: http://unifile.silexlabs.org/v1.0/dropbox/exec/mkdir/path/to/folder/
-* copy a file or directory: http://unifile.silexlabs.org/v1.0/dropbox/exec/cp/path/to/src/:/path/to/dst/
-* move (rename) a file or directory: http://unifile.silexlabs.org/v1.0/dropbox/exec/mv/path/to/src/:/path/to/dst/
-* access a file: http://unifile.silexlabs.org/v1.0/dropbox/exec/get/path/to/file.txt
-* write data to a file: http://unifile.silexlabs.org/v1.0/dropbox/exec/put/path/to/file.txt:hello world!
-
-##Google drive
-
-Connect to your drive
-* http://unifile.silexlabs.org/v1.0/gdrive/connect/
-* open the url given by the previous call
-* http://unifile.silexlabs.org/v1.0/gdrive/login/
-
-Get your account info and logout
-* http://unifile.silexlabs.org/v1.0/gdrive/account/
-* http://unifile.silexlabs.org/v1.0/gdrive/logout/
-
-Execute commands: simply replace dropbox by gdrive in the above examples
-
 
 #Use locally or host your own server
 
@@ -64,17 +117,32 @@ If you wish to add a service,
 
 Here is a list of services which could be useful
 
-* github
+* github (they provides free hosting, see https://help.github.com/articles/user-organization-and-project-pages)
+* FTP
 * Box, SkyDrive, RapidShare, CloudMine, FilesAnywhere, RapidShare
 * SugarSync
-* Amazon S3, FTP and WebDav
+* Amazon S3 and WebDav
 
+##Notes / roadmap
+
+remove admin admin
+
+Unifile archi
+
+* Should be a nodejs module
+* Silex and CE would use it as a middleware
+* No more strange system for config in unifle?
+
+unifile archi, tests and readme
+
+* https://npmjs.org/package/social-cms-backend
+* tests http://stackoverflow.com/questions/11520170/unit-testing-oauth-js-with-mocha
+* http://decodize.com/javascript/build-nodejs-npm-installation-package-scratch/
 
 to do
 
-* 2 fichiers de conf pour ne pas commiter les secrets
-* debug get/put/cat
-* ajout "next_url" pour indiquer quoi faire ensuite
+* better readme
+* unit tests for get/put/cat
 * pagination for ls commands
 * security: make the "allowCrossDomain" function look for the api key and det if the domain is allowed
 * best practices for the api
