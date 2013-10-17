@@ -1,7 +1,7 @@
 {
   "name": "unifile",
   "description": "Express middleware to provide a common API for cloud storage services. ",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "author": "Alex Hoyau aka lexoyo",
   "contributors": [
     "Thomas Fetiveau aka zabojad"
@@ -12,11 +12,12 @@
     "node-oauth": "0.1.x",
     "googleapis": "0.2.x",
     "oauth": "",
-    "logger": "",
     "path": ""
   },
   "devDependencies": {
     "express": "~3.2.6",
+    "chai": "",
+    "supertest": "",
     "mocha": "~1.11.0"
   },
   "repository": {
@@ -35,9 +36,12 @@
     "api"
   ],
   "main": "./lib/index.js",
+  "directories": {
+    "lib": "./lib"
+  },
   "license": "MIT",
   "engines": {
     "node": "0.10.x",
-    "npm": "1.2.x"
+    "npm": "1.3.x"
   }
 }
