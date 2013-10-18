@@ -122,15 +122,13 @@ Here is a list of services which could be useful
 
 * http://localhost:6805/api/v1.0/www/connect/ bug
 * doc: list of supported services (also in CE)
-* service www: use templates
+* service www: use jade templates
 
 unifile archi, tests and readme
 
-* https://www.dreamfactory.com/developers/live_API
+* doc: https://www.dreamfactory.com/developers/live_API
 * https://npmjs.org/package/social-cms-backend
-* as a middleware https://github.com/senchalabs/connect
 * tests http://stackoverflow.com/questions/11520170/unit-testing-oauth-js-with-mocha
-* http://decodize.com/javascript/build-nodejs-npm-installation-package-scratch/
 
 to do
 
