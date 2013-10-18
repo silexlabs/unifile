@@ -14,23 +14,27 @@ We hope that other communities will benefit this way to use their cloud services
 
 With node installed ([download](http://nodejs.org/download)), clone unifile on your computer
 
-$ git clone https://github.com/silexlabs/unifile.git
-$ cd unifile
+    $ npm install unifile
 
+Then write a small node.js server like this
 
-Then you can use nodejs's npm to install the dependencies, in this case just type:
+    // node modules
+    var unifile = require('unifile');
+    var express = require('express');
+    var app = express();
 
-$ npm install
+    // config
+    var options = unifile.defaultConfig;
 
-This uses unifiles 'package.json' file to install the needed node modules.
+    // use unifile as a middleware
+    app.use(unifile.middleware(express, app, options));
 
-Now run unifile server
-
-$ node lib/app.js
+    // server 'loop'
+    app.listen(6805); // 6805 is the date of sexual revolution started in paris france 8-)
 
 And start making calls with wget or your browser. For example...
 
-http://localhost:6805/api/
+    http://localhost:6805/api/v1.0/services/list/
 
 ... will list the available services:
 
@@ -38,9 +42,7 @@ http://localhost:6805/api/
         {
             "name": "dropbox",
             "display_name": "Dropbox",
-            "image_small": "unifile-assets/services/dropbox.png",
             "description": "Edit html files from your Dropbox.",
-            "visible": true,
             "isLoggedIn": true,
             "isConnected": true,
             "user": {
@@ -54,11 +56,12 @@ http://localhost:6805/api/
         {
             "name": "www",
             "display_name": "Web server",
-            "image_small": "unifile-assets/services/www.png",
             "description": "Edit files on the server where Silex is installed.",
-            "visible": true,
             "isLoggedIn": false,
             "isConnected": false
+            "user": {
+                "display_name": "admin",
+            }
         }
     ]
 
@@ -91,14 +94,6 @@ Execute commands
 
 license: GPL v2
 
-#Use locally or host your own server
-
-Install and run the node.js server or host the server online
-
-Create an app on google drive and dropbox
-
-Edit the config file lib/config.js
-
 #Developer guide
 
 Here is how to contribute
@@ -125,13 +120,9 @@ Here is a list of services which could be useful
 
 ##Notes / roadmap
 
-remove admin admin
-
-Unifile archi
-
-* Should be a nodejs module
-* Silex and CE would use it as a middleware
-* No more strange system for config in unifle?
+* http://localhost:6805/api/v1.0/www/connect/ bug
+* doc: list of supported services (also in CE)
+* service www: use templates
 
 unifile archi, tests and readme
 
