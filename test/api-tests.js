@@ -1,5 +1,14 @@
 // http://strongloop.com/strongblog/how-to-test-an-api-with-node-js/
 // http://chaijs.com/
+
+/**
+ * manque ici
+ * * test des commandes
+ * * test des échecs d'auth ou de login
+ * * test des erreurs
+ * * pareil pour les autres services que www
+ */
+
 console.log('start tests');
 
 // node modules
@@ -15,8 +24,7 @@ var options = unifile.defaultConfig;
 
 // define users (login/password) wich will be authorized to access the www folder (read and write)
 options.www.users = {
-    "abcd": "1234"
-    , "efgh": "5678"
+    "admin": "admin"
 }
 
 // use unifile as a middleware
@@ -68,7 +76,7 @@ describe('Authentication', function() {
   });
   it('should authorize and return auth page HTML content', function(done) {
         api.post(options.www.auth_form_submit_route)
-        .send({'username': 'abcd', 'password': '1234'})
+        .send({'username': 'admin', 'password': 'admin'})
         .expect(200)
         .end(function(err, res) {
             if (err) return done(err);
@@ -103,7 +111,7 @@ describe('User account', function() {
 /*
 describe('Authentication', function() {
   it('errors if wrong basic auth', function(done) {
-    api.post('/api/v1.0/www/login/', {'username': 'abcd', 'password': '1234'})
+    api.post('/api/v1.0/www/login/', {'username': 'admin', 'password': 'admin'})
     .set('x-api-key', '123myapikey')
     .auth('incorrect', 'credentials')
     .expect(401, done)
