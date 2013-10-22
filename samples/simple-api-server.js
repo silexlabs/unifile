@@ -14,7 +14,7 @@ var options = unifile.defaultConfig;
 // define users (login/password) wich will be authorized to access the www folder (read and write)
 options.www.users = {
     "admin": "admin"
-}
+};
 
 // use unifile as a middleware
 app.use(unifile.middleware(express, app, options));
