@@ -1,19 +1,19 @@
-// http://strongloop.com/strongblog/how-to-test-an-api-with-node-js/
-// http://chaijs.com/
-
-/**
- * manque ici
- * * test erreurs
- * * test des commandes
- * * test des échecs d'auth ou de login
- * * test des erreurs
- * * pareil pour les autres services que www
-
- * NO: make sure to have a folder named test at the root of the file tree, with a file name test.txt in it
+/*
+ * Unifile, unified access to cloud storage services.
+ * https://github.com/silexlabs/unifile/
+ *
+ * Copyright (c) Silex Labs
+ * Unifile is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-console.log('start tests');
-
+/**
+ * About this file
+ *
+ * functional tests
+ * todo
+ * * test errors (commands and auth)
+ */
 // node modules
 var express = require('express')
     , app = express()
@@ -21,6 +21,17 @@ var express = require('express')
     , supertest = require('supertest')
     , api = supertest('http://localhost:6805')
     , unifile = require('../lib/');
+/*
+ * useful methode
+ */
+function getElementByProp(arr, name, val){
+    for(idx in arr){
+        if (arr[idx][name]===val){
+            return arr[idx];
+        }
+    }
+    return null;
+}
 
 // config
 var options = unifile.defaultConfig;
@@ -36,19 +47,8 @@ app.use(unifile.middleware(express, app, options));
 // server 'loop'
 var port = process.env.PORT || 6805; // 6805 is the date of sexual revolution started in paris france 8-)
 app.listen(port, function() {
-  console.log('Listening on ' + port);
+  console.log('Start tests on port ' + port);
 });
-
-function getElementByProp(arr, name, val){
-    for(idx in arr){
-        //console.log('getElementByProp', idx, arr[idx][name], val);
-
-        if (arr[idx][name]===val){
-            return arr[idx];
-        }
-    }
-    return null;
-}
 
 // test routes
 var cookie;

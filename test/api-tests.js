@@ -1,15 +1,18 @@
-// http://strongloop.com/strongblog/how-to-test-an-api-with-node-js/
-// http://chaijs.com/
+/*
+ * Unifile, unified access to cloud storage services.
+ * https://github.com/silexlabs/unifile/
+ *
+ * Copyright (c) Silex Labs
+ * Unifile is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
 /**
- * manque ici
- * * test erreurs
- * * test des commandes
- * * test des échecs d'auth ou de login
- * * test des erreurs
- * * pareil pour les autres services que www
-
- * NO: make sure to have a folder named test at the root of the file tree, with a file name test.txt in it
+ * About this file
+ *
+ * functional tests
+ * uses chai and supertest
+ * http://chaijs.com/
  */
 
 console.log('start tests');

@@ -1,7 +1,15 @@
-/**
- * A simple unifile server to expose unifile api and nothing else
+/*
+ * Unifile, unified access to cloud storage services.
  * https://github.com/silexlabs/unifile/
- * license: GPL v2
+ *
+ * Copyright (c) Silex Labs
+ * Unifile is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
+/*
+ * About this file
+ *
+ * This is a sample of a nodejs API server which uses unifile to expose cloud storage services as a REST API
  */
 // node modules
 var express = require('express');
