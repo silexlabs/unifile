@@ -120,7 +120,8 @@ Here is a list of services which could be useful
 
 ##Notes / roadmap
 
-* http://localhost:6805/api/v1.0/www/connect/ bug
+* https://app.apiary.io/unifile/
+* http://apiblueprint.org/
 * doc: list of supported services (also in CE)
 * service www: use jade templates
 
@@ -132,7 +133,6 @@ unifile archi, tests and readme
 
 to do
 
-* better readme
 * unit tests for get/put/cat
 * pagination for ls commands
 * security: make the "allowCrossDomain" function look for the api key and det if the domain is allowed
