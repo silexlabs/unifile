@@ -12,7 +12,7 @@ We hope that other communities will benefit this way to use their cloud services
 
 #How to install
 
-With node installed ([download](http://nodejs.org/download)), clone unifile on your computer
+In your project folder, use npm to install unifile nodejs module
 
     $ npm install unifile
 
@@ -32,9 +32,13 @@ Then write a small node.js server like this
     // server 'loop'
     app.listen(6805); // 6805 is the date of sexual revolution started in paris france 8-)
 
-And start making calls with wget or your browser. For example...
+Save this as server.js and start it with 
 
-    http://localhost:6805/api/v1.0/services/list/
+    $ node server.js
+
+Then start making calls with wget or your browser. For example...
+
+    $ wget http://localhost:6805/api/v1.0/services/list/
 
 ... will list the available services:
 
