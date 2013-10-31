@@ -7,14 +7,14 @@
     "Thomas Fetiveau aka zabojad"
   ],
   "dependencies": {
-    "express": "3.2.x",
+    "express": "3.4.x",
     "dbox": "0.6.x",
     "node-oauth": "0.1.x",
     "oauth": "",
     "path": ""
   },
   "devDependencies": {
-    "express": "~3.2.6",
+    "express": "~3.4.6",
     "chai": "",
     "supertest": "",
     "mocha": "~1.11.0"
