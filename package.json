@@ -10,7 +10,7 @@
     "express": "3.2.x",
     "dbox": "0.6.x",
     "node-oauth": "0.1.x",
-    "googleapis": "0.2.x",
+    "googleapis": "0.4.x",
     "oauth": "",
     "path": ""
   },
