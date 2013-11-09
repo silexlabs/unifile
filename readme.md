@@ -1,9 +1,5 @@
 #Unifile, unified access to cloud storage services.
 
-[![Build Status](https://travis-ci.org/silexlabs/unifile.png?branch=master)](https://travis-ci.org/silexlabs/unifile)
-[![Dependency Status](https://gemnasium.com/silexlabs/unifile.png)](https://gemnasium.com/silexlabs/unifile)
-[![NPM version](https://badge.fury.io/js/unifile.png)](http://badge.fury.io/js/unifile)
-
 Express middleware to provide REST API for accessing cloud storage services.
 
 #Motivation
@@ -36,7 +32,7 @@ Then write a small node.js server like this
     // server 'loop'
     app.listen(6805); // 6805 is the date of sexual revolution started in paris france 8-)
 
-Save this as server.js and start it with
+Save this as server.js and start it with 
 
     $ node server.js
 
