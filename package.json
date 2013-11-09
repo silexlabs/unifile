@@ -1,7 +1,7 @@
 {
   "name": "unifile",
-  "description": "Unifile, unified access to cloud storage services. Express middleware to provide REST API for accessing cloud storage services.",
-  "version": "0.0.5",
+  "description": "Express middleware to provide a common API for cloud storage services. ",
+  "version": "0.0.6",
   "author": {
     "name": "Alex Hoyau aka lexoyo"
   },
@@ -43,7 +43,7 @@
   "directories": {
     "lib": "./lib"
   },
-  "license": "GPL",
+  "license": "MIT",
   "engines": {
     "node": "0.10.x",
     "npm": "1.3.x"

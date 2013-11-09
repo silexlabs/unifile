@@ -12,7 +12,7 @@ We hope that other communities will benefit this way to use their cloud services
 
 #How to install
 
-In your project folder, use npm to install unifile nodejs module
+With node installed ([download](http://nodejs.org/download)), clone unifile on your computer
 
     $ npm install unifile
 
@@ -38,7 +38,7 @@ Save this as server.js and start it with
 
 Then start making calls with wget or your browser. For example...
 
-    $ wget http://localhost:6805/api/v1.0/services/list/
+    http://localhost:6805/api/v1.0/services/list/
 
 ... will list the available services:
 
@@ -96,7 +96,7 @@ Execute commands
 
 #License
 
-license: GPL
+license: GPL v2
 
 #Developer guide
 
@@ -113,7 +113,6 @@ If you wish to add a service,
 * add your .js file in lib/services/ (duplicate the lib/services/dropbox.js file in order to have all the required methods)
 * edit core/router.js to make your service reachable
 * if you use an external node.js library, add the dependency in package.json
-* write functionnal tests, duplicate test/www-tests.js and change it to test your service
 
 Here is a list of services which could be useful
 
@@ -125,25 +124,26 @@ Here is a list of services which could be useful
 
 ##Notes / roadmap
 
-to do
+* http://localhost:6805/api/v1.0/www/connect/ bug
+* doc: list of supported services (also in CE)
+* service www: use jade templates
 
-* finish the www service (execute "make test" to check what is missing)
-* unit tests for dropbox
-* pagination for ls commands
-* doc: https://app.apiary.io/unifile/ or http://apiblueprint.org/
-* check best practices for the api
-  http://www.startupcto.com/backend-tech/building-an-api-best-practices
-* navigation / display of the routes: use jade templates
-
-archi, tests and readme
+unifile archi, tests and readme
 
 * doc: https://www.dreamfactory.com/developers/live_API
 * https://npmjs.org/package/social-cms-backend
 * tests http://stackoverflow.com/questions/11520170/unit-testing-oauth-js-with-mocha
 
-to do maybe?
+to do
 
-* ? mimic unix commands : /v1.0/gdrive/exec/?cmd="cd /example1/test/ ; cp img1.jpg img2.jpg ; ls"
+* better readme
+* unit tests for get/put/cat
+* pagination for ls commands
+* security: make the "allowCrossDomain" function look for the api key and det if the domain is allowed
+* best practices for the api
+  http://www.startupcto.com/backend-tech/building-an-api-best-practices
+* mimic unix commands : /v1.0/gdrive/exec/?cmd="cd /example1/test/ ; cp img1.jpg img2.jpg ; ls"
 * make a Terminal in javascript to test the services
+* add a new service : an example of social network, like facebook, g+ or twitter?
 
 
