@@ -1,20 +1,21 @@
 {
   "name": "unifile",
-  "description": "Unifile, unified access to cloud storage services. Express middleware to provide REST API for accessing cloud storage services.",
-  "version": "0.0.5",
+  "description": "Express middleware to provide a common API for cloud storage services. ",
+  "version": "0.0.3",
   "author": "Alex Hoyau aka lexoyo",
   "contributors": [
     "Thomas Fetiveau aka zabojad"
   ],
   "dependencies": {
-    "express": "3.4.x",
+    "express": "3.2.x",
     "dbox": "0.6.x",
     "node-oauth": "0.1.x",
+    "googleapis": "0.2.x",
     "oauth": "",
     "path": ""
   },
   "devDependencies": {
-    "express": "~3.4.6",
+    "express": "~3.2.6",
     "chai": "",
     "supertest": "",
     "mocha": "~1.11.0"
@@ -29,6 +30,7 @@
     "cms",
     "rest",
     "dropbox",
+    "google-drive",
     "storage",
     "filepicker",
     "api"
@@ -37,7 +39,7 @@
   "directories": {
     "lib": "./lib"
   },
-  "license": "GPL",
+  "license": "MIT",
   "engines": {
     "node": "0.10.x",
     "npm": "1.3.x"

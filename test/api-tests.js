@@ -1,18 +1,12 @@
-/*
- * Unifile, unified access to cloud storage services.
- * https://github.com/silexlabs/unifile/
- *
- * Copyright (c) Silex Labs
- * Unifile is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
- */
+// http://strongloop.com/strongblog/how-to-test-an-api-with-node-js/
+// http://chaijs.com/
 
 /**
- * About this file
- *
- * functional tests
- * uses chai and supertest
- * http://chaijs.com/
+ * manque ici
+ * * test des commandes
+ * * test des échecs d'auth ou de login
+ * * test des erreurs
+ * * pareil pour les autres services que www
  */
 
 console.log('start tests');
@@ -30,7 +24,8 @@ var options = unifile.defaultConfig;
 
 // define users (login/password) wich will be authorized to access the www folder (read and write)
 options.www.users = {
-    "admin": "admin"
+    "abcd": "1234"
+    , "efgh": "5678"
 }
 
 // use unifile as a middleware
@@ -42,20 +37,8 @@ app.listen(port, function() {
   console.log('Listening on ' + port);
 });
 
-function getElementByProp(arr, name, val){
-    for(idx in arr){
-        //console.log('getElementByProp', idx, arr[idx][name], val);
-
-        if (arr[idx][name]===val){
-            return arr[idx];
-        }
-    }
-    return null;
-}
-
-// test routes
 var cookie;
-describe('Test generic API routes', function() {
+describe('General routes', function() {
   it('should display services', function(done) {
     api.get('/api/v1.0/services/list/')
     .expect(200)
@@ -69,3 +52,70 @@ describe('Test generic API routes', function() {
     });
   });
 });
+describe('Authentication', function() {
+  it('should logout', function(done) {
+    api.get('/api/v1.0/www/logout/')
+    .expect(200, done)
+    .expect('Content-Type', /json/)
+  });
+  var authorize_url = options.www.auth_form_route;
+  it('should connect and return the auth page url', function(done) {
+      api.get('/api/v1.0/www/connect/')
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end(function(err, res) {
+          if (err) return done(err);
+          console.log('/api/v1.0/www/connect/', res.body, typeof(res.body.authorize_url));
+          res.body.should.have.property('authorize_url').and.be.a('string');
+          authorize_url = res.body.authorize_url;
+          done();
+      });
+  });
+  it('should return the auth page HTML content', function(done) {
+      api.get(authorize_url)
+      .expect(200, done);
+  });
+  it('should authorize and return auth page HTML content', function(done) {
+        api.post(options.www.auth_form_submit_route)
+        .send({'username': 'abcd', 'password': '1234'})
+        .expect(200)
+        .end(function(err, res) {
+            if (err) return done(err);
+            console.log(options.www.auth_form_submit_route);
+            cookie = res.headers['set-cookie'];
+            done();
+        });
+  });
+  it('should now be logged in', function(done) {
+      api.get('/api/v1.0/www/login/')
+      .set('cookie', cookie)
+      .expect(200, done)
+      .expect('Content-Type', /json/);
+  });
+});
+describe('User account', function() {
+    it('should display account info', function(done) {
+        api.get('/api/v1.0/www/account/')
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .set('cookie', cookie)
+        .end(function(err, res) {
+            if (err) return done(err);
+            console.log(res.body, res.body.display_name, typeof(res.body.display_name));
+            res.body.should.be.instanceof(Object);
+            res.body.should.have.property('display_name').and.be.a('string');
+            done();
+        });
+    });
+});
+
+/*
+describe('Authentication', function() {
+  it('errors if wrong basic auth', function(done) {
+    api.post('/api/v1.0/www/login/', {'username': 'abcd', 'password': '1234'})
+    .set('x-api-key', '123myapikey')
+    .auth('incorrect', 'credentials')
+    .expect(401, done)
+  });
+});
+*/
