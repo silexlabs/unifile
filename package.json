@@ -1,7 +1,7 @@
 {
   "name": "unifile",
   "description": "Express middleware to provide a common API for cloud storage services. ",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "author": {
     "name": "Alex Hoyau aka lexoyo"
   },
@@ -11,7 +11,10 @@
     }
   ],
   "dependencies": {
-    "express": "3.2.x",
+    "express": "~4.0.x",
+    "body-parser": "~1.0.x",
+    "cookie-parser": "~1.0.x",
+    "cookie-session": "~1.0.x",
     "dbox": "0.6.x",
     "ftp": "0.3.x",
     "node-oauth": "0.1.x",
@@ -20,7 +23,7 @@
     "path": ""
   },
   "devDependencies": {
-    "express": "~3.2.6",
+    "express": "~4.0.x",
     "chai": "",
     "supertest": "",
     "mocha": "~1.11.0"
