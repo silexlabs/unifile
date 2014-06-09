@@ -1,0 +1,33 @@
+doctype html
+html
+  head
+    // link(rel="stylesheet", href="/unifile-templates/login.css", type="text/css")
+    // this comes from login.css
+    style(type="text/css").
+      #{css}
+  body.all-text
+    div.logo
+    div.main-container
+      form.inner-container(action='/api/v1.0/ftp-auth-submit', method='post')
+        if success
+          script(type='text/javascript').
+            window.onload=function(){window.close();};
+          h1.title Ok, you can close this window now
+        else
+          h1.title Unifile would like access to your files and folders.
+          if error
+            label.error-text Invalid access codes
+          div
+            label Host:
+            input.input-text(type='text', name='host')
+          div
+            label Port:
+            input.input-text(type='text', name='port', value='21')
+          div
+            label Username:
+            input.input-text(type='text', name='username')
+          div
+            label Password:
+            input.input-text(type='password', name='password')
+          div
+            input.input-text(type='submit', value='Log In')
