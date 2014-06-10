@@ -19,7 +19,7 @@ var express = require('express')
     , app = express()
     , should = require('chai').should()
     , supertest = require('supertest')
-    , api = supertest('http://localhost:6805')
+    , api = supertest.agent('http://localhost:6805')
     , unifile = require('../lib/');
 /*
  * useful methode
@@ -36,11 +36,6 @@ function getElementByProp(arr, name, val){
 // config
 var options = unifile.defaultConfig;
 
-// define users (login/password) wich will be authorized to access the www folder (read and write)
-options.www.users = {
-    "admin": "admin"
-}
-
 // use unifile as a middleware
 app.use(unifile.middleware(express, app, options));
 
@@ -51,8 +46,13 @@ app.listen(port, function() {
 });
 
 // test routes
-var cookie;
 describe('Test www service', function() {
+  before(function () {
+    // define users (login/password) wich will be authorized to access the www folder (read and write)
+    options.www.USERS = {
+        "admin": "admin"
+    }
+  });
   // test auth error
   describe('Authentication error', function() {
     it('should logout', function(done) {
@@ -60,7 +60,7 @@ describe('Test www service', function() {
       .expect(200, done)
       .expect('Content-Type', /json/)
     });
-    var authorize_url = options.www.auth_form_route;
+    var authorize_url = options.www.AUTH_FORM_ROUTE;
     it('should connect and return the auth page url', function(done) {
         api.get('/api/v1.0/www/connect/')
         .expect(200)
@@ -78,25 +78,21 @@ describe('Test www service', function() {
         .expect(200, done);
     });
     it('should NOT authorize', function(done) {
-          api.post(options.www.auth_form_submit_route)
+          api.post(options.www.AUTH_FORM_SUBMIT_ROUTE)
           .send({'username': 'wrong', 'password': 'password'})
           .expect(401)
           .end(function(err, res) {
-              if (err) return done(err);
-              console.log(options.www.auth_form_submit_route);
-              cookie = res.headers['set-cookie'];
-              done();
+            if (err) return done(err);
+            done();
           });
     });
     it('should NOT be logged in', function(done) {
         api.get('/api/v1.0/www/login/')
-        .set('cookie', cookie)
         .expect(401, done)
         .expect('Content-Type', /json/);
     });
     it('should NOT have acces to account info', function(done) {
         api.get('/api/v1.0/www/account/')
-        .set('cookie', cookie)
         .expect(401, done)
         .expect('Content-Type', /json/);
     });
@@ -108,7 +104,7 @@ describe('Test www service', function() {
       .expect(200, done)
       .expect('Content-Type', /json/)
     });
-    var authorize_url = options.www.auth_form_route;
+    var authorize_url = options.www.AUTH_FORM_ROUTE;
     it('should connect and return the auth page url', function(done) {
         api.get('/api/v1.0/www/connect/')
         .expect(200)
@@ -126,19 +122,17 @@ describe('Test www service', function() {
         .expect(200, done);
     });
     it('should authorize and return auth page HTML content', function(done) {
-          api.post(options.www.auth_form_submit_route)
+          api.post(options.www.AUTH_FORM_SUBMIT_ROUTE)
           .send({'username': 'admin', 'password': 'admin'})
           .expect(200)
           .end(function(err, res) {
               if (err) return done(err);
-              console.log(options.www.auth_form_submit_route);
-              cookie = res.headers['set-cookie'];
+              console.log(options.www.AUTH_FORM_SUBMIT_ROUTE);
               done();
           });
     });
     it('should now be logged in', function(done) {
         api.get('/api/v1.0/www/login/')
-        .set('cookie', cookie)
         .expect(200, done)
         .expect('Content-Type', /json/);
     });
@@ -148,7 +142,6 @@ describe('Test www service', function() {
         api.get('/api/v1.0/www/account/')
         .expect(200)
         .expect('Content-Type', /json/)
-        .set('cookie', cookie)
         .end(function(err, res) {
             if (err) return done(err);
             console.log(res.body, res.body.display_name, typeof(res.body.display_name));
@@ -162,19 +155,16 @@ describe('Test www service', function() {
     // commands
     it('should be abble to execute command ls at root', function(done) {
         api.get('/api/v1.0/www/exec/ls/')
-        .set('cookie', cookie)
         .expect(200, done)
         .expect('Content-Type', /json/);
     });
     it('should create a folder', function(done) {
         api.get('/api/v1.0/www/exec/mkdir/tmp-test')
-        .set('cookie', cookie)
         .expect(200, done)
         .expect('Content-Type', /json/);
     });
     it('should list the created folder', function(done) {
         api.get('/api/v1.0/www/exec/ls/')
-        .set('cookie', cookie)
         .expect(200)
         .expect('Content-Type', /json/)
         .end(function (err, res) {
@@ -187,13 +177,11 @@ describe('Test www service', function() {
     });
     it('should be abble to add a text file', function(done) {
         api.get('/api/v1.0/www/exec/put/tmp-test/test.txt:This is a text my file.')
-        .set('cookie', cookie)
         .expect(200, done)
         .expect('Content-Type', /json/);
     });
     it('should list the created files', function(done) {
         api.get('/api/v1.0/www/exec/ls/tmp-test/')
-        .set('cookie', cookie)
         .expect(200)
         .expect('Content-Type', /json/)
         .end(function (err, res) {
@@ -206,13 +194,11 @@ describe('Test www service', function() {
     });
     it('should copy the file', function(done) {
         api.get('/api/v1.0/www/exec/cp/tmp-test/test.txt:/tmp-test/test-cp.txt')
-        .set('cookie', cookie)
         .expect(200, done)
         .expect('Content-Type', /json/);
     });
     it('should list the created files', function(done) {
         api.get('/api/v1.0/www/exec/ls/tmp-test/')
-        .set('cookie', cookie)
         .expect(200)
         .expect('Content-Type', /json/)
         .end(function (err, res) {
@@ -224,17 +210,16 @@ describe('Test www service', function() {
         });
     });
     it('should rename (mv) a file', function(done) {
-        api.get('/api/v1.0/www/exec/mv/test-cp.txt:test-mv.txt')
-        .set('cookie', cookie)
+        api.get('/api/v1.0/www/exec/mv/tmp-test/test-cp.txt:/tmp-test/test-mv.txt')
         .expect(200, done)
         .expect('Content-Type', /json/);
     });
     it('should list the created files', function(done) {
         api.get('/api/v1.0/www/exec/ls/tmp-test/')
-        .set('cookie', cookie)
         .expect(200)
         .expect('Content-Type', /json/)
         .end(function (err, res) {
+          console.log('ls : ', res.body);
             if (err) return done(err);
             res.body.should.be.an('array');
             var element = getElementByProp(res.body, 'name', 'test-mv.txt');
@@ -246,26 +231,25 @@ describe('Test www service', function() {
     });
     it('should be abble to remove a file', function(done) {
         api.get('/api/v1.0/www/exec/rm/tmp-test/test-mv.txt')
-        .set('cookie', cookie)
-        .expect(401, done)
+        .expect(200, done)
         .expect('Content-Type', /json/);
     });
     it('should list the created files', function(done) {
         api.get('/api/v1.0/www/exec/ls/tmp-test/')
-        .set('cookie', cookie)
         .expect(200)
         .expect('Content-Type', /json/)
         .end(function (err, res) {
             if (err) return done(err);
             res.body.should.be.an('array');
-            var element = getElementByProp(res.body, 'name', 'test-mv.txt');
+            var element = getElementByProp(res.body, 'name', 'test.txt');
             should.exist(element);
+            var element = getElementByProp(res.body, 'name', 'test-mv.txt');
+            should.not.exist(element);
              done();
         });
     });
     it('should retrieve the content of a text file', function(done) {
         api.get('/api/v1.0/www/exec/get/tmp-test/test.txt')
-        .set('cookie', cookie)
         .expect(200)
         .expect('Content-Type', /text/)
         .end(function (err, res) {
