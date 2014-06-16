@@ -1,7 +1,7 @@
 {
   "name": "unifile",
   "description": "Express middleware to provide a common API for cloud storage services. ",
-  "version": "0.0.32",
+  "version": "0.0.33",
   "author": {
     "name": "Alex Hoyau aka lexoyo"
   },
@@ -68,7 +68,7 @@
   "bugs": {
     "url": "https://github.com/silexlabs/unifile/issues"
   },
-  "_id": "unifile@0.0.11",
-  "_from": "unifile@~0.0.x",
+  "_id": "unifile@0.0.33",
+  "_from": "unifile@~0.0.29",
   "homepage": "https://github.com/silexlabs/unifile"
 }
