@@ -1,9 +1,14 @@
 .logo{
-  background-image: url('/unifile-assets/services/ftp.png');
   width: 64px;
   height: 64px;
   background-repeat: no-repeat;
   background-size: cover;
+}
+.logo-ftp{
+  background-image: url('/unifile-assets/services/ftp.png');
+}
+.logo-www{
+  background-image: url('/unifile-assets/services/www.png');
 }
 .main-container {
   width: 550px;

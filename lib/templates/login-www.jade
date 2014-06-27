@@ -7,9 +7,9 @@ html
     style(type="text/css").
       #{css}
   body.all-text
-    div.logo.logo-ftp
+    div.logo.logo-www
     div.main-container
-      form.inner-container(action='/api/v1.0/ftp-auth-submit', method='post')
+      form.inner-container(action='/api/v1.0/www-auth-submit', method='post')
         if success
           script(type='text/javascript').
             window.onload=function(){window.close();};
@@ -18,12 +18,6 @@ html
           h1.title Unifile would like access to your files and folders.
           if error
             label.error-text Invalid access codes
-          div
-            label Host:
-            input.input-text(type='text', name='host')
-          div
-            label Port:
-            input.input-text(type='text', name='port', value='21')
           div
             label Username:
             input.input-text(type='text', name='username')
