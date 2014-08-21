@@ -1,8 +1,20 @@
 #Unifile, unified access to cloud storage services.
 
-Express middleware to provide REST API for accessing cloud storage services.
-
 [![Build Status](https://travis-ci.org/silexlabs/unifile.png?branch=master)](https://travis-ci.org/silexlabs/unifile)
+
+Express middleware to provide web services for accessing cloud storage services with a common API.
+
+Currently supported services
+
+* FTP
+* Dropbox
+* local web server
+* see instructions bellow to add a service
+
+Example
+
+    GET    /api/v1.0/dropbox/exec/ls/path/to/folder/                 list a directory of the loggedin user
+
 
 #Motivation
 
@@ -14,11 +26,11 @@ We hope that other communities will benefit this way to use their cloud services
 
 #How to install
 
-With node installed ([download](http://nodejs.org/download)), clone unifile on your computer
+With node installed ([download](http://nodejs.org/download)), install unifile in your project (the ```-save``` option will add the latest version of unifile to your package.json file)
 
-    $ npm install unifile
+    $ npm install unifile -save
 
-Then write a small node.js server like this
+Then write a small node.js server like this and name it ```server.js```
 
     // node modules
     var unifile = require('unifile');
@@ -34,7 +46,7 @@ Then write a small node.js server like this
     // server 'loop'
     app.listen(6805); // 6805 is the date of sexual revolution started in paris france 8-)
 
-Save this as server.js and start it with 
+Save this as ```server.js``` and start it with
 
     $ node server.js
 
@@ -48,7 +60,7 @@ Then start making calls with wget or your browser. For example...
         {
             "name": "dropbox",
             "display_name": "Dropbox",
-            "description": "Edit html files from your Dropbox.",
+            "description": "Access files from your Dropbox.",
             "isLoggedIn": true,
             "isConnected": true,
             "user": {
@@ -60,9 +72,19 @@ Then start making calls with wget or your browser. For example...
             }
         },
         {
+            "name": "ftp",
+            "display_name": "FTP",
+            "description": "Access files through FTP.",
+            "isLoggedIn": false,
+            "isConnected": false
+            "user": {
+                "display_name": "test",
+            }
+        },
+        {
             "name": "www",
             "display_name": "Web server",
-            "description": "Edit files on the server where Silex is installed.",
+            "description": "Access files on the server where unifile is running.",
             "isLoggedIn": false,
             "isConnected": false
             "user": {
@@ -118,11 +140,11 @@ If you wish to add a service,
 
 Here is a list of services which could be useful
 
-* github (they provides free hosting, see https://help.github.com/articles/user-organization-and-project-pages)
-* FTP
-* Box, SkyDrive, RapidShare, CloudMine, FilesAnywhere, RapidShare
-* SugarSync
+* Box, SkyDrive, RapidShare, CloudMine, FilesAnywhere
 * Amazon S3 and WebDav
+* SugarSync
+* Google drive if not too slow
+* Facebook if possibe?
 
 ##Notes / roadmap
 
@@ -138,14 +160,12 @@ unifile archi, tests and readme
 
 to do
 
-* better readme
 * unit tests for get/put/cat
-* pagination for ls commands
+* pagination for ls commands?
 * security: make the "allowCrossDomain" function look for the api key and det if the domain is allowed
 * best practices for the api
   http://www.startupcto.com/backend-tech/building-an-api-best-practices
 * mimic unix commands : /v1.0/gdrive/exec/?cmd="cd /example1/test/ ; cp img1.jpg img2.jpg ; ls"
-* make a Terminal in javascript to test the services
-* add a new service : an example of social network, like facebook, g+ or twitter?
+* add a new service
 
 
