@@ -11,16 +11,43 @@
 
 console.log('start tests');
 
+// tested module
+var unifile = require('../lib/');
+
+// test modules
+var should = require('chai').should();
+var supertest = require('supertest');
+var api = supertest.agent('http://localhost:6805');
+
 // node modules
-var express = require('express')
-    , app = express()
-    , should = require('chai').should()
-    , supertest = require('supertest')
-    , api = supertest.agent('http://localhost:6805')
-    , unifile = require('../lib/');
+var express = require('express');
+var bodyParser = require('body-parser');
+var cookieParser = require('cookie-parser');
+var session = require('express-session');
+var multipart = require('connect-multiparty');
+
+// init express
+var app = express();
 
 // config
 var options = unifile.defaultConfig;
+
+// parse data for file upload
+app.use(options.apiRoot, multipart());
+
+// parse data for post and get requests
+app.use(options.apiRoot, bodyParser.urlencoded({
+    extended: true
+}));
+app.use(options.apiRoot, bodyParser.json());
+app.use(options.apiRoot, cookieParser());
+
+// session management
+app.use(options.apiRoot, session({
+    secret: options.sessionSecret,
+    resave: false,
+    saveUninitialized: false
+}));
 
 // use unifile as a middleware
 app.use(unifile.middleware(express, app, options));

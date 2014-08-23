@@ -16,6 +16,22 @@ options.www.USERS = {
     "admin": "admin"
 }
 
+// parse data for file upload
+app.use(options.apiRoot, multipart());
+
+// parse data for post data
+app.use(options.apiRoot, bodyParser.urlencoded({
+    extended: true
+}));
+app.use(options.apiRoot, bodyParser.json());
+
+app.use(options.apiRoot, cookieParser());
+app.use(options.apiRoot, session({
+    secret: options.sessionSecret,
+    resave: false,
+    saveUninitialized: false
+}));
+
 // use unifile as a middleware
 app.use(unifile.middleware(express, app, options));
 

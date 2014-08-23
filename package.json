@@ -1,7 +1,7 @@
 {
   "name": "unifile",
   "description": "Express middleware to provide a common API for cloud storage services. ",
-  "version": "0.0.44",
+  "version": "0.0.46",
   "author": {
     "name": "Alex Hoyau aka lexoyo"
   },
@@ -11,12 +11,8 @@
     }
   ],
   "dependencies": {
-    "body-parser": "~1.6.5",
-    "connect-multiparty": "~1.2.1",
-    "cookie-parser": "~1.3.2",
     "dbox": "~0.6.3",
     "express": "~4.8.5",
-    "express-session": "1.7.6",
     "ftp": "~0.3.7",
     "jade": "~1.5.0",
     "mime": "~1.2.11",
@@ -24,6 +20,10 @@
     "unorm": "~1.3.3"
   },
   "devDependencies": {
+    "body-parser": "~1.6.5",
+    "connect-multiparty": "~1.2.1",
+    "cookie-parser": "~1.3.2",
+    "express-session": "1.7.6",
     "chai": "~1.9.1",
     "supertest": "~0.13.0",
     "mocha": "~1.21.4",
@@ -64,7 +64,9 @@
   "bugs": {
     "url": "https://github.com/silexlabs/unifile/issues"
   },
-  "_id": "unifile@0.0.33",
-  "_from": "unifile@~0.0.29",
-  "homepage": "https://github.com/silexlabs/unifile"
+  "_id": "unifile@0.0.44",
+  "_from": "unifile@0.0.44",
+  "homepage": "https://github.com/silexlabs/unifile",
+  "_shasum": "7b3a39cabc0e7d0cf765868897997ac9ce97b430",
+  "_resolved": "https://registry.npmjs.org/unifile/-/unifile-0.0.44.tgz"
 }
