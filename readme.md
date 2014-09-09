@@ -179,6 +179,7 @@ Here is a list of services which could be useful
 unifile archi, tests and readme
 
 * doc: https://www.dreamfactory.com/developers/live_API
+* mock, doc et tests: http://apiblueprint.org/
 * https://npmjs.org/package/social-cms-backend
 * tests http://stackoverflow.com/questions/11520170/unit-testing-oauth-js-with-mocha
 
