@@ -1,0 +1,47 @@
+HOST: http://www.silex.me/api/v1.0/
+
+--- Unifile API ---
+---
+Welcome to the our sample API documentation. All comments can be written in (support [Markdown](http://daringfireball.net/projects/markdown/syntax) syntax)
+---
+
+--
+Services utilities
+Utilities to discover services
+--
+List services
+GET /services/list
+< 200
+< Content-Type: application/json
+[
+{
+"name": "dropbox",
+"display_name": "Dropbox",
+"image_small": "unifile-assets/services/dropbox.png",
+"description": "Edit html files from your Dropbox.",
+"visible": true,
+"isLoggedIn": true,
+"isConnected": true,
+"user": {
+"display_name": "Alex Hoyau",
+"quota_info": {
+"available": 5234491392,
+"used": 4530789341
+}
+]
+
+Save new products in your shopping cart
+POST /shopping-cart
+> Content-Type: application/json
+{ "product":"1AB23ORM", "quantity": 2 }
+< 201
+< Content-Type: application/json
+{ "status": "created", "url": "/shopping-cart/2" }
+
+
+-- Payment Resources --
+This resource allows you to submit payment information to process your *shopping cart* items
+POST /payment
+{ "cc": "12345678900", "cvc": "123", "expiry": "0112" }
+< 200
+{ "receipt": "/payment/receipt/1" }
