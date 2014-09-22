@@ -26,9 +26,9 @@ We hope that other communities will benefit this way to use their cloud services
 
 #How to install
 
-With node installed ([download](http://nodejs.org/download)), install unifile in your project (the ```-save``` option will add the latest version of unifile to your package.json file)
+With node installed ([download](http://nodejs.org/download)), install unifile in your project
 
-    $ npm install unifile -save
+    $ npm install unifile
 
 Then write a small node.js server like this and name it ```server.js```
 
