@@ -134,3 +134,135 @@ After calling connect, you are expected to follow the "authorize_url" provided i
             "message": "User not logged in yet. You need to call the 'login' service first."
         }
 
+## Delete file or folder [/{service}/exec/rm/{path}]
+
+### Remove a file or folder from the authenticated user's cloud storage [GET]
+
++ Response 200 (application/json; charset=utf-8)
+
+        {
+            "success": true
+        }
+
++ Response 401 (application/json; charset=utf-8)
+
+        {
+            "success": false,
+            "code": 401,
+            "message": "User not logged in yet. You need to call the 'login' service first."
+        }
+
+## Create a folder [/{service}/exec/mkdir/{path}]
+
+### Create an empty folder in the authenticated user's cloud storage [GET]
+
++ Response 200 (application/json; charset=utf-8)
+
+        {
+            "success": true
+        }
+
++ Response 401 (application/json; charset=utf-8)
+
+        {
+            "success": false,
+            "code": 401,
+            "message": "User not logged in yet. You need to call the 'login' service first."
+        }
+
+## Copy a file [/{service}/exec/cp/{src}:{dst}]
+
+### Copy a file from a location to another in the authenticated user's cloud storage [GET]
+
+src and dst may have to be in the same service? to be tested
+
++ Response 200 (application/json; charset=utf-8)
+
+        {
+            "success": true
+        }
+
++ Response 401 (application/json; charset=utf-8)
+
+        {
+            "success": false,
+            "code": 401,
+            "message": "User not logged in yet. You need to call the 'login' service first."
+        }
+
+## Move a file [/{service}/exec/mv/{src}:{dst}]
+
+src and dst may have to be in the same service? to be tested
+
+### Move or rename a file from the authenticated user's cloud storage [GET]
+
++ Response 200 (application/json; charset=utf-8)
+
+        {
+            "success": true
+        }
+
++ Response 401 (application/json; charset=utf-8)
+
+        {
+            "success": false,
+            "code": 401,
+            "message": "User not logged in yet. You need to call the 'login' service first."
+        }
+
+## Get a file [/{service}/exec/get/{path}]
+
+### Get a file from a location to another in the authenticated user's cloud storage [GET]
+
++ Response 200 (application/octet-stream)
+
+        the file bytes
+
++ Response 401 (application/json; charset=utf-8)
+
+        {
+            "success": false,
+            "code": 401,
+            "message": "User not logged in yet. You need to call the 'login' service first."
+        }
+
+## Write to a file [/{service}/exec/put/{path}:{bytes}]
+
+This will overrite the file content if it exists.
+
+### Write to a file in the authenticated user's cloud storage [GET]
+
++ Response 200 (application/json; charset=utf-8)
+
+        {
+            "success": true
+        }
+
++ Response 401 (application/json; charset=utf-8)
+
+        {
+            "success": false,
+            "code": 401,
+            "message": "User not logged in yet. You need to call the 'login' service first."
+        }
+
+### Write to a file in the authenticated user's cloud storage [POST]
+
++ Request (application/octet-stream)
+
+        bytes to be wrinten to the file
+
++ Response 200 (application/json; charset=utf-8)
+
+        {
+            "success": true
+        }
+
++ Response 401 (application/json; charset=utf-8)
+
+        {
+            "success": false,
+            "code": 401,
+            "message": "User not logged in yet. You need to call the 'login' service first."
+        }
+
