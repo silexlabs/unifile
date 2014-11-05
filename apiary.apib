@@ -14,34 +14,31 @@ GET /services/list
 < 200
 < Content-Type: application/json
 [
-{
-"name": "dropbox",
-"display_name": "Dropbox",
-"image_small": "unifile-assets/services/dropbox.png",
-"description": "Edit html files from your Dropbox.",
-"visible": true,
-"isLoggedIn": true,
-"isConnected": true,
-"user": {
-"display_name": "Alex Hoyau",
-"quota_info": {
-"available": 5234491392,
-"used": 4530789341
-}
+  {
+    "name": "dropbox",
+    "display_name": "Dropbox",
+    "image_small": "unifile-assets/services/dropbox.png",
+    "description": "Edit html files from your Dropbox.",
+    "visible": true,
+    "isLoggedIn": true,
+    "isConnected": true,
+    "isOAuth": true,
+    "user": {
+      "display_name": "Alex Hoyau",
+      "quota_info": {
+        "available": 5234491392,
+        "used": 2899550907
+      }
+    }
+  },
+  {
+    "name": "ftp",
+    "display_name": "FTP",
+    "image_small": "unifile-assets/services/ftp.png",
+    "description": "Edit files on a web server.",
+    "visible": true,
+    "isLoggedIn": false,
+    "isConnected": false,
+    "isOAuth": false
+  }
 ]
-
-Save new products in your shopping cart
-POST /shopping-cart
-> Content-Type: application/json
-{ "product":"1AB23ORM", "quantity": 2 }
-< 201
-< Content-Type: application/json
-{ "status": "created", "url": "/shopping-cart/2" }
-
-
--- Payment Resources --
-This resource allows you to submit payment information to process your *shopping cart* items
-POST /payment
-{ "cc": "12345678900", "cvc": "123", "expiry": "0112" }
-< 200
-{ "receipt": "/payment/receipt/1" }
