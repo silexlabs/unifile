@@ -1,44 +1,96 @@
-HOST: http://www.silex.me/api/v1.0/
+FORMAT: 1A
+HOST: http://www.silex.me/api/v1.0
 
---- Unifile API ---
----
-Welcome to the our sample API documentation. All comments can be written in (support [Markdown](http://daringfireball.net/projects/markdown/syntax) syntax)
----
+# Unifile API
 
---
-Services utilities
-Utilities to discover services
---
-List services
-GET /services/list
-< 200
-< Content-Type: application/json
-[
-  {
-    "name": "dropbox",
-    "display_name": "Dropbox",
-    "image_small": "unifile-assets/services/dropbox.png",
-    "description": "Edit html files from your Dropbox.",
-    "visible": true,
-    "isLoggedIn": true,
-    "isConnected": true,
-    "isOAuth": true,
-    "user": {
-      "display_name": "Alex Hoyau",
-      "quota_info": {
-        "available": 5234491392,
-        "used": 2899550907
-      }
-    }
-  },
-  {
-    "name": "ftp",
-    "display_name": "FTP",
-    "image_small": "unifile-assets/services/ftp.png",
-    "description": "Edit files on a web server.",
-    "visible": true,
-    "isLoggedIn": false,
-    "isConnected": false,
-    "isOAuth": false
-  }
-]
+This is the API to manage your users' cloud services from your application.
+
+## Resources
+
+[Unifile, unified access to cloud storage services through a simple web API.](https://github.com/silexlabs/unifile) 
+
+
+## Services list [/services/list]
+
+### List the available services [GET]
+
++ Response 200 (application/json; charset=utf-8)
+
+        [
+            {
+                "name": "dropbox",
+                "display_name": "Dropbox",
+                "image_small": "unifile-assets/services/dropbox.png",
+                "description": "Edit html files from your Dropbox.",
+                "visible": true,
+                "isLoggedIn": true,
+                "isConnected": true,
+                "isOAuth": true,
+                "user": {
+                    "display_name": "Alex Hoyau",
+                    "quota_info": {
+                        "available": 5234491392,
+                        "used": 2899550907
+                    }
+                }
+            },
+            {
+                "name": "ftp",
+                "display_name": "FTP",
+                "image_small": "unifile-assets/services/ftp.png",
+                "description": "Edit files on a web server.",
+                "visible": true,
+                "isLoggedIn": false,
+                "isConnected": false,
+                "isOAuth": false
+            }
+        ]
+
+# Group Service authentication and user account
+
+## User account [/*/account]
+
+### List the available information concerning the authenticated user [GET]
+
++ Response 200 (application/json; charset=utf-8)
+
++ Response 401 (application/json; charset=utf-8)
+
+        {
+            "success": false,
+            "message": "User not connected yet. You need to call the 'login' service first.",
+            "code": 401
+        }
+
+## Connect the user [/*/connect]
+
+### Connect the user and start the oauth process [GET]
+
+After calling connect, you are expected to follow the "authorize_url" provided in the response. There the user will authorize your app to acces his/her data. And then you will want to call the login route.
+
++ Response 200 (application/json; charset=utf-8)
+
+        {
+            "success": true,
+            "message": "Now connected. You probably want to <a href=\"/api/v1.0/www-auth\">authenticate</a> now.",
+            "authorize_url": "..."
+        }
+
+## User login [/*/login]
+
+### Login after connection through oauth mechanism [GET]
+
++ Response 200 (application/json; charset=utf-8)
+
+        {
+            "success": true
+        }
+
++ Response 401 (application/json; charset=utf-8)
+
+        {
+            "success": false,
+            "message": "User not authorized.",
+            "code": 401
+        }
+
