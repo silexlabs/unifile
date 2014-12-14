@@ -4,6 +4,8 @@
 
 Express middleware to provide web services for accessing cloud storage services with a common API.
 
+> [Here is the API online documentation with code samples in Javascript, node.js, python...](http://docs.unifile.apiary.io/)
+
 Currently supported services
 
 * FTP
@@ -14,7 +16,6 @@ Currently supported services
 Example
 
     GET    /api/v1.0/dropbox/exec/ls/path/to/folder/                 list a directory of the loggedin user
-
 
 #Motivation
 
@@ -117,7 +118,7 @@ Then start making calls with wget or your browser. For example...
         }
     ]
 
-#REST APIs
+#API calls
 
 Let's take the example of the Dropbox service
 
@@ -125,7 +126,7 @@ Connect to the service
 
 Basic login and such
 
-    GET    /api/v1.0/dropbox/connect/       returns an URL, which you will open and authorize unifile to access the service (this is an oauth2 authorization mechanism)
+    GET   /api/v1.0/dropbox/connect/       returns an URL, which you will open and authorize unifile to access the service (this is an oauth2 authorization mechanism)
     GET   /api/v1.0/dropbox/login/          now your have access to the service
 
     GET   /api/v1.0/dropbox/account/        Get your account info, with your display_name at least
