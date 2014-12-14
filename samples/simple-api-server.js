@@ -7,6 +7,10 @@
 var express = require('express');
 var app = express();
 var unifile = require('../lib/');
+var multipart = require('connect-multiparty');
+var bodyParser = require('body-parser');
+var cookieParser = require('cookie-parser');
+var session = require('express-session');
 
 // config
 var options = unifile.defaultConfig;
@@ -29,7 +33,10 @@ app.use(options.apiRoot, cookieParser());
 app.use(options.apiRoot, session({
     secret: options.sessionSecret,
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    }
 }));
 
 // use unifile as a middleware
