@@ -11,13 +11,13 @@
     }
   ],
   "dependencies": {
-    "dbox": "~0.6.3",
     "express": "~4.8.5",
     "ftp": "~0.3.7",
     "jade": "~1.5.0",
     "mime": "~1.2.11",
     "path": "~0.4.9",
-    "unorm": "~1.3.3"
+    "unorm": "~1.3.3",
+    "dbox-timecorrection": "~0.6.5"
   },
   "devDependencies": {
     "body-parser": "~1.10.0",
