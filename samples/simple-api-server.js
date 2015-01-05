@@ -37,6 +37,9 @@ app.use(options.apiRoot, session({
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
     }
+    // TIP: you may want to add a session store here
+    // so that unifile memorizes the users connexion data
+    // into a database or file - e.g. https://www.npmjs.com/package/connect-fs2
 }));
 
 // use unifile as a middleware
