@@ -31,6 +31,7 @@ app.use(options.apiRoot, bodyParser.json());
 
 app.use(options.apiRoot, cookieParser());
 app.use(options.apiRoot, session({
+    name: options.cookieName,
     secret: options.sessionSecret,
     resave: false,
     saveUninitialized: false,
