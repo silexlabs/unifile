@@ -11,6 +11,7 @@
     }
   ],
   "dependencies": {
+    "crypto": "0.0.3",
     "dbox": "~0.6.3",
     "express": "~4.8.5",
     "ftp": "~0.3.7",
