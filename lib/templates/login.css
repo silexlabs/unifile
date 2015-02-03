@@ -10,6 +10,21 @@
 .logo-www{
   background-image: url('/unifile-assets/services/www.png');
 }
+.logo-open-pages{
+  background-image: url('/unifile-assets/open-pages-logo.png');
+  width: 145px;
+  height: 35px;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+#signin {
+  background-image: url('/unifile-assets/persona-signin-link.png');
+  width: 115px;
+  height: 35px;
+  margin-left: 400px;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
 .main-container {
   width: 550px;
   margin: 120px auto 0 auto;
