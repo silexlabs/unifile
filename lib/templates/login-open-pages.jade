@@ -12,53 +12,73 @@ html
   body.all-text.pre-auth
     div.logo-open-pages
     div.main-container
-        h1.title Unifile would like access to your files and folders on Open Pages.
+        h1.title Unifile would like to access your files and folders on Open Pages.<br><br>
         label#error-text
+        label.post-auth Enter a name for your website
+        input#folder.input-text.post-auth(placeholder="Your Site Name")
         .buttons
           #signin.button.pre-auth Sign in / Sign up
           #close.button.post-auth Ok
 
         script(type='text/javascript').
-          var signinLink = document.getElementById('signin');
-          if (signinLink) {
-            signinLink.onclick = function() { navigator.id.request(); };
+          var signinElement = document.getElementById('signin');
+          var closeElement = document.getElementById('close');
+          var folderElement = document.getElementById('folder');
+          var errorElement = document.getElementById('error-text');
+          var assertion = null;
+          if (signinElement) {
+            signinElement.onclick = function() { navigator.id.request(); };
           }
-          var signoutLink = document.getElementById('signout');
-          if (signoutLink) {
-            signoutLink.onclick = function() { navigator.id.logout(); };
+          if (closeElement) {
+            closeElement.onclick = saveAndClose;
           }
-          function simpleXhrSentinel(xhr) {
+          function simpleXhrSentinel(xhr, cbk) {
             return function() {
               if (xhr.readyState == 4) {
-                var errorText = document.getElementById('error-text');
                 if (xhr.status == 200){
-                  errorText.innerHTML = 'Ok, you can close this window now';
-                  window.close();
+                  cbk();
                 }
                 else {
-                  navigator.id.logout();
-                  errorText.innerHTML = 'Invalid access codes (' + xhr.status + ')';
+                  cbk(xhr.status);
                 }
               }
             }
           }
 
-          function verifyAssertion(assertion) {
-            console.log("verifyAssertion", assertion);
+          function verifyAssertion(cbk) {
+
+            var folder = folderElement.value;
+            console.log("verifyAssertion", assertion, folder);
             // Your backend must return HTTP status code 200 to indicate successful
             // verification of user's email address and it must arrange for the binding
             // of currentUser to said address when the page is reloaded
             var xhr = new XMLHttpRequest();
             xhr.open("POST", "/api/v1.0/open-pages-auth-submit", true);
-            var param = "assertion=" + assertion + "&audience=" + window.location.href;
+            var param = "assertion=" + assertion + "&audience=" + window.location.href + "&folder=" + folder;
             xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
             xhr.setRequestHeader("Content-length", param.length);
             xhr.setRequestHeader("Connection", "close");
             xhr.send(param); // for verification by your backend
 
-            xhr.onreadystatechange = simpleXhrSentinel(xhr);
+            xhr.onreadystatechange = simpleXhrSentinel(xhr, cbk);
+          }
+          function onLogedin (argAssertion) {
+            assertion = argAssertion;
+            document.body.classList.remove('pre-auth');
+            document.body.classList.add('post-auth');
           }
           // Go!
           navigator.id.watch( {
-              onlogin: verifyAssertion
+              onlogin: onLogedin
+          });
+          function saveAndClose() {
+            verifyAssertion(function(err) {
+              if(err) {
+                errorElement.innerHTML = 'This website name is already taken.';
+              }
+              else{
+                errorElement.innerHTML = 'Ok, you can close this window now';
+                window.close();
+              }
             });
+          }
