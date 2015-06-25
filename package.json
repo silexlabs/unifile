@@ -1,7 +1,7 @@
 {
   "name": "unifile",
   "description": "Express middleware to provide a common API for cloud storage services. ",
-  "version": "0.0.50",
+  "version": "0.0.51",
   "author": {
     "name": "Alex Hoyau aka lexoyo"
   },
@@ -52,8 +52,8 @@
   },
   "license": "MIT",
   "engines": {
-    "node": "~0.10.30",
-    "npm": "~1.3.0"
+    "node": "~0.12.4",
+    "npm": "~2.10.1"
   },
   "scripts": {
     "test": "make test"
