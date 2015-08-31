@@ -24,6 +24,7 @@
   margin-left: 400px;
   background-repeat: no-repeat;
   background-size: cover;
+  cursor: pointer;
 }
 .post-auth .pre-auth,
 .pre-auth .post-auth {
