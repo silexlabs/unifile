@@ -145,7 +145,7 @@ Execute commands
 
 #License
 
-license: GPL v2
+license: MIT
 
 #Developer guide
 
