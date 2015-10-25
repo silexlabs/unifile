@@ -1,6 +1,6 @@
 .logo{
-  width: 64px;
-  height: 64px;
+  width: 32px;
+  height: 32px;
   background-repeat: no-repeat;
   background-size: cover;
 }
@@ -10,9 +10,8 @@
 .logo-www{
   background-image: url('/unifile-assets/services/www.png');
 }
-.main-container {
-  width: 550px;
-  margin: 120px auto 0 auto;
+.main-container {    
+  display: inline-block;
   padding: 25px;
   border: 1px solid #D9D9D9;
   -webkit-border-radius: 12px;
@@ -22,9 +21,9 @@
   border-radius: 12px;
 }
 .inner-container{
-  font-weight: normal;
-  width: 450px;
-  margin-left: 50px;
+  font-weight: normal;  
+  display: inline-block;  
+  text-align: left;
 }
 .title{
   font-size: 18px;
@@ -34,6 +33,7 @@
   color: rgb(61, 70, 77);
   font-family: 'Open Sans', 'lucida grande', 'Segoe UI', arial, verdana, 'lucida sans unicode', tahoma, sans-serif;
   font-size: 14px;
+  text-align: center;
 }
 .input-text{
   border: 1px solid #bdc4c9;
