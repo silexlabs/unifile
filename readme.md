@@ -187,6 +187,7 @@ unifile archi, tests and readme
 
 to do
 
+* app keys and sensitive info in env vars
 * unit tests for get/put/cat
 * pagination for ls commands?
 * security: make the "allowCrossDomain" function look for the api key and det if the domain is allowed

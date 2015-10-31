@@ -20,6 +20,13 @@ options.www.USERS = {
     "admin": "admin"
 }
 
+// enable open pages
+// this is the ""self hosting mode"
+// auth with Mozilla persona, choose a name and brose a folder on the server where unifile is installed and which is served as http(s)://the-unifile-server.com/chosen-name/ - this is an experimental feature which still has to be fine tuned
+// here you can set all open pages config, see default-config.js
+options.openPages.ENABLED = true;
+
+
 // parse data for file upload
 app.use(options.apiRoot, multipart());
 
