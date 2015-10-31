@@ -10,8 +10,9 @@ Currently supported services
 
 * FTP
 * Dropbox
-* local web server
-* see instructions bellow to add a service
+* local web server: auth and browse a given folder on the server where unifile is running
+* self hosting mode: auth with [Mozilla persona](https://www.mozilla.org/en-US/persona/), choose a name and brose a folder on the server where unifile is installed and which is served as `http(s)://the-unifile-server.com/chosen-name/` - this is an experimental feature which still has to be fine tuned
+* extend unifile: see instructions bellow to add a service
 
 Example
 
