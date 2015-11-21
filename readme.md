@@ -11,7 +11,7 @@ Currently supported services
 * FTP
 * Dropbox
 * local web server: auth and browse a given folder on the server where unifile is running
-* self hosting mode: auth with [Mozilla persona](https://www.mozilla.org/en-US/persona/), choose a name and brose a folder on the server where unifile is installed and which is served as `http(s)://the-unifile-server.com/chosen-name/` - this is an experimental feature which still has to be fine tuned
+* self hosting mode (we call it "open pages"): auth with [Mozilla persona](https://www.mozilla.org/en-US/persona/), choose a name and brose a folder on the server where unifile is installed and which is served as `http(s)://the-unifile-server.com/chosen-name/` - this is an experimental feature which still has to be fine tuned
 * extend unifile: see instructions bellow to add a service
 
 Example
@@ -171,6 +171,7 @@ Here is a list of services which could be useful
 * SugarSync
 * Google drive if not too slow
 * Facebook if possibe?
+* a random list of other cloud storage services: Amazon Cloud Drive, Amazon S3, Bitcasa, Box, DollyDrive, Dropbox, Google Drive, iCloud Drive, Microsoft OneDrive, SpiderOak, SugarSync, Wuala
 
 ##Notes / roadmap
 
