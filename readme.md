@@ -166,6 +166,7 @@ If you wish to add a service,
 
 Here is a list of services which could be useful
 
+* owncloud, cozy cloud, BTSync
 * Box, SkyDrive, RapidShare, CloudMine, FilesAnywhere
 * Amazon S3 and WebDav
 * SugarSync
