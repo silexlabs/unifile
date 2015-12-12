@@ -11,6 +11,7 @@
     }
   ],
   "dependencies": {
+    "bluebird": "^3.0.5",
     "crypto": "0.0.3",
     "dbox": "~0.6.3",
     "express": "~4.8.5",
