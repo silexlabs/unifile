@@ -10,29 +10,41 @@ var Unifile = require('../lib/');
 var request = require('request');
 var unifile = new Unifile();
 var bodyParser = require('body-parser');
+var serveStatic = require('serve-static');
 
 app.use( bodyParser.json() );
+app.use(serveStatic(__dirname+'/public', {index: 'index.html'}));
 
 // Fake connector
-var connector = {
-  // Name is mandatory
-  name: 'FakeGH',
-  // Implement all the functions you'd like on your connector
-  authorize: function(){
-    request('https://github.com/login/oauth/authorize?scope=repo,delete_repo&client_id=c39806c4d0906cfeaac932012996a1919475cc78', function authorizeCallback(req, res, body) {
-      console.log('return', body);
-    });
-  }
-};
-
+var Connector = require('../lib/unifile-github.js');
+var connector = new Connector({clientId: 'b4e46028bf36d871f68d', clientSecret: 'c39806c4d0906cfeaac932012996a1919475cc78', state: 'aaathub'});
 // Register connector
 unifile.useConnector(connector);
 
-// use unifile as a middleware
+// Register connector methods
 app.post('/authorize', function(req, res) {
-  console.log('Request');
-  //unifile.authorize(connector.name);
-  res.end('OK');
+  var result = unifile.getAuthorizeURL(connector.name);
+  res.end(result);
+});
+
+app.get('/ls', function(req, res) {
+  unifile.ls(connector.name, '/')
+  .then(function(result){
+    res.send(result);
+  })
+  .catch(function(err){
+    res.status(400).send(err);
+  });
+})
+// register callback url
+app.get('/oauth-callback', function(req, res) {
+  unifile.login(connector.name, req.query)
+  .then(function(){
+    res.end();
+  })
+  .catch(function(err){
+    res.status(500).send(err);
+  });
 });
 
 // server 'loop'

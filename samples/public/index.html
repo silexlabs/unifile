@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Test Unifile</title>
+  </head>
+  <body>
+    <button id="authButton" type="button">Authorize GitHub</button>
+    <button id="lsButton" type="button">List all repos</button>
+    <h3>Result</h3>
+    <p id='result'></p>
+    <script type="text/javascript" charset="utf-8">
+      var res = document.getElementById('result');
+      var btn = document.getElementById('authButton');
+      btn.onclick = function(){
+        var req = new XMLHttpRequest();
+        req.open('POST', '/authorize', false);
+        req.send();
+        console.log('res', req.responseText);
+        window.open(req.responseText);
+      }
+      var lsbtn = document.getElementById('lsButton');
+      lsbtn.onclick = function(){
+        var req = new XMLHttpRequest();
+        req.open('GET', '/ls', false);
+        req.send();
+        res.textContent = JSON.parse(req.response).map((repo) => repo.name).join('\n'); }
+    </script>
+  </body>
+</html>
