@@ -27,8 +27,8 @@ app.post('/:connector/authorize', function(req, res) {
   res.end(result);
 });
 
-app.get('/:connector/ls/:path', function(req, res) {
-  unifile.ls(req.params.connector, '/' + req.params.path)
+app.get(/\/(.*)\/ls\/(.*)/, function(req, res) {
+  unifile.ls(req.params[0], '/' + req.params[1])
   .then(function(result){
     res.send(result);
   })
