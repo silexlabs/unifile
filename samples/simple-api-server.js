@@ -27,6 +27,7 @@ app.post('/:connector/authorize', function(req, res) {
   res.end(result);
 });
 
+// List files and folders
 app.get(/\/(.*)\/ls\/(.*)/, function(req, res) {
   unifile.ls(req.params[0], '/' + req.params[1])
   .then(function(result){
@@ -35,7 +36,18 @@ app.get(/\/(.*)\/ls\/(.*)/, function(req, res) {
   .catch(function(err){
     res.status(400).send(err);
   });
-})
+});
+
+app.put(/\/(.*)\/mkdir\/(.*)/, function(req, res) {
+  unifile.mkdir(req.params[0], '/' + req.params[1])
+  .then(function(result){
+    res.send(result);
+  })
+  .catch(function(err){
+    res.status(400).send(err);
+  });
+});
+
 // register callback url
 app.get('/oauth-callback', function(req, res) {
   unifile.login(connector.name, req.query)

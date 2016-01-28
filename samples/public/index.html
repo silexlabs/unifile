@@ -7,8 +7,10 @@
   </head>
   <body>
     <button id="authButton" type="button">Authorize GitHub</button>
-    <input type="text" name="path" value="/" id="path">
+    <input type="text" name="path" value="" id="path">
     <button id="lsButton" type="button">List all repos</button>
+    <input type="text" name="path" value="" id="mkdirPath">
+    <button id="mkdirButton" type="button">Create repository</button>
     <h3>Result</h3>
     <p id='result'></p>
     <script type="text/javascript" charset="utf-8">
@@ -26,6 +28,15 @@
         var path = document.getElementById('path').value;
         var req = new XMLHttpRequest();
         req.open('GET', '/GitHub/ls/' + path, false);
+        req.send();
+        var result = JSON.parse(req.response);
+        res.textContent = Array.isArray(result) ? result.map((repo) => repo.name).join('\n') : JSON.toString(result);
+      }
+      var mkbtn = document.getElementById('mkdirButton');
+      mkbtn.onclick = function(){
+        var path = document.getElementById('mkdirPath').value;
+        var req = new XMLHttpRequest();
+        req.open('PUT', '/GitHub/mkdir/' + path, false);
         req.send();
         var result = JSON.parse(req.response);
         res.textContent = Array.isArray(result) ? result.map((repo) => repo.name).join('\n') : JSON.toString(result);
