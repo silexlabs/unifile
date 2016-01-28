@@ -22,13 +22,13 @@ var connector = new Connector({clientId: 'b4e46028bf36d871f68d', clientSecret: '
 unifile.useConnector(connector);
 
 // Register connector methods
-app.post('/authorize', function(req, res) {
-  var result = unifile.getAuthorizeURL(connector.name);
+app.post('/:connector/authorize', function(req, res) {
+  var result = unifile.getAuthorizeURL(req.params.connector);
   res.end(result);
 });
 
-app.get('/ls', function(req, res) {
-  unifile.ls(connector.name, '/')
+app.get('/:connector/ls/:path', function(req, res) {
+  unifile.ls(req.params.connector, '/' + req.params.path)
   .then(function(result){
     res.send(result);
   })

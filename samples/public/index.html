@@ -7,6 +7,7 @@
   </head>
   <body>
     <button id="authButton" type="button">Authorize GitHub</button>
+    <input type="text" name="path" value="/" id="path">
     <button id="lsButton" type="button">List all repos</button>
     <h3>Result</h3>
     <p id='result'></p>
@@ -15,17 +16,20 @@
       var btn = document.getElementById('authButton');
       btn.onclick = function(){
         var req = new XMLHttpRequest();
-        req.open('POST', '/authorize', false);
+        req.open('POST', '/GitHub/authorize', false);
         req.send();
         console.log('res', req.responseText);
         window.open(req.responseText);
       }
       var lsbtn = document.getElementById('lsButton');
       lsbtn.onclick = function(){
+        var path = document.getElementById('path').value;
         var req = new XMLHttpRequest();
-        req.open('GET', '/ls', false);
+        req.open('GET', '/GitHub/ls/' + path, false);
         req.send();
-        res.textContent = JSON.parse(req.response).map((repo) => repo.name).join('\n'); }
+        var result = JSON.parse(req.response);
+        res.textContent = Array.isArray(result) ? result.map((repo) => repo.name).join('\n') : JSON.toString(result);
+      }
     </script>
   </body>
 </html>
