@@ -48,6 +48,18 @@ app.put(/\/(.*)\/mkdir\/(.*)/, function(req, res) {
   });
 });
 
+app.put(/\/(.*)\/put\/(.*)/, function(req, res) {
+  console.log('content', req.body.content);
+  unifile.put(req.params[0], '/' + req.params[1], req.body.content)
+  .then(function(result){
+    res.send(result);
+  })
+  .catch(function(err){
+    console.error(err);
+    res.status(400).send(err);
+  });
+});
+
 // register callback url
 app.get('/oauth-callback', function(req, res) {
   unifile.login(connector.name, req.query)
