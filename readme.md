@@ -162,7 +162,7 @@ Each service is a Node.js class implementing a given set of functions, e.g. ls, 
 If you wish to add a service,
 
 * add your .js file in lib/services/ (duplicate the lib/services/dropbox.js file in order to have all the required methods)
-* edit core/router.js to make your service reachable
+* edit lib/default-config.js to make your service reachable
 * if you use an external node.js library, add the dependency in package.json
 
 Here is a list of services which could be useful
