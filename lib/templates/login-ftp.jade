@@ -20,13 +20,13 @@ html
             label.error-text Invalid access codes
           div
             label Host:
-            input.input-text(type='text', name='host')
+            input.input-text(type='text', name='host' value="#{host || ''}")
           div
             label Port:
-            input.input-text(type='text', name='port', value='21')
+            input.input-text(type='text', name='port', value="#{port || 21}")
           div
             label Username:
-            input.input-text(type='text', name='username')
+            input.input-text(type='text', name='username' value="#{username || ''}")
           div
             label Password:
             input.input-text(type='password', name='password')
