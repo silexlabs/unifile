@@ -145,6 +145,18 @@ Execute commands
     GET    /api/v1.0/dropbox/exec/put/path/to/file.txt:{string}      write data to a file
     POST    /api/v1.0/dropbox/exec/put/path/to/file.txt              write data to a file
 
+#Applications configuration
+
+Some services need an application registered on the plateform (GitHub, Dropbox...) to authorize Unifile. To activate them, you have to provide a `client_id` and a `client_secret` in the config object you pass to Unifile middleware. It have to be under the key namig the service:
+```
+{
+  github: {
+    "client_secret": SECRET_STRING,
+    "client_id": ID_STRING
+  }
+}
+```
+
 #License
 
 license: MIT
