@@ -1,7 +1,7 @@
 {
   "name": "unifile",
   "description": "Express middleware to provide a common API for cloud storage services. ",
-  "version": "0.0.58",
+  "version": "0.0.59",
   "contributors": [
     {"name": "@lexoyo"},
     {"name": "@JbIPS"},
@@ -20,7 +20,8 @@
     "path": "~0.4.9",
     "request": "^2.53.0",
     "sqlite3": "^3.1.0",
-    "unorm": "~1.3.3"
+    "unorm": "~1.3.3",
+    "xml2js": "^0.4.16"
   },
   "devDependencies": {
     "body-parser": "~1.10.0",
@@ -30,8 +31,7 @@
     "express-session": "1.7.6",
     "mocha": "~1.21.4",
     "precommit-hook": "~1.0.7",
-    "supertest": "~0.13.0",
-    "xml2js": "^0.4.16"
+    "supertest": "~0.13.0"
   },
   "repository": {
     "type": "git",
