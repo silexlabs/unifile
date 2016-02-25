@@ -1,14 +1,12 @@
 {
   "name": "unifile",
   "description": "Express middleware to provide a common API for cloud storage services. ",
-  "version": "0.0.56",
-  "author": {
-    "name": "Alex Hoyau aka lexoyo"
-  },
+  "version": "0.0.57",
   "contributors": [
-    {
-      "name": "Thomas Fetiveau aka zabojad"
-    }
+    {"name": "@lexoyo"},
+    {"name": "@JbIPS"},
+    {"name": "@zabojad"},
+    {"name": "@tfeserver"}
   ],
   "dependencies": {
     "bluebird": "^3.0.5",
