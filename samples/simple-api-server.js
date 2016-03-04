@@ -49,13 +49,31 @@ app.put(/\/(.*)\/mkdir\/(.*)/, function(req, res) {
 });
 
 app.put(/\/(.*)\/put\/(.*)/, function(req, res) {
-  console.log('content', req.body.content);
   unifile.put(req.params[0], '/' + req.params[1], req.body.content)
   .then(function(result){
     res.send(result);
   })
   .catch(function(err){
-    console.error(err);
+    res.status(400).send(err);
+  });
+});
+
+app.get(/\/(.*)\/get\/(.*)/, function(req, res) {
+  unifile.get(req.params[0], '/' + req.params[1])
+  .then(function(result){
+    res.send(result);
+  })
+  .catch(function(err){
+    res.status(400).send(err);
+  });
+});
+
+app.patch(/\/(.*)\/mv\/(.*)/, function(req, res) {
+  unifile.mv(req.params[0], '/' + req.params[1], '/' + req.body.destination)
+  .then(function(result){
+    res.send(result);
+  })
+  .catch(function(err){
     res.status(400).send(err);
   });
 });

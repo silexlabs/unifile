@@ -4,16 +4,67 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <title>Test Unifile</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <style type="text/css" media="screen">
+    .btn-primary, .input-group {
+      margin: 10px;
+    }
+    </style>
   </head>
   <body>
-    <button id="authButton" type="button">Authorize GitHub</button>
-    <input type="text" name="path" value="" id="path">
-    <button id="lsButton" type="button">List all repos</button>
-    <input type="text" name="path" value="" id="mkdirPath">
-    <button id="mkdirButton" type="button">Create Folder</button>
-    <input type="text" name="path" value="" id="putPath">
-    <textarea name="content" id="putContent"></textarea>
-    <button id="putButton" type="button">Create File</button>
+  <button type="button" id="authButton" class="btn btn-primary">Log in</button>
+  <div class="row">
+    <div class="col-lg-3">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Path...">
+        <span class="input-group-btn">
+          <button class="btn btn-default" type="button">List</button>
+        </span>
+      </div><!-- /input-group -->
+    </div><!-- /.col-lg-6 -->
+  </div><!-- /.row -->
+  <div class="row">
+    <div class="col-lg-3">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Path...">
+        <span class="input-group-btn">
+          <button class="btn btn-default" type="button">Create Folder</button>
+        </span>
+      </div><!-- /input-group -->
+    </div><!-- /.col-lg-6 -->
+  </div><!-- /.row -->
+  <div class="row">
+    <div class="col-lg-3">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Path...">
+        <input id="fileContent" type="text" class="form-control" placeholder="Content...">
+        <span class="input-group-btn">
+          <button class="btn btn-default" style="padding: 24px 12px;" type="button">Create File</button>
+        </span>
+      </div><!-- /input-group -->
+    </div><!-- /.col-lg-6 -->
+  </div><!-- /.row -->
+  <div class="row">
+    <div class="col-lg-3">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Path...">
+        <span class="input-group-btn">
+          <button class="btn btn-default" type="button">Get</button>
+        </span>
+      </div><!-- /input-group -->
+    </div><!-- /.col-lg-6 -->
+  </div><!-- /.row -->
+  <div class="row">
+    <div class="col-lg-3">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Source...">
+        <input id="destination" type="text" class="form-control" placeholder="Destination...">
+        <span class="input-group-btn">
+          <button class="btn btn-default" style="padding: 24px 12px;" type="button">Move</button>
+        </span>
+      </div><!-- /input-group -->
+    </div><!-- /.col-lg-6 -->
+  </div><!-- /.row -->
     <h3>Result</h3>
     <p id='result'></p>
     <script type="text/javascript" charset="utf-8">
@@ -24,37 +75,67 @@
         req.open('POST', '/GitHub/authorize', false);
         req.send();
         window.open(req.responseText);
-      }
-      var lsbtn = document.getElementById('lsButton');
-      lsbtn.onclick = function(){
-        var path = document.getElementById('path').value;
+      };
+
+      var field = document.getElementById('field');
+
+      function request(method = 'GET', path){
         var req = new XMLHttpRequest();
-        req.open('GET', '/GitHub/ls/' + path, false);
+        req.open(method, path, false);
         req.send();
-        var result = JSON.parse(req.response);
-        res.textContent = Array.isArray(result) ? result.map((repo) => repo.name).join('\n') : JSON.toString(result);
+        try{
+          return JSON.parse(req.response);
+        }
+        catch(e){
+          return req.response;
+        }
       }
-      var mkbtn = document.getElementById('mkdirButton');
-      mkbtn.onclick = function(){
-        var path = document.getElementById('mkdirPath').value;
-        var req = new XMLHttpRequest();
-        req.open('PUT', '/GitHub/mkdir/' + path, false);
-        req.send();
-        var result = JSON.parse(req.response);
-        res.textContent = Array.isArray(result) ? result.map((repo) => repo.name).join('\n') : JSON.toString(result);
+
+      function doAction(action, path){
+        switch(action){
+          case 'List':
+            var result = request('GET', '/GitHub/ls/' + path);
+            res.textContent = Array.isArray(result) ? result.map((repo) => repo.name).join('\n') : JSON.toString(result);
+            break;
+          case 'Create Folder':
+            var result = request('PUT', '/GitHub/mkdir/' + path);
+            res.textContent = Array.isArray(result) ? result.map((repo) => repo.name).join('\n') : JSON.toString(result);
+            break;
+          case 'Create File':
+            var content = document.getElementById('fileContent').value;
+            var req = new XMLHttpRequest();
+            req.open('PUT', '/GitHub/put/' + path, false);
+            req.setRequestHeader("Content-type", "application/json");
+            req.setRequestHeader("Content-length", content.length);
+            req.setRequestHeader("Connection", "close");
+            req.send(JSON.stringify({"content": content}));
+            var result = JSON.parse(req.response);
+            res.textContent = Array.isArray(result) ? result.map((repo) => repo.name).join('\n') : JSON.toString(result);
+            break;
+          case 'Get':
+            var result = request('GET', '/GitHub/get/' + path);
+            res.textContent = result;
+            break;
+          case 'Move':
+            var dest = document.getElementById('destination').value;
+            var req = new XMLHttpRequest();
+            req.open('PATCH', '/GitHub/mv/' + path, false);
+            req.setRequestHeader("Content-type", "application/json");
+            req.setRequestHeader("Content-length", destination.length);
+            req.setRequestHeader("Connection", "close");
+            req.send(JSON.stringify({"destination": dest}));
+            var result = JSON.parse(req.response);
+            res.textContent = Array.isArray(result) ? result.map((repo) => repo.name).join('\n') : JSON.toString(result);
+            break;
+        }
       }
-      var putBtn = document.getElementById('putButton');
-      putBtn.onclick = function(){
-        var path = document.getElementById('putPath').value;
-        var content = document.getElementById('putContent').value;
-        var req = new XMLHttpRequest();
-        req.open('PUT', '/GitHub/put/' + path, false);
-        req.setRequestHeader("Content-type", "application/json");
-        req.setRequestHeader("Content-length", content.length);
-        req.setRequestHeader("Connection", "close");
-        req.send(JSON.stringify({"content": content}));
-        var result = JSON.parse(req.response);
-        res.textContent = Array.isArray(result) ? result.map((repo) => repo.name).join('\n') : JSON.stringify(result);
+
+      var actions = document.getElementsByClassName('input-group');
+      for(a of actions){
+        var btn = a.querySelector('button');
+        btn.onclick = function(){
+          doAction(this.textContent, this.parentElement.parentElement.firstElementChild.value);
+        };
       }
     </script>
   </body>
