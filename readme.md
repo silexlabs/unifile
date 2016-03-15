@@ -11,6 +11,7 @@ Currently supported services
 * FTP
 * Dropbox
 * GitHub: use git as a cloud with repository and branches as folder
+* Webdav: access owncloud, Box and other webdav compatible cloud services
 * local web server: auth and browse a given folder on the server where unifile is running
 * self hosting mode (we call it "open pages"): auth with [Mozilla persona](https://www.mozilla.org/en-US/persona/), choose a name and browse a folder on the server where unifile is installed and which is served as `http(s)://the-unifile-server.com/chosen-name/` - this is an experimental feature which still has to be fine tuned
 * extend unifile: see instructions bellow to add a service
