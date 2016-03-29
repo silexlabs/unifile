@@ -50,8 +50,6 @@
 }
 .main-container {
   display: inline-block;
-  width: 550px;
-  margin: 120px auto 0 auto;
   padding: 25px;
   border: 1px solid #D9D9D9;
   -webkit-border-radius: 12px;
