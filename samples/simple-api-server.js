@@ -29,7 +29,7 @@ app.post('/:connector/authorize', function(req, res) {
 
 // List files and folders
 app.get(/\/(.*)\/ls\/(.*)/, function(req, res) {
-  unifile.ls(req.params[0], '/' + req.params[1])
+  unifile.readdir(req.params[0], '/' + req.params[1])
   .then(function(result){
     res.send(result);
   })
@@ -49,7 +49,7 @@ app.put(/\/(.*)\/mkdir\/(.*)/, function(req, res) {
 });
 
 app.put(/\/(.*)\/put\/(.*)/, function(req, res) {
-  unifile.put(req.params[0], '/' + req.params[1], req.body.content)
+  unifile.writeFile(req.params[0], '/' + req.params[1], req.body.content)
   .then(function(result){
     res.send(result);
   })
@@ -59,7 +59,7 @@ app.put(/\/(.*)\/put\/(.*)/, function(req, res) {
 });
 
 app.get(/\/(.*)\/get\/(.*)/, function(req, res) {
-  unifile.get(req.params[0], '/' + req.params[1])
+  unifile.readFile(req.params[0], '/' + req.params[1])
   .then(function(result){
     res.send(result);
   })
@@ -69,7 +69,7 @@ app.get(/\/(.*)\/get\/(.*)/, function(req, res) {
 });
 
 app.patch(/\/(.*)\/mv\/(.*)/, function(req, res) {
-  unifile.mv(req.params[0], '/' + req.params[1], '/' + req.body.destination)
+  unifile.rename(req.params[0], '/' + req.params[1], '/' + req.body.destination)
   .then(function(result){
     res.send(result);
   })
@@ -79,7 +79,7 @@ app.patch(/\/(.*)\/mv\/(.*)/, function(req, res) {
 });
 
 app.delete(/\/(.*)\/rm\/(.*)/, function(req, res) {
-  unifile.rm(req.params[0], '/' + req.params[1])
+  unifile.unlink(req.params[0], '/' + req.params[1])
   .then(function(result){
     res.send(result);
   })
