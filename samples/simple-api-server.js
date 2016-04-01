@@ -78,6 +78,16 @@ app.patch(/\/(.*)\/mv\/(.*)/, function(req, res) {
   });
 });
 
+app.delete(/\/(.*)\/rm\/(.*)/, function(req, res) {
+  unifile.rm(req.params[0], '/' + req.params[1])
+  .then(function(result){
+    res.send(result);
+  })
+  .catch(function(err){
+    res.status(400).send(err);
+  });
+});
+
 // register callback url
 app.get('/oauth-callback', function(req, res) {
   unifile.login(connector.name, req.query)

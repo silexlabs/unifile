@@ -65,6 +65,16 @@
       </div><!-- /input-group -->
     </div><!-- /.col-lg-6 -->
   </div><!-- /.row -->
+  <div class="row">
+    <div class="col-lg-3">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Path...">
+        <span class="input-group-btn">
+          <button class="btn btn-default" type="button">Remove</button>
+        </span>
+      </div><!-- /input-group -->
+    </div><!-- /.col-lg-6 -->
+  </div><!-- /.row -->
     <h3>Result</h3>
     <p id='result'></p>
     <script type="text/javascript" charset="utf-8">
@@ -126,6 +136,10 @@
             req.send(JSON.stringify({"destination": dest}));
             var result = JSON.parse(req.response);
             res.textContent = Array.isArray(result) ? result.map((repo) => repo.name).join('\n') : JSON.toString(result);
+            break;
+          case 'Remove':
+            var result = request('DELETE', '/GitHub/rm/' + path);
+            res.textContent = result;
             break;
         }
       }
