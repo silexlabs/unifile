@@ -4,20 +4,22 @@
  * license: GPL v2
  */
 // node modules
-var express = require('express');
-var app = express();
-var Unifile = require('../lib/');
-var request = require('request');
-var unifile = new Unifile();
-var bodyParser = require('body-parser');
-var serveStatic = require('serve-static');
+const express = require('express');
+const app = express();
+const Unifile = require('../lib/');
+const request = require('request');
+const unifile = new Unifile();
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+const serveStatic = require('serve-static');
 
 app.use( bodyParser.json() );
-app.use(serveStatic(__dirname+'/public', {index: 'index.html'}));
+app.use(cookieParser());
+//app.use(serveStatic(__dirname+'/public', {index: 'index.html'}));
 
 // Fake connector
-var Connector = require('../lib/unifile-github.js');
-var connector = new Connector({clientId: 'b4e46028bf36d871f68d', clientSecret: 'c39806c4d0906cfeaac932012996a1919475cc78', state: 'aaathub'});
+const Connector = require('../lib/unifile-github.js');
+const connector = new Connector({clientId: 'b4e46028bf36d871f68d', clientSecret: 'c39806c4d0906cfeaac932012996a1919475cc78', state: 'aaathub'});
 // Register connector
 unifile.useConnector(connector);
 
@@ -25,6 +27,14 @@ unifile.useConnector(connector);
 app.post('/:connector/authorize', function(req, res) {
   var result = unifile.getAuthorizeURL(req.params.connector);
   res.end(result);
+});
+
+// Search for a old session token in the cookies
+app.get('/', function(req, res){
+  if(req.cookies.unifileToken){
+    unifile.setAccessToken('GitHub', req.cookies.unifileToken);
+  }
+  res.sendFile(__dirname + '/public/index.html');
 });
 
 // List files and folders
@@ -88,11 +98,18 @@ app.delete(/\/(.*)\/rm\/(.*)/, function(req, res) {
   });
 });
 
+app.post(/\/(.*)\/cp\/(.*)/, function(req, res) {
+  var read = unifile.createReadStream(req.params[0], '/' + req.params[1]);
+  var write = unifile.createWriteStream(req.params[0], '/' + req.body.destination);
+  read.pipe(write).pipe(res);
+});
+
 // register callback url
 app.get('/oauth-callback', function(req, res) {
   unifile.login(connector.name, req.query)
-  .then(function(){
-    res.end();
+  .then(function(result){
+    res.cookie('unifileToken', result);
+    res.end('<script>window.close();</script>');
   })
   .catch(function(err){
     res.status(500).send(err);

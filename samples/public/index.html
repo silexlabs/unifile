@@ -75,6 +75,17 @@
       </div><!-- /input-group -->
     </div><!-- /.col-lg-6 -->
   </div><!-- /.row -->
+  <div class="row">
+    <div class="col-lg-3">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Source...">
+        <input id="cpdestination" type="text" class="form-control" placeholder="Destination...">
+        <span class="input-group-btn">
+          <button class="btn btn-default" style="padding: 24px 12px;" type="button">Copy</button>
+        </span>
+      </div><!-- /input-group -->
+    </div><!-- /.col-lg-6 -->
+  </div><!-- /.row -->
     <h3>Result</h3>
     <p id='result'></p>
     <script type="text/javascript" charset="utf-8">
@@ -140,6 +151,17 @@
           case 'Remove':
             var result = request('DELETE', '/GitHub/rm/' + path);
             res.textContent = result;
+            break;
+          case 'Copy':
+            var dest = document.getElementById('cpdestination').value;
+            var req = new XMLHttpRequest();
+            req.open('POST', '/GitHub/cp/' + path, false);
+            req.setRequestHeader("Content-type", "application/json");
+            req.setRequestHeader("Content-length", destination.length);
+            req.setRequestHeader("Connection", "close");
+            req.send(JSON.stringify({"destination": dest}));
+            var result = JSON.parse(req.response);
+            res.textContent = Array.isArray(result) ? result.map((repo) => repo.name).join('\n') : JSON.toString(result);
             break;
         }
       }
