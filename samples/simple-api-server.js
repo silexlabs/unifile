@@ -21,7 +21,7 @@ app.use(cookieParser());
 const Connector = require('../lib/unifile-github.js');
 const connector = new Connector({clientId: 'b4e46028bf36d871f68d', clientSecret: 'c39806c4d0906cfeaac932012996a1919475cc78', state: 'aaathub'});
 // Register connector
-unifile.useConnector(connector);
+unifile.use(connector);
 
 // Register connector methods
 app.post('/:connector/authorize', function(req, res) {
