@@ -11,11 +11,7 @@
  * About this file
  *
  * functional tests
- * todo
- * * test errors (commands and auth)
  */
-// start local ftp serve rfor tests
-require('../start-local-ftp-server');
 
 /*
  * useful methode
@@ -30,11 +26,16 @@ function getElementByProp(arr, name, val){
 }
 
 // test modules
+var fs = require('fs');
+var pathModule = require('path');
 var should = require('chai').should();
 var supertest = require('supertest');
 var api = supertest.agent('http://localhost:6805');
 var InitTest = require('../init-unifile');
 var options = InitTest.options;
+
+// start local ftp serve rfor tests
+require('../start-local-ftp-server');
 
 // test routes
 describe('Test ftp service', function() {
@@ -176,6 +177,28 @@ describe('Test ftp service', function() {
         .expect(200, done)
         .expect('Content-Type', /json/);
     });
+    var loremFilePath = pathModule.resolve(__dirname, '../lorem.txt');
+    var loremFinalFilePath = pathModule.resolve(__dirname, '../../tmp-test/lorem.txt');
+    it('should be abble to add a big text file', function(done) {
+        api.post('/api/v1.0/ftp/exec/put/tmp-test/lorem.txt')
+        .attach('data', loremFilePath)
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end(function (err, res) {
+            if (err) return done(err);
+            if (fs.existsSync(loremFinalFilePath)) {
+                if(fs.readFileSync(loremFilePath, "utf-8") === fs.readFileSync(loremFinalFilePath, "utf-8")) {
+                    done();
+                }
+                else {
+                    done('Lorem big file corrupted');
+                }
+            }
+            else {
+                done('Lorem big file not copied');
+            }
+        });
+    });
     it('should list the created files', function(done) {
         api.get('/api/v1.0/ftp/exec/ls/tmp-test/')
         .expect(200)
@@ -184,6 +207,8 @@ describe('Test ftp service', function() {
             if (err) return done(err);
             res.body.should.be.an('array');
             var element = getElementByProp(res.body, 'name', 'test.txt');
+            should.exist(element);
+            var element = getElementByProp(res.body, 'name', 'lorem.txt');
             should.exist(element);
             done();
         });
@@ -259,9 +284,11 @@ describe('Test ftp service', function() {
   // cleanup after commands test
   after(function () {
     console.log('cleanup');
-    var fs = require('fs'), pathModule = require('path');
 
     var resolvedPath = pathModule.resolve(__dirname, '../../tmp-test/test.txt');
+    if (fs.existsSync(resolvedPath))
+        fs.unlinkSync(resolvedPath);
+    var resolvedPath = pathModule.resolve(__dirname, '../../tmp-test/lorem.txt');
     if (fs.existsSync(resolvedPath))
         fs.unlinkSync(resolvedPath);
     var resolvedPath = pathModule.resolve(__dirname, '../../tmp-test/test-cp.txt');
