@@ -12,7 +12,7 @@
 console.log('start tests');
 
 // tested module
-var unifile = require('../lib/');
+var unifile = require('../../lib/');
 
 // test modules
 var should = require('chai').should();

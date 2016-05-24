@@ -3,10 +3,18 @@
   "description": "Express middleware to provide a common API for cloud storage services. ",
   "version": "0.0.59",
   "contributors": [
-    {"name": "@lexoyo"},
-    {"name": "@JbIPS"},
-    {"name": "@zabojad"},
-    {"name": "@tfeserver"}
+    {
+      "name": "@lexoyo"
+    },
+    {
+      "name": "@JbIPS"
+    },
+    {
+      "name": "@zabojad"
+    },
+    {
+      "name": "@tfeserver"
+    }
   ],
   "dependencies": {
     "bluebird": "^3.0.5",
@@ -29,6 +37,7 @@
     "connect-multiparty": "~1.2.5",
     "cookie-parser": "~1.3.2",
     "express-session": "1.7.6",
+    "ftpd": "^0.2.15",
     "mocha": "~1.21.4",
     "precommit-hook": "~1.0.7",
     "supertest": "~0.13.0"
