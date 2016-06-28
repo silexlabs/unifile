@@ -112,15 +112,29 @@
         }
       }
 
+      function formatRes(res){
+        console.log(res);
+        if(res == '') return 'No content';
+        else if(Array.isArray(res))
+          return res.map(item => item.name).join('\n');
+        else if(typeof res === 'object'){
+          console.log('json');
+          return JSON.toString(res);
+        }
+        else{
+          return res;
+        }
+      }
+
       function doAction(action, path){
         switch(action){
           case 'List':
             var result = request('GET', '/GitHub/ls/' + path);
-            res.textContent = Array.isArray(result) ? result.map((repo) => repo.name).join('\n') : JSON.toString(result);
+            res.textContent = formatRes(result);
             break;
           case 'Create Folder':
             var result = request('PUT', '/GitHub/mkdir/' + path);
-            res.textContent = Array.isArray(result) ? result.map((repo) => repo.name).join('\n') : JSON.toString(result);
+            res.textContent = formatRes(result);
             break;
           case 'Create File':
             var content = document.getElementById('fileContent').value;
@@ -131,7 +145,7 @@
             req.setRequestHeader("Connection", "close");
             req.send(JSON.stringify({"content": content}));
             var result = JSON.parse(req.response);
-            res.textContent = Array.isArray(result) ? result.map((repo) => repo.name).join('\n') : JSON.toString(result);
+            res.textContent = formatRes(result);
             break;
           case 'Get':
             var result = request('GET', '/GitHub/get/' + path);
@@ -146,7 +160,7 @@
             req.setRequestHeader("Connection", "close");
             req.send(JSON.stringify({"destination": dest}));
             var result = JSON.parse(req.response);
-            res.textContent = Array.isArray(result) ? result.map((repo) => repo.name).join('\n') : JSON.toString(result);
+            res.textContent = formatRes(result);
             break;
           case 'Remove':
             var result = request('DELETE', '/GitHub/rm/' + path);
@@ -161,7 +175,7 @@
             req.setRequestHeader("Connection", "close");
             req.send(JSON.stringify({"destination": dest}));
             var result = JSON.parse(req.response);
-            res.textContent = Array.isArray(result) ? result.map((repo) => repo.name).join('\n') : JSON.toString(result);
+            res.textContent = formatRes(result);
             break;
         }
       }
