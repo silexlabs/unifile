@@ -1,11 +1,12 @@
 'use strict';
 
-var chai = require('chai');
-var Promise = require('bluebird');
+const PassThrough = require('stream').PassThrough;
+const chai = require('chai');
+const Promise = require('bluebird');
 
-var Unifile = require('../lib');
+const Unifile = require('../lib');
 
-var expect = chai.expect;
+const expect = chai.expect;
 
 describe('Unifile class', function() {
   describe('constructor', function() {
@@ -15,15 +16,6 @@ describe('Unifile class', function() {
       expect(unifile.connectors).to.be.an.instanceof(Map);
       expect(unifile.connectors.size).to.equal(0);
       expect(unifile.use).to.exist;
-    });
-
-    it('create a new instance with config', function() {
-      var config = {key: 'value'};
-      var unifile = new Unifile(config);
-      expect(unifile).not.to.be.null;
-      expect(unifile.connectors).to.be.an.instanceof(Map);
-      expect(unifile.connectors.size).to.equal(0);
-      expect(unifile.config).to.deep.equal(config);
     });
   });
 
@@ -57,21 +49,21 @@ describe('Unifile class', function() {
     });
 
     it('throws an error if connectorName is undefined', function() {
-      var fn = function() { unifile.getAuthorizeURL();};
+      var fn = function() { unifile.getAuthorizeURL({});};
       expect(fn).to.throw(/Unknown connector/);
     });
 
     it('throws an error if connector does not implement it', function() {
       var connector = {name: 'test'};
       unifile.use(connector);
-      var fn = function() { unifile.getAuthorizeURL(connector.name); };
+      var fn = function() { unifile.getAuthorizeURL({}, connector.name); };
       expect(fn).to.throw(/This connector does not implement/);
     });
 
     it('returns a promise of the getAuthorizeURL function of the connector', function() {
       var connector = {name: 'test', getAuthorizeURL: function() {return new Promise.resolve();}};
       unifile.use(connector);
-      expect(unifile.getAuthorizeURL(connector.name)).to.be.an.instanceof(Promise);
+      expect(unifile.getAuthorizeURL({}, connector.name)).to.be.an.instanceof(Promise);
     });
   });
 
@@ -82,46 +74,46 @@ describe('Unifile class', function() {
     });
 
     it('throws an error if connectorName is undefined', function() {
-      var fn = function() { unifile.login();};
+      var fn = function() { unifile.login({});};
       expect(fn).to.throw(/Unknown connector/);
     });
 
     it('throws an error if connector does not implement it', function() {
       var connector = {name: 'test'};
       unifile.use(connector);
-      var fn = function() { unifile.login(connector.name); };
+      var fn = function() { unifile.login({}, connector.name); };
       expect(fn).to.throw(/This connector does not implement/);
     });
 
     it('returns a promise of the login function of the connector', function() {
       var connector = {name: 'test', login: function() {return new Promise.resolve();}};
       unifile.use(connector);
-      expect(unifile.login(connector.name)).to.be.an.instanceof(Promise);
+      expect(unifile.login({}, connector.name)).to.be.an.instanceof(Promise);
     });
   });
 
-  describe('ls()', function(){
+  describe('readdir()', function(){
     var unifile;
     beforeEach('Instanciation', function() {
       unifile = new Unifile();
     });
 
     it('throws an error if connectorName is undefined', function() {
-      var fn = function() { unifile.ls();};
+      var fn = function() { unifile.readdir({});};
       expect(fn).to.throw(/Unknown connector/);
     });
 
     it('throws an error if connector does not implement it', function() {
       var connector = {name: 'test'};
       unifile.use(connector);
-      var fn = function() { unifile.ls(connector.name); };
+      var fn = function() { unifile.readdir({}, connector.name); };
       expect(fn).to.throw(/This connector does not implement/);
     });
 
-    it('returns a promise of the ls function of the connector', function() {
-      var connector = {name: 'test', ls: function() {return new Promise.resolve();}};
+    it('returns a promise of the readdir function of the connector', function() {
+      var connector = {name: 'test', readdir: function() {return new Promise.resolve();}};
       unifile.use(connector);
-      expect(unifile.ls(connector.name)).to.be.an.instanceof(Promise);
+      expect(unifile.readdir({}, connector.name)).to.be.an.instanceof(Promise);
     });
   });
 
@@ -132,46 +124,196 @@ describe('Unifile class', function() {
     });
 
     it('throws an error if connectorName is undefined', function() {
-      var fn = function() { unifile.mkdir();};
+      var fn = function() { unifile.mkdir({});};
       expect(fn).to.throw(/Unknown connector/);
     });
 
     it('throws an error if connector does not implement it', function() {
       var connector = {name: 'test'};
       unifile.use(connector);
-      var fn = function() { unifile.mkdir(connector.name); };
+      var fn = function() { unifile.mkdir({}, connector.name); };
       expect(fn).to.throw(/This connector does not implement/);
     });
 
     it('returns a promise of the mkdir function of the connector', function() {
       var connector = {name: 'test', mkdir: function() {return new Promise.resolve();}};
       unifile.use(connector);
-      expect(unifile.mkdir(connector.name)).to.be.an.instanceof(Promise);
+      expect(unifile.mkdir({}, connector.name)).to.be.an.instanceof(Promise);
     });
   });
 
-  describe('put()', function(){
+  describe('writeFile()', function(){
     var unifile;
     beforeEach('Instanciation', function() {
       unifile = new Unifile();
     });
 
     it('throws an error if connectorName is undefined', function() {
-      var fn = function() { unifile.put();};
+      var fn = function() { unifile.writeFile({});};
       expect(fn).to.throw(/Unknown connector/);
     });
 
     it('throws an error if connector does not implement it', function() {
       var connector = {name: 'test'};
       unifile.use(connector);
-      var fn = function() { unifile.put(connector.name); };
+      var fn = function() { unifile.writeFile({}, connector.name); };
       expect(fn).to.throw(/This connector does not implement/);
     });
 
-    it('returns a promise of the put function of the connector', function() {
-      var connector = {name: 'test', put: function() {return new Promise.resolve();}};
+    it('returns a promise of the writeFilefunction of the connector', function() {
+      var connector = {name: 'test', writeFile: function() {return new Promise.resolve();}};
       unifile.use(connector);
-      expect(unifile.put(connector.name)).to.be.an.instanceof(Promise);
+      expect(unifile.writeFile({}, connector.name)).to.be.an.instanceof(Promise);
+    });
+  });
+
+  describe('createWriteStream()', function(){
+    var unifile;
+    beforeEach('Instanciation', function() {
+      unifile = new Unifile();
+    });
+
+    it('throws an error if connectorName is undefined', function() {
+      var fn = function() { unifile.createWriteStream({});};
+      expect(fn).to.throw(/Unknown connector/);
+    });
+
+    it('throws an error if connector does not implement it', function() {
+      var connector = {name: 'test'};
+      unifile.use(connector);
+      var fn = function() { unifile.createWriteStream({}, connector.name); };
+      expect(fn).to.throw(/This connector does not implement/);
+    });
+
+    it('returns a promise of the writeFilefunction of the connector', function() {
+      var connector = {name: 'test', createWriteStream: function() {return new PassThrough();}};
+      unifile.use(connector);
+      expect(unifile.createWriteStream({}, connector.name)).to.be.an.instanceof(PassThrough);
+    });
+  });
+
+  describe('readFile()', function(){
+    var unifile;
+    beforeEach('Instanciation', function() {
+      unifile = new Unifile();
+    });
+
+    it('throws an error if connectorName is undefined', function() {
+      var fn = function() { unifile.readFile({});};
+      expect(fn).to.throw(/Unknown connector/);
+    });
+
+    it('throws an error if connector does not implement it', function() {
+      var connector = {name: 'test'};
+      unifile.use(connector);
+      var fn = function() { unifile.readFile({}, connector.name); };
+      expect(fn).to.throw(/This connector does not implement/);
+    });
+
+    it('returns a promise of the writeFilefunction of the connector', function() {
+      var connector = {name: 'test', readFile: function() {return new Promise.resolve();}};
+      unifile.use(connector);
+      expect(unifile.readFile({}, connector.name)).to.be.an.instanceof(Promise);
+    });
+  });
+
+  describe('createReadStream()', function(){
+    var unifile;
+    beforeEach('Instanciation', function() {
+      unifile = new Unifile();
+    });
+
+    it('throws an error if connectorName is undefined', function() {
+      var fn = function() { unifile.createReadStream({});};
+      expect(fn).to.throw(/Unknown connector/);
+    });
+
+    it('throws an error if connector does not implement it', function() {
+      var connector = {name: 'test'};
+      unifile.use(connector);
+      var fn = function() { unifile.createReadStream({}, connector.name); };
+      expect(fn).to.throw(/This connector does not implement/);
+    });
+
+    it('returns a promise of the writeFilefunction of the connector', function() {
+      var connector = {name: 'test', createReadStream: function() {return new PassThrough();}};
+      unifile.use(connector);
+      expect(unifile.createReadStream({}, connector.name)).to.be.an.instanceof(PassThrough);
+    });
+  });
+
+  describe('rename()', function(){
+    var unifile;
+    beforeEach('Instanciation', function() {
+      unifile = new Unifile();
+    });
+
+    it('throws an error if connectorName is undefined', function() {
+      var fn = function() { unifile.rename({});};
+      expect(fn).to.throw(/Unknown connector/);
+    });
+
+    it('throws an error if connector does not implement it', function() {
+      var connector = {name: 'test'};
+      unifile.use(connector);
+      var fn = function() { unifile.rename({}, connector.name); };
+      expect(fn).to.throw(/This connector does not implement/);
+    });
+
+    it('returns a promise of the writeFilefunction of the connector', function() {
+      var connector = {name: 'test', rename: function() {return new Promise.resolve();}};
+      unifile.use(connector);
+      expect(unifile.rename({}, connector.name)).to.be.an.instanceof(Promise);
+    });
+  });
+
+  describe('unlink()', function(){
+    var unifile;
+    beforeEach('Instanciation', function() {
+      unifile = new Unifile();
+    });
+
+    it('throws an error if connectorName is undefined', function() {
+      var fn = function() { unifile.unlink({});};
+      expect(fn).to.throw(/Unknown connector/);
+    });
+
+    it('throws an error if connector does not implement it', function() {
+      var connector = {name: 'test'};
+      unifile.use(connector);
+      var fn = function() { unifile.unlink({}, connector.name); };
+      expect(fn).to.throw(/This connector does not implement/);
+    });
+
+    it('returns a promise of the writeFilefunction of the connector', function() {
+      var connector = {name: 'test', unlink: function() {return new Promise.resolve();}};
+      unifile.use(connector);
+      expect(unifile.unlink({}, connector.name)).to.be.an.instanceof(Promise);
+    });
+  });
+
+  describe('rmdir()', function(){
+    var unifile;
+    beforeEach('Instanciation', function() {
+      unifile = new Unifile();
+    });
+
+    it('throws an error if connectorName is undefined', function() {
+      var fn = function() { unifile.rmdir({});};
+      expect(fn).to.throw(/Unknown connector/);
+    });
+
+    it('throws an error if connector does not implement it', function() {
+      var connector = {name: 'test'};
+      unifile.use(connector);
+      var fn = function() { unifile.rmdir({}, connector.name); };
+      expect(fn).to.throw(/This connector does not implement/);
+    });
+
+    it('returns a promise of the writeFilefunction of the connector', function() {
+      var connector = {name: 'test', rmdir: function() {return new Promise.resolve();}};
+      unifile.use(connector);
+      expect(unifile.rmdir({}, connector.name)).to.be.an.instanceof(Promise);
     });
   });
 });
