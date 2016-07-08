@@ -12,6 +12,11 @@
     </style>
   </head>
   <body>
+    <select name="connector" id="connector">
+      <option value="github">GitHub</option>
+      <option value="dropbox">Dropbox</option>
+      <option value="ftp">FTP</option>
+    </select>
   <button type="button" id="authButton" class="btn btn-primary">Log in</button>
   <div class="row">
     <div class="col-lg-3">
@@ -91,9 +96,10 @@
     <script type="text/javascript" charset="utf-8">
       var res = document.getElementById('result');
       var btn = document.getElementById('authButton');
+      var connector = document.getElementById('connector');
       btn.onclick = function(){
         var req = new XMLHttpRequest();
-        req.open('POST', '/GitHub/authorize', false);
+        req.open('POST', '/' + connector.value + '/authorize', false);
         req.send();
         window.open(req.responseText);
       };
@@ -129,17 +135,17 @@
       function doAction(action, path){
         switch(action){
           case 'List':
-            var result = request('GET', '/GitHub/ls/' + path);
+            var result = request('GET', '/' + connector.value + '/ls/' + path);
             res.textContent = formatRes(result);
             break;
           case 'Create Folder':
-            var result = request('PUT', '/GitHub/mkdir/' + path);
+            var result = request('PUT', '/' + connector.value + '/mkdir/' + path);
             res.textContent = formatRes(result);
             break;
           case 'Create File':
             var content = document.getElementById('fileContent').value;
             var req = new XMLHttpRequest();
-            req.open('PUT', '/GitHub/put/' + path, false);
+            req.open('PUT', '/' + connector.value + '/put/' + path, false);
             req.setRequestHeader("Content-type", "application/json");
             req.setRequestHeader("Content-length", content.length);
             req.setRequestHeader("Connection", "close");
@@ -148,13 +154,13 @@
             res.textContent = formatRes(result);
             break;
           case 'Get':
-            var result = request('GET', '/GitHub/get/' + path);
+            var result = request('GET', '/' + connector.value + '/get/' + path);
             res.textContent = result;
             break;
           case 'Move':
             var dest = document.getElementById('destination').value;
             var req = new XMLHttpRequest();
-            req.open('PATCH', '/GitHub/mv/' + path, false);
+            req.open('PATCH', '/' + connector.value + '/mv/' + path, false);
             req.setRequestHeader("Content-type", "application/json");
             req.setRequestHeader("Content-length", destination.length);
             req.setRequestHeader("Connection", "close");
@@ -163,13 +169,13 @@
             res.textContent = formatRes(result);
             break;
           case 'Remove':
-            var result = request('DELETE', '/GitHub/rm/' + path);
+            var result = request('DELETE', '/' + connector.value + '/rm/' + path);
             res.textContent = result;
             break;
           case 'Copy':
             var dest = document.getElementById('cpdestination').value;
             var req = new XMLHttpRequest();
-            req.open('POST', '/GitHub/cp/' + path, false);
+            req.open('POST', '/' + connector.value + '/cp/' + path, false);
             req.setRequestHeader("Content-type", "application/json");
             req.setRequestHeader("Content-length", destination.length);
             req.setRequestHeader("Connection", "close");

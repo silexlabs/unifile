@@ -1,3 +1,4 @@
+'use strict';
 /**
  * A simple unifile server to expose unifile api and nothing else
  * https://github.com/silexlabs/unifile/
@@ -23,15 +24,20 @@ app.use(session({
 }));
 //app.use(serveStatic(__dirname+'/public', {index: 'index.html'}));
 
-// Fake connector
-const Connector = require('../lib/unifile-github.js');
-const connector = new Connector({clientId: 'b4e46028bf36d871f68d', clientSecret: 'c39806c4d0906cfeaac932012996a1919475cc78', state: 'aaathub'});
+const GitHubConnector = require('../lib/unifile-github.js');
+const DropboxConnector = require('../lib/unifile-dropbox.js');
+const FtpConnector = require('../lib/unifile-ftp.js');
+const ghconnector = new GitHubConnector({clientId: 'b4e46028bf36d871f68d', clientSecret: 'c39806c4d0906cfeaac932012996a1919475cc78', state: 'aaathub'});
+const dbxconnector = new DropboxConnector({clientId: '37mo489tld3rdi2', clientSecret: 'kqfzd11vamre6xr', state: 'aaathub', redirectUri: 'http://localhost:6805/dropbox/oauth-callback'});
+const ftpconnector = new FtpConnector({redirectUri: 'http://localhost:6805/ftp/signin'});
 // Register connector
-unifile.use(connector);
+unifile.use(ghconnector);
+unifile.use(dbxconnector);
+unifile.use(ftpconnector);
 
 // Register connector methods
 app.post('/:connector/authorize', function(req, res) {
-  var result = unifile.getAuthorizeURL(req.session.unifile, req.params.connector);
+  let result = unifile.getAuthorizeURL(req.session.unifile, req.params.connector);
   res.end(result);
 });
 
@@ -41,17 +47,19 @@ app.get('/', function(req, res){
   req.session.unifile = req.session.unifile || {};
 
   let response;
-  if(req.cookies.unifileToken)
-    response = unifile.setAccessToken(req.session.unifile, 'github', req.cookies.unifileToken)
-  else
-    response = unifile.clearAccessToken(req.session.unifile, 'github');
+  if(req.cookies.unifile_github)
+    response = unifile.setAccessToken(req.session.unifile, 'github', req.cookies.unifile_github);
+  if(req.cookies.unifile_dropbox)
+    response = unifile.setAccessToken(req.session.unifile, 'dropbox', req.cookies.unifile_dropbox);
 
-  response.then(() => res.sendFile(__dirname + '/public/index.html'));
+  if(response)
+    response.then(() => res.sendFile(__dirname + '/public/index.html'));
+  else res.sendFile(__dirname + '/public/index.html');
 });
 
 // List files and folders
 app.get(/\/(.*)\/ls\/(.*)/, function(req, res) {
-  unifile.readdir(req.session.unifile, req.params[0], '/' + req.params[1])
+  unifile.readdir(req.session.unifile, req.params[0], req.params[1])
   .then(function(result){
     res.send(result);
   })
@@ -62,7 +70,7 @@ app.get(/\/(.*)\/ls\/(.*)/, function(req, res) {
 });
 
 app.put(/\/(.*)\/mkdir\/(.*)/, function(req, res) {
-  unifile.mkdir(req.session.unifile, req.params[0], '/' + req.params[1])
+  unifile.mkdir(req.session.unifile, req.params[0], req.params[1])
   .then(function(result){
     res.send(result);
   })
@@ -73,8 +81,9 @@ app.put(/\/(.*)\/mkdir\/(.*)/, function(req, res) {
 });
 
 app.put(/\/(.*)\/put\/(.*)/, function(req, res) {
-  unifile.writeFile(req.session.unifile, req.params[0], '/' + req.params[1], req.body.content)
+  unifile.writeFile(req.session.unifile, req.params[0], req.params[1], req.body.content)
   .then(function(result){
+    console.log('res', result);
     res.send(result);
   })
   .catch(function(err){
@@ -84,7 +93,7 @@ app.put(/\/(.*)\/put\/(.*)/, function(req, res) {
 });
 
 app.get(/\/(.*)\/get\/(.*)/, function(req, res) {
-  unifile.readFile(req.session.unifile, req.params[0], '/' + req.params[1])
+  unifile.readFile(req.session.unifile, req.params[0], req.params[1])
   .then(function(result){
     res.send(result);
   })
@@ -95,7 +104,7 @@ app.get(/\/(.*)\/get\/(.*)/, function(req, res) {
 });
 
 app.patch(/\/(.*)\/mv\/(.*)/, function(req, res) {
-  unifile.rename(req.session.unifile, req.params[0], '/' + req.params[1], '/' + req.body.destination)
+  unifile.rename(req.session.unifile, req.params[0], req.params[1], req.body.destination)
   .then(function(result){
     res.send(result);
   })
@@ -106,7 +115,7 @@ app.patch(/\/(.*)\/mv\/(.*)/, function(req, res) {
 });
 
 app.delete(/\/(.*)\/rm\/(.*)/, function(req, res) {
-  unifile.unlink(req.session.unifile, req.params[0], '/' + req.params[1])
+  unifile.unlink(req.session.unifile, req.params[0], req.params[1])
   .then(function(result){
     res.send(result);
   })
@@ -117,22 +126,26 @@ app.delete(/\/(.*)\/rm\/(.*)/, function(req, res) {
 });
 
 app.post(/\/(.*)\/cp\/(.*)/, function(req, res) {
-  var read = unifile.createReadStream(req.session.unifile, req.params[0], '/' + req.params[1]);
-  var write = unifile.createWriteStream(req.session.unifile, req.params[0], '/' + req.body.destination);
+  var read = unifile.createReadStream(req.session.unifile, req.params[0], req.params[1]);
+  var write = unifile.createWriteStream(req.session.unifile, req.params[0], req.body.destination);
   read.pipe(write).pipe(res);
 });
 
 // register callback url
-app.get('/oauth-callback', function(req, res) {
-  unifile.login(req.session.unifile, connector.name, req.query)
+app.get('/:connector/oauth-callback', function(req, res) {
+  unifile.login(req.session.unifile, req.params.connector, req.query)
   .then(function(result){
-    res.cookie('unifileToken', result);
+    res.cookie('unifile_' + req.params.connector, result);
     res.end('<script>window.close();</script>');
   })
   .catch(function(err){
     console.error(err);
     res.status(500).send(err);
   });
+});
+
+app.get('/ftp/signin', function(req, res){
+  res.sendFile(__dirname + '/public/ftp_login.html');
 });
 
 // server 'loop'
