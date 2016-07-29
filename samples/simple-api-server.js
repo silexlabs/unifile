@@ -27,18 +27,29 @@ app.use(session({
 const GitHubConnector = require('../lib/unifile-github.js');
 const DropboxConnector = require('../lib/unifile-dropbox.js');
 const FtpConnector = require('../lib/unifile-ftp.js');
+const RSConnector = require('../lib/unifile-remoteStorage.js');
 const ghconnector = new GitHubConnector({clientId: 'b4e46028bf36d871f68d', clientSecret: 'c39806c4d0906cfeaac932012996a1919475cc78', state: 'aaathub'});
 const dbxconnector = new DropboxConnector({clientId: '37mo489tld3rdi2', clientSecret: 'kqfzd11vamre6xr', state: 'aaathub', redirectUri: 'http://localhost:6805/dropbox/oauth-callback'});
 const ftpconnector = new FtpConnector({redirectUri: 'http://localhost:6805/ftp/signin'});
+const rsconnector = new RSConnector({redirectUri: 'http://localhost:6805/remotestorage/callback'});
 // Register connector
 unifile.use(ghconnector);
 unifile.use(dbxconnector);
 unifile.use(ftpconnector);
+unifile.use(rsconnector);
 
 // Register connector methods
 app.post('/:connector/authorize', function(req, res) {
-  let result = unifile.getAuthorizeURL(req.session.unifile, req.params.connector);
-  res.end(result);
+  // TODO make all connector return Promise
+  //let result = unifile.getAuthorizeURL(req.session.unifile, req.params.connector);
+  if(req.body != null){
+    if(req.session.unifile.remotestorage)
+      req.session.unifile.remotestorage.userAddress = req.body.userAddress;
+    else
+      req.session.unifile.remotestorage = req.body;
+  }
+  unifile.getAuthorizeURL(req.session.unifile, req.params.connector)
+  .then(result => res.end(result));
 });
 
 // Search for a old session token in the cookies
@@ -125,6 +136,17 @@ app.delete(/\/(.*)\/rm\/(.*)/, function(req, res) {
   });
 });
 
+app.delete(/\/(.*)\/rmdir\/(.*)/, function(req, res) {
+  unifile.rmdir(req.session.unifile, req.params[0], req.params[1])
+  .then(function(result){
+    res.send(result);
+  })
+  .catch(function(err){
+    console.error(err);
+    res.status(400).send(err);
+  });
+});
+
 app.post(/\/(.*)\/cp\/(.*)/, function(req, res) {
   var read = unifile.createReadStream(req.session.unifile, req.params[0], req.params[1]);
   var write = unifile.createWriteStream(req.session.unifile, req.params[0], req.body.destination);
@@ -139,9 +161,14 @@ app.get('/:connector/oauth-callback', function(req, res) {
     res.end('<script>window.close();</script>');
   })
   .catch(function(err){
-    console.error(err);
+    console.error('ERROR', err);
     res.status(500).send(err);
   });
+});
+
+app.get('/remotestorage/callback', function(req, res){
+  // Return a script that get the hash and redirect to oauth-callback
+  res.end('<script>var token = location.hash.substr(1).split("=")[1];location="/remotestorage/oauth-callback?token="+token</script>');
 });
 
 app.get('/ftp/signin', function(req, res){

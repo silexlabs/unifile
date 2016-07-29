@@ -16,8 +16,10 @@
       <option value="github">GitHub</option>
       <option value="dropbox">Dropbox</option>
       <option value="ftp">FTP</option>
+      <option value="remotestorage">RemoteStorage</option>
     </select>
   <button type="button" id="authButton" class="btn btn-primary">Log in</button>
+  <label for="rsHost">rsHost</label><input type="text/submit/hidden/button" id="rsHost" name="rsHost" placeholder="me@remotestorage.io" id="rsHost">
   <div class="row">
     <div class="col-lg-3">
       <div class="input-group">
@@ -83,6 +85,16 @@
   <div class="row">
     <div class="col-lg-3">
       <div class="input-group">
+        <input type="text" class="form-control" placeholder="Path...">
+        <span class="input-group-btn">
+          <button class="btn btn-default" type="button">Remove dir</button>
+        </span>
+      </div><!-- /input-group -->
+    </div><!-- /.col-lg-6 -->
+  </div><!-- /.row -->
+  <div class="row">
+    <div class="col-lg-3">
+      <div class="input-group">
         <input type="text" class="form-control" placeholder="Source...">
         <input id="cpdestination" type="text" class="form-control" placeholder="Destination...">
         <span class="input-group-btn">
@@ -100,7 +112,8 @@
       btn.onclick = function(){
         var req = new XMLHttpRequest();
         req.open('POST', '/' + connector.value + '/authorize', false);
-        req.send();
+        req.setRequestHeader('Content-Type', 'application/json');
+        req.send('{"userAddress": "' + document.getElementById('rsHost').value + '"}');
         window.open(req.responseText);
       };
 
@@ -172,6 +185,10 @@
             var result = request('DELETE', '/' + connector.value + '/rm/' + path);
             res.textContent = result;
             break;
+          case 'Remove dir':
+            var result = request('DELETE', '/' + connector.value + '/rmdir/' + path);
+            res.textContent = result;
+            break;
           case 'Copy':
             var dest = document.getElementById('cpdestination').value;
             var req = new XMLHttpRequest();
@@ -188,7 +205,7 @@
 
       var actions = document.getElementsByClassName('input-group');
       for(a of actions){
-        var btn = a.querySelector('button');
+        var btn = a.querySelector('button:not([id=authButton])');
         btn.onclick = function(){
           doAction(this.textContent, this.parentElement.parentElement.firstElementChild.value);
         };
