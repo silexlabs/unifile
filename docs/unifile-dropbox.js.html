@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>unifile-dropbox.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Unifile.html">Unifile</a><ul class='methods'><li data-type='method'><a href="Unifile.html#batch">batch</a></li><li data-type='method'><a href="Unifile.html#clearAccessToken">clearAccessToken</a></li><li data-type='method'><a href="Unifile.html#createReadStream">createReadStream</a></li><li data-type='method'><a href="Unifile.html#createWriteStream">createWriteStream</a></li><li data-type='method'><a href="Unifile.html#getAuthorizeURL">getAuthorizeURL</a></li><li data-type='method'><a href="Unifile.html#getInfos">getInfos</a></li><li data-type='method'><a href="Unifile.html#login">login</a></li><li data-type='method'><a href="Unifile.html#mkdir">mkdir</a></li><li data-type='method'><a href="Unifile.html#readdir">readdir</a></li><li data-type='method'><a href="Unifile.html#readFile">readFile</a></li><li data-type='method'><a href="Unifile.html#rename">rename</a></li><li data-type='method'><a href="Unifile.html#rmdir">rmdir</a></li><li data-type='method'><a href="Unifile.html#setAccessToken">setAccessToken</a></li><li data-type='method'><a href="Unifile.html#setBasicAuth">setBasicAuth</a></li><li data-type='method'><a href="Unifile.html#unlink">unlink</a></li><li data-type='method'><a href="Unifile.html#use">use</a></li><li data-type='method'><a href="Unifile.html#writeFile">writeFile</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#callAPI">callAPI</a></li><li><a href="global.html#commit">commit</a></li><li><a href="global.html#createBranch">createBranch</a></li><li><a href="global.html#move">move</a></li><li><a href="global.html#paginate">paginate</a></li><li><a href="global.html#PassThrough">PassThrough</a></li><li><a href="global.html#Promise">Promise</a></li><li><a href="global.html#removeFile">removeFile</a></li><li><a href="global.html#streamAPI">streamAPI</a></li><li><a href="global.html#transformTree">transformTree</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">unifile-dropbox.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>'use strict';
+/**
+ * Service connector for the dropbox api
+ */
+
+const Promise = require('bluebird');
+const request = require('request');
+
+const NAME = 'dropbox';
+const DB_OAUTH_URL = 'https://www.dropbox.com/oauth2';
+
+/**
+ * Make a call to the Dropbox API
+ * @param {Object} session - Dropbox session storage
+ * @param {string} path - End point path
+ * @param {Object} data - Data to pass. Convert to querystring if method is GET or to the request body
+ * @return {Promise} a Promise of the result send by server
+ */
+function callAPI(session, path, data) {
+  let authorization;
+  if(session.basic) authorization = 'Basic ' + session.basic;
+  else authorization = 'Bearer ' + session.token;
+
+  let reqOptions = {
+    url: 'https://api.dropboxapi.com/2' + path,
+    method: 'POST',
+    headers: {
+      'Authorization': authorization,
+      'Content-Type': 'application/json',
+      'User-Agent': 'Unifile'
+    },
+    body: JSON.stringify(data)
+  };
+
+  //console.log('Calling', reqOptions.url, 'with', data, '/ auth:', authorization);
+  return new Promise(function(resolve, reject) {
+    request(reqOptions, function (err, res, body) {
+      if (err) {
+        return reject(err);
+      }
+      if (res.statusCode >= 400) {
+        console.error(body);
+        return reject({statusCode: res.statusCode, message: body});
+      }
+      try {
+        let result = res.statusCode !== 204 ? JSON.parse(body) : null;
+        if(res.headers.hasOwnProperty('link')){
+          paginate(reqOptions, res.headers.link, result).then(resolve);
+        }
+        else resolve(result);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  });
+}
+
+class DropboxConnector {
+  constructor(config){
+    this.config = config;
+    this.name = NAME;
+  }
+
+  /**
+   * info about this service
+   * @return an object with these attributes: display_name, description, visible. These attributes determine the response to the request /v1.0/services/list/
+   */
+  getInfos(session) {
+    return {
+      name: NAME,
+      display_name: 'Dropbox',
+      image_small: '../assets/dropbox.png',
+      description: 'Edit html files from your Dropbox.',
+      visible: ('clientId' in this.config), // true if user set an app clientId
+      isLoggedIn: (session &amp;&amp; 'token' in session),
+      isOAuth: true,
+      user: session.account
+    };
+  }
+
+  setAccessToken(session, token){
+    session.token = token;
+    console.log(session);
+    if(session.account &amp;&amp; 'id' in session.account){
+      return callAPI(session, '/users/get_account', {
+        account_id: session.account.id
+      })
+      .then(account => {
+        session.account = account;
+        console.log(session);
+        return token;
+      });
+    }
+    else return Promise.resolve(token);
+  }
+
+  getAuthorizeURL(session){
+    return Promise.resolve(DB_OAUTH_URL +
+      '/authorize?response_type=code&amp;client_id=' + this.config.clientId +
+        '&amp;redirect_uri=' + this.config.redirectUri +
+        '&amp;state=' + this.config.state);
+  }
+
+  login(session, loginInfos){
+    if(loginInfos.state !== this.config.state) return Promise.reject('Invalid request (cross-site request)');
+
+    return new Promise((resolve, reject) => {
+      request({
+        url: 'https://api.dropboxapi.com/oauth2/token',
+        method: 'POST',
+        form: {
+          code: loginInfos.code,
+          grant_type: 'authorization_code',
+          client_id: this.config.clientId,
+          client_secret: this.config.clientSecret,
+          redirect_uri: this.config.redirectUri
+        },
+        json: true
+      }, function (err, response, body) {
+        if (err) return reject('Error while calling Dropbox API. ' + err);
+        session.account = {id: body.account_id};
+        return resolve(body.access_token);
+      });
+    })
+    .then(token => {
+      return this.setAccessToken(session, token);
+    });
+  }
+
+  //Filesystem commands
+
+  readdir(session, path){
+    if (!session.token)
+      return Promise.reject('User not logged in yet. You need to call the login() first.');
+    else{
+      return callAPI(session, '/files/list_folder', {
+        path: path,
+        recursive: false,
+        include_media_info: false,
+        include_deleted: false,
+        include_has_explicit_shared_members: false
+      })
+      .then(result => {
+        return result.entries.map(entry => {
+          return {
+            bytes: entry.size,
+            modified: entry.client_modified,
+            name: entry.name,
+            is_dir: entry['.tag'] == 'folder'
+          }
+        });
+      });
+    }
+  }
+
+  mkdir(session, path){
+    if (!session.token)
+      return Promise.reject('User not logged in yet. You need to call the login() first.');
+    else{
+      return callAPI(session, '/files/create_folder', {
+        path: path
+      });
+    }
+  }
+
+  writeFile(session, path, data) {
+    if (!session.token)
+      return Promise.reject('User not logged in yet. You need to call the login() first.');
+    else{
+      // TODO Use upload session for files bigger than 150Mo (https://www.dropbox.com/developers/documentation/http/documentation#files-upload_session-start)
+      // TODO Handle file conflict and write mode
+      return new Promise((resolve, reject) => {
+        request({
+          url: 'https://content.dropboxapi.com/2/files/upload',
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + session.token,
+            'Content-Type': 'application/octet-stream',
+            'User-Agent': 'Unifile',
+            'Dropbox-API-Arg': JSON.stringify({
+              path: path
+            })
+          },
+          body: data
+        }, function (err, response, body) {
+          if (err) return reject('Error while calling Dropbox API. ' + err);
+          resolve(body);
+        });
+      });
+    }
+  }
+
+  createWriteStream(session, path){
+    if(!session.token)
+      throw  'User not logged in yet. You need to call the login() first.';
+
+    return request({
+      url: 'https://content.dropboxapi.com/2/files/upload',
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + session.token,
+        'Content-Type': 'application/octet-stream',
+        'User-Agent': 'Unifile',
+        'Dropbox-API-Arg': JSON.stringify({
+          path: path
+        })
+      }
+    });
+  }
+
+  readFile(session, path) {
+    if (!session.token)
+      return Promise.reject('User not logged in yet. You need to call the login() first.');
+    else{
+      return new Promise((resolve, reject) => {
+        request({
+          url: 'https://content.dropboxapi.com/2/files/download',
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + session.token,
+            'User-Agent': 'Unifile',
+            'Dropbox-API-Arg': JSON.stringify({
+              path: path
+            })
+          }
+        }, function (err, response, body) {
+          if (err) return reject('Error while calling Dropbox API. ' + err);
+          resolve(body);
+        });
+      });
+    }
+  }
+
+  createReadStream(session, path){
+    if(!session.token)
+      throw  'User not logged in yet. You need to call the login() first.';
+
+    return request({
+      url: 'https://content.dropboxapi.com/2/files/download',
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + session.token,
+        'User-Agent': 'Unifile',
+        'Dropbox-API-Arg': JSON.stringify({
+          path: path
+        })
+      }
+    });
+  }
+
+  rename(session, src, dest) {
+    if (!session.token)
+      return Promise.reject('User not logged in yet. You need to call the login() first.');
+    else{
+      return callAPI(session, '/files/move', {
+        from_path: src,
+        to_path: dest
+      });
+    }
+  }
+
+  unlink(session, path) {
+    if (!session.token)
+      return Promise.reject('User not logged in yet. You need to call the login() first.');
+    else{
+      return callAPI(session, '/files/delete', {
+        path: path
+      });
+    }
+  }
+
+  rmdir(session, path){
+    return unlink(session, path);
+  }
+}
+
+module.exports = DropboxConnector;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Sep 02 2016 15:05:37 GMT+0200 (CEST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

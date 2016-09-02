@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Test Unifile</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <style type="text/css" media="screen">
+    .btn-primary, .input-group {
+      margin: 10px;
+    }
+    </style>
+  </head>
+  <body>
+    <select name="connector" id="connector">
+      <option value="github">GitHub</option>
+      <option value="dropbox">Dropbox</option>
+      <option value="ftp">FTP</option>
+      <option value="remotestorage">RemoteStorage</option>
+    </select>
+  <button type="button" id="authButton" class="btn btn-primary">Log in</button>
+  <label for="rsHost">rsHost</label><input type="text/submit/hidden/button" id="rsHost" name="rsHost" placeholder="me@remotestorage.io" id="rsHost">
+  <div class="row">
+    <div class="col-lg-3">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Path...">
+        <span class="input-group-btn">
+          <button class="btn btn-default" type="button">List</button>
+        </span>
+      </div><!-- /input-group -->
+    </div><!-- /.col-lg-6 -->
+  </div><!-- /.row -->
+  <div class="row">
+    <div class="col-lg-3">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Path...">
+        <span class="input-group-btn">
+          <button class="btn btn-default" type="button">Create Folder</button>
+        </span>
+      </div><!-- /input-group -->
+    </div><!-- /.col-lg-6 -->
+  </div><!-- /.row -->
+  <div class="row">
+    <div class="col-lg-3">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Path...">
+        <input id="fileContent" type="text" class="form-control" placeholder="Content...">
+        <span class="input-group-btn">
+          <button class="btn btn-default" style="padding: 24px 12px;" type="button">Create File</button>
+        </span>
+      </div><!-- /input-group -->
+    </div><!-- /.col-lg-6 -->
+  </div><!-- /.row -->
+  <div class="row">
+    <div class="col-lg-3">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Path...">
+        <span class="input-group-btn">
+          <button class="btn btn-default" type="button">Get</button>
+        </span>
+      </div><!-- /input-group -->
+    </div><!-- /.col-lg-6 -->
+  </div><!-- /.row -->
+  <div class="row">
+    <div class="col-lg-3">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Source...">
+        <input id="destination" type="text" class="form-control" placeholder="Destination...">
+        <span class="input-group-btn">
+          <button class="btn btn-default" style="padding: 24px 12px;" type="button">Move</button>
+        </span>
+      </div><!-- /input-group -->
+    </div><!-- /.col-lg-6 -->
+  </div><!-- /.row -->
+  <div class="row">
+    <div class="col-lg-3">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Path...">
+        <span class="input-group-btn">
+          <button class="btn btn-default" type="button">Remove</button>
+        </span>
+      </div><!-- /input-group -->
+    </div><!-- /.col-lg-6 -->
+  </div><!-- /.row -->
+  <div class="row">
+    <div class="col-lg-3">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Path...">
+        <span class="input-group-btn">
+          <button class="btn btn-default" type="button">Remove dir</button>
+        </span>
+      </div><!-- /input-group -->
+    </div><!-- /.col-lg-6 -->
+  </div><!-- /.row -->
+  <div class="row">
+    <div class="col-lg-3">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Source...">
+        <input id="cpdestination" type="text" class="form-control" placeholder="Destination...">
+        <span class="input-group-btn">
+          <button class="btn btn-default" style="padding: 24px 12px;" type="button">Copy</button>
+        </span>
+      </div><!-- /input-group -->
+    </div><!-- /.col-lg-6 -->
+  </div><!-- /.row -->
+    <h3>Result</h3>
+    <p id='result'></p>
+    <script type="text/javascript" charset="utf-8">
+      var res = document.getElementById('result');
+      var btn = document.getElementById('authButton');
+      var connector = document.getElementById('connector');
+      btn.onclick = function(){
+        var req = new XMLHttpRequest();
+        req.open('POST', '/' + connector.value + '/authorize', false);
+        req.setRequestHeader('Content-Type', 'application/json');
+        req.send('{"userAddress": "' + document.getElementById('rsHost').value + '"}');
+        window.open(req.responseText);
+      };
+
+      var field = document.getElementById('field');
+
+      function request(method, path){
+        var req = new XMLHttpRequest();
+        req.open(method, path, false);
+        req.send();
+        try{
+          return JSON.parse(req.response);
+        }
+        catch(e){
+          return req.response;
+        }
+      }
+
+      function formatRes(res){
+        console.log(res);
+        if(res == '') return 'No content';
+        else if(Array.isArray(res))
+          return res.map(item => item.name).join('\n');
+        else if(typeof res === 'object'){
+          console.log('json');
+          return JSON.toString(res);
+        }
+        else{
+          return res;
+        }
+      }
+
+      function doAction(action, path){
+        switch(action){
+          case 'List':
+            var result = request('GET', '/' + connector.value + '/ls/' + path);
+            res.textContent = formatRes(result);
+            break;
+          case 'Create Folder':
+            var result = request('PUT', '/' + connector.value + '/mkdir/' + path);
+            res.textContent = formatRes(result);
+            break;
+          case 'Create File':
+            var content = document.getElementById('fileContent').value;
+            var req = new XMLHttpRequest();
+            req.open('PUT', '/' + connector.value + '/put/' + path, false);
+            req.setRequestHeader("Content-type", "application/json");
+            req.setRequestHeader("Content-length", content.length);
+            req.setRequestHeader("Connection", "close");
+            req.send(JSON.stringify({"content": content}));
+            var result = JSON.parse(req.response);
+            res.textContent = formatRes(result);
+            break;
+          case 'Get':
+            var result = request('GET', '/' + connector.value + '/get/' + path);
+            res.textContent = result;
+            break;
+          case 'Move':
+            var dest = document.getElementById('destination').value;
+            var req = new XMLHttpRequest();
+            req.open('PATCH', '/' + connector.value + '/mv/' + path, false);
+            req.setRequestHeader("Content-type", "application/json");
+            req.setRequestHeader("Content-length", destination.length);
+            req.setRequestHeader("Connection", "close");
+            req.send(JSON.stringify({"destination": dest}));
+            var result = JSON.parse(req.response);
+            res.textContent = formatRes(result);
+            break;
+          case 'Remove':
+            var result = request('DELETE', '/' + connector.value + '/rm/' + path);
+            res.textContent = result;
+            break;
+          case 'Remove dir':
+            var result = request('DELETE', '/' + connector.value + '/rmdir/' + path);
+            res.textContent = result;
+            break;
+          case 'Copy':
+            var dest = document.getElementById('cpdestination').value;
+            var req = new XMLHttpRequest();
+            req.open('POST', '/' + connector.value + '/cp/' + path, false);
+            req.setRequestHeader("Content-type", "application/json");
+            req.setRequestHeader("Content-length", destination.length);
+            req.setRequestHeader("Connection", "close");
+            req.send(JSON.stringify({"destination": dest}));
+            var result = JSON.parse(req.response);
+            res.textContent = formatRes(result);
+            break;
+        }
+      }
+
+      var actions = document.getElementsByClassName('input-group');
+      for(a of actions){
+        var btn = a.querySelector('button:not([id=authButton])');
+        btn.onclick = function(){
+          doAction(this.textContent, this.parentElement.parentElement.firstElementChild.value);
+        };
+      }
+    </script>
+  </body>
+</html>
