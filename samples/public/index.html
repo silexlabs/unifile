@@ -119,7 +119,7 @@
 
       var field = document.getElementById('field');
 
-      function request(method = 'GET', path){
+      function request(method, path){
         var req = new XMLHttpRequest();
         req.open(method, path, false);
         req.send();

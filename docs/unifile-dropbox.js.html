@@ -1,11 +1,49 @@
-'use strict';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>unifile-dropbox.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Unifile.html">Unifile</a><ul class='methods'><li data-type='method'><a href="Unifile.html#batch">batch</a></li><li data-type='method'><a href="Unifile.html#clearAccessToken">clearAccessToken</a></li><li data-type='method'><a href="Unifile.html#createReadStream">createReadStream</a></li><li data-type='method'><a href="Unifile.html#createWriteStream">createWriteStream</a></li><li data-type='method'><a href="Unifile.html#getAuthorizeURL">getAuthorizeURL</a></li><li data-type='method'><a href="Unifile.html#getInfos">getInfos</a></li><li data-type='method'><a href="Unifile.html#login">login</a></li><li data-type='method'><a href="Unifile.html#mkdir">mkdir</a></li><li data-type='method'><a href="Unifile.html#readdir">readdir</a></li><li data-type='method'><a href="Unifile.html#readFile">readFile</a></li><li data-type='method'><a href="Unifile.html#rename">rename</a></li><li data-type='method'><a href="Unifile.html#rmdir">rmdir</a></li><li data-type='method'><a href="Unifile.html#setAccessToken">setAccessToken</a></li><li data-type='method'><a href="Unifile.html#setBasicAuth">setBasicAuth</a></li><li data-type='method'><a href="Unifile.html#unlink">unlink</a></li><li data-type='method'><a href="Unifile.html#use">use</a></li><li data-type='method'><a href="Unifile.html#writeFile">writeFile</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#callAPI">callAPI</a></li><li><a href="global.html#commit">commit</a></li><li><a href="global.html#createBranch">createBranch</a></li><li><a href="global.html#move">move</a></li><li><a href="global.html#paginate">paginate</a></li><li><a href="global.html#PassThrough">PassThrough</a></li><li><a href="global.html#Promise">Promise</a></li><li><a href="global.html#removeFile">removeFile</a></li><li><a href="global.html#streamAPI">streamAPI</a></li><li><a href="global.html#transformTree">transformTree</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">unifile-dropbox.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>'use strict';
 /**
  * Service connector for the dropbox api
  */
 
 const Promise = require('bluebird');
 const request = require('request');
-const mime = require('mime');
 
 const NAME = 'dropbox';
 const DB_OAUTH_URL = 'https://www.dropbox.com/oauth2';
@@ -69,23 +107,26 @@ class DropboxConnector {
   getInfos(session) {
     return {
       name: NAME,
-      displayName: 'Dropbox',
-      icon: '../assets/dropbox.png',
+      display_name: 'Dropbox',
+      image_small: '../assets/dropbox.png',
       description: 'Edit html files from your Dropbox.',
-      isLoggedIn: (session && 'token' in session),
+      visible: ('clientId' in this.config), // true if user set an app clientId
+      isLoggedIn: (session &amp;&amp; 'token' in session),
       isOAuth: true,
-      username: session.account.name.display_name
+      user: session.account
     };
   }
 
   setAccessToken(session, token){
     session.token = token;
-    if(session.account && 'id' in session.account){
+    console.log(session);
+    if(session.account &amp;&amp; 'id' in session.account){
       return callAPI(session, '/users/get_account', {
         account_id: session.account.id
       })
       .then(account => {
         session.account = account;
+        console.log(session);
         return token;
       });
     }
@@ -94,9 +135,9 @@ class DropboxConnector {
 
   getAuthorizeURL(session){
     return Promise.resolve(DB_OAUTH_URL +
-      '/authorize?response_type=code&client_id=' + this.config.clientId +
-        '&redirect_uri=' + this.config.redirectUri +
-        '&state=' + this.config.state);
+      '/authorize?response_type=code&amp;client_id=' + this.config.clientId +
+        '&amp;redirect_uri=' + this.config.redirectUri +
+        '&amp;state=' + this.config.state);
   }
 
   login(session, loginInfos){
@@ -141,11 +182,10 @@ class DropboxConnector {
       .then(result => {
         return result.entries.map(entry => {
           return {
-            size: entry.size,
+            bytes: entry.size,
             modified: entry.client_modified,
             name: entry.name,
-            isDir: entry['.tag'] == 'folder',
-            mime: mime.lookup(entry.name)
+            is_dir: entry['.tag'] == 'folder'
           }
         });
       });
@@ -274,3 +314,22 @@ class DropboxConnector {
 }
 
 module.exports = DropboxConnector;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Sep 02 2016 15:05:37 GMT+0200 (CEST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

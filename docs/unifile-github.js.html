@@ -1,10 +1,48 @@
-'use strict';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>unifile-github.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Unifile.html">Unifile</a><ul class='methods'><li data-type='method'><a href="Unifile.html#batch">batch</a></li><li data-type='method'><a href="Unifile.html#clearAccessToken">clearAccessToken</a></li><li data-type='method'><a href="Unifile.html#createReadStream">createReadStream</a></li><li data-type='method'><a href="Unifile.html#createWriteStream">createWriteStream</a></li><li data-type='method'><a href="Unifile.html#getAuthorizeURL">getAuthorizeURL</a></li><li data-type='method'><a href="Unifile.html#getInfos">getInfos</a></li><li data-type='method'><a href="Unifile.html#login">login</a></li><li data-type='method'><a href="Unifile.html#mkdir">mkdir</a></li><li data-type='method'><a href="Unifile.html#readdir">readdir</a></li><li data-type='method'><a href="Unifile.html#readFile">readFile</a></li><li data-type='method'><a href="Unifile.html#rename">rename</a></li><li data-type='method'><a href="Unifile.html#rmdir">rmdir</a></li><li data-type='method'><a href="Unifile.html#setAccessToken">setAccessToken</a></li><li data-type='method'><a href="Unifile.html#setBasicAuth">setBasicAuth</a></li><li data-type='method'><a href="Unifile.html#unlink">unlink</a></li><li data-type='method'><a href="Unifile.html#use">use</a></li><li data-type='method'><a href="Unifile.html#writeFile">writeFile</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#callAPI">callAPI</a></li><li><a href="global.html#commit">commit</a></li><li><a href="global.html#createBranch">createBranch</a></li><li><a href="global.html#move">move</a></li><li><a href="global.html#paginate">paginate</a></li><li><a href="global.html#PassThrough">PassThrough</a></li><li><a href="global.html#Promise">Promise</a></li><li><a href="global.html#removeFile">removeFile</a></li><li><a href="global.html#streamAPI">streamAPI</a></li><li><a href="global.html#transformTree">transformTree</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">unifile-github.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>'use strict';
 
 const url = require('url');
 
 const request = require('request');
 const Promise = require('bluebird');
-const mime = require('mime');
 
 const NAME = 'github';
 const GH_OAUTH_URL = 'https://github.com/login/oauth';
@@ -13,7 +51,7 @@ const APP_PERMISSION = 'scope=repo,delete_repo';
 /*
  * Remove first '/', split the path and remove empty tokens
  * @param {String} path - Path to split
- * @return {Array<String>} an array with path levels as elements
+ * @return {Array&lt;String>} an array with path levels as elements
  */
 function getPathTokens(path) {
   if(path.startsWith('/')) path = path.substr(1);
@@ -31,7 +69,7 @@ function paginate(reqOptions, link, memo) {
   let links = link.split(/,\s*/);
   let matches;
   links.some(function(link) {
-    matches = link.trim().match(/<(.+)>;\s*rel="next"/);
+    matches = link.trim().match(/&lt;(.+)>;\s*rel="next"/);
     return matches !== null;
   });
   // End of pagination
@@ -155,7 +193,7 @@ function transformTree(session, repo, transformer, message, branch) {
     return transformer(res);
   })
   .then(function(tree) {
-    if(Array.isArray(tree) && tree.length > 0){
+    if(Array.isArray(tree) &amp;&amp; tree.length > 0){
       return callAPI(session, apiPath + '/git/trees', {tree: tree}, 'POST');
     }
     else if(Array.isArray(tree)){
@@ -294,12 +332,13 @@ class GitHubConnector {
   getInfos(session){
     return {
       name: NAME,
-      displayName: 'GitHub',
-      icon: '../assets/github.png',
+      display_name: 'GitHub',
+      image_small: '../assets/github.png',
       description: 'Edit html files from your GitHub repository.',
-      isLoggedIn: (session && 'token' in session),
+      visible: ('clientId' in this.config), // true if user set an app clientId
+      isLoggedIn: (session &amp;&amp; 'token' in session),
       isOAuth: true,
-      username: session.account.display_name
+      user: session.account
     };
   }
 
@@ -361,7 +400,7 @@ class GitHubConnector {
   }
 
   getAuthorizeURL() {
-    return Promise.resolve(GH_OAUTH_URL + '/authorize?' + APP_PERMISSION + '&client_id=' + this.config.clientId + '&state=' + this.config.state);
+    return Promise.resolve(GH_OAUTH_URL + '/authorize?' + APP_PERMISSION + '&amp;client_id=' + this.config.clientId + '&amp;state=' + this.config.state);
   }
 
   //Filesystem commands
@@ -379,11 +418,10 @@ class GitHubConnector {
           .then(function (res) {
             return res.map(function(item) {
               return {
-                size: item.size,
+                bytes: item.size,
                 modified: new Date(item.updated_at).toISOString(),
                 name: item.name,
-                isDir: true,
-                mime: 'application/git-repo'
+                is_dir: true
               };
             });
           });
@@ -399,11 +437,10 @@ class GitHubConnector {
               })
               .then(function(date) {
                 return {
-                  size: 'N/A',
+                  bytes: 'N/A',
                   modified: new Date(date).toISOString(),
                   name: item.name,
-                  isDir: true,
-                  mime: 'application/git-branch'
+                  is_dir: true
                 };
               });
             });
@@ -424,11 +461,10 @@ class GitHubConnector {
               })
               .then(function(date) {
                 return {
-                  size: item.size,
+                  bytes: item.size,
                   modified: new Date(date).toISOString(),
                   name: item.name,
-                  isDir: item.type === 'dir',
-                  mime: mime.lookup(item.name)
+                  is_dir: item.type === 'dir'
                 };
               });
             });
@@ -482,7 +518,7 @@ class GitHubConnector {
       return Promise.reject('User not logged in yet. You need to call the login() first.');
     else{
       let splitPath = getPathTokens(path);
-      if (splitPath.length < 3) {
+      if (splitPath.length &lt; 3) {
         return Promise.reject('This folder can only contain folders. Files can go in sub-folders.');
       }
       let filePath = splitPath.slice(2).join('/');
@@ -529,7 +565,7 @@ class GitHubConnector {
       return Promise.reject('User not logged in yet. You need to call the login() first.');
     else{
       let splitPath = getPathTokens(path);
-      if (splitPath.length < 3) {
+      if (splitPath.length &lt; 3) {
         return Promise.reject('This folder only contain folders. Files can be found in sub-folders.');
       }
       let apiPath = '/repos/' + session.account.login
@@ -630,10 +666,10 @@ class GitHubConnector {
       let splitPath = getPathTokens(actions[0].path);
       return transformTree(session, splitPath[0], function(treeRes){
         let tree = treeRes.tree;// get tree
-        for(let i=0; i<actions.length; i++){
+        for(let i=0; i&lt;actions.length; i++){
           let splitPath = getPathTokens(actions[i].path);
           // Reject if its not a file or folder
-          if(splitPath.length < 3) return Promise.reject('Cannot execute bash request on repositories or branches');
+          if(splitPath.length &lt; 3) return Promise.reject('Cannot execute bash request on repositories or branches');
 
           let path = splitPath.slice(2).join('/');
           switch(actions[i].toLowerCase()){
@@ -660,3 +696,22 @@ class GitHubConnector {
 }
 
 module.exports = GitHubConnector;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Sep 02 2016 15:05:37 GMT+0200 (CEST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
