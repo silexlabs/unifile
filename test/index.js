@@ -67,7 +67,7 @@ describe('Unifile class', function() {
     });
   });
 
-  describe('login()', function(){
+  describe('login()', function() {
     var unifile;
     beforeEach('Instanciation', function() {
       unifile = new Unifile();
@@ -92,7 +92,7 @@ describe('Unifile class', function() {
     });
   });
 
-  describe('readdir()', function(){
+  describe('readdir()', function() {
     var unifile;
     beforeEach('Instanciation', function() {
       unifile = new Unifile();
@@ -117,7 +117,7 @@ describe('Unifile class', function() {
     });
   });
 
-  describe('mkdir()', function(){
+  describe('mkdir()', function() {
     var unifile;
     beforeEach('Instanciation', function() {
       unifile = new Unifile();
@@ -142,7 +142,7 @@ describe('Unifile class', function() {
     });
   });
 
-  describe('writeFile()', function(){
+  describe('writeFile()', function() {
     var unifile;
     beforeEach('Instanciation', function() {
       unifile = new Unifile();
@@ -167,7 +167,7 @@ describe('Unifile class', function() {
     });
   });
 
-  describe('createWriteStream()', function(){
+  describe('createWriteStream()', function() {
     var unifile;
     beforeEach('Instanciation', function() {
       unifile = new Unifile();
@@ -192,7 +192,7 @@ describe('Unifile class', function() {
     });
   });
 
-  describe('readFile()', function(){
+  describe('readFile()', function() {
     var unifile;
     beforeEach('Instanciation', function() {
       unifile = new Unifile();
@@ -217,7 +217,7 @@ describe('Unifile class', function() {
     });
   });
 
-  describe('createReadStream()', function(){
+  describe('createReadStream()', function() {
     var unifile;
     beforeEach('Instanciation', function() {
       unifile = new Unifile();
@@ -242,7 +242,7 @@ describe('Unifile class', function() {
     });
   });
 
-  describe('rename()', function(){
+  describe('rename()', function() {
     var unifile;
     beforeEach('Instanciation', function() {
       unifile = new Unifile();
@@ -267,7 +267,7 @@ describe('Unifile class', function() {
     });
   });
 
-  describe('unlink()', function(){
+  describe('unlink()', function() {
     var unifile;
     beforeEach('Instanciation', function() {
       unifile = new Unifile();
@@ -292,7 +292,7 @@ describe('Unifile class', function() {
     });
   });
 
-  describe('rmdir()', function(){
+  describe('rmdir()', function() {
     var unifile;
     beforeEach('Instanciation', function() {
       unifile = new Unifile();
