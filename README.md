@@ -1,6 +1,6 @@
-#Unifile, unified access to cloud storage services.
+# Unifile, unified access to cloud storage services.
 
-[![Build Status](https://travis-ci.org/silexlabs/unifile.png?branch=master)](https://travis-ci.org/silexlabs/unifile)
+[![Build Status](https://travis-ci.org/silexlabs/unifile.png?branch=master)](https://travis-ci.org/silexlabs/unifile) [![Code Climate](https://codeclimate.com/github/silexlabs/unifile/badges/gpa.svg)](https://codeclimate.com/github/silexlabs/unifile)
 
 Nodejs library to access cloud storage services with a common API.
 
@@ -9,26 +9,23 @@ Currently supported services
 * FTP
 * Dropbox
 * GitHub: use git as a cloud with repository and branches as folder
+* [RemoteStorage](https://remotestorage.io/)
 
 
-#Motivation
+# Motivation
 
-In 2013, team has developed the v2 of [Silex](http://www.silex.me/), free and open source website builder for designers. Since Silex is a web app, running in the browser, we faced a choice: either we make people download and install Silex, or we host it in the cloud. But Silex Labs non profit organization can not afford paying hosting for our users.
+With the rise of cloud services and the need to be independant of such or such provider, we decided to create a common tool to access a lot of online plateform.
 
-So we have decided that Silex would edit the user's files on the user's Dropbox. It is not acceptable for a free project to force people to store their data on a service such as Dropbox, so we decided to make it an option. We have added the ability for Silex to edit files on the server on which it is installed. And then other services came to our minds.
-
-We hope that other communities will benefit this way to use their cloud services before they install the web app locally.
+This aim to give the user of your app the liberty of choosing where they want to store their data.
 
 
-#Use
+# Use
 
 Requirements
 
-* [nodejs](http://nodejs.org/) > 6.0.0
+* [Node.js](http://nodejs.org/) > 6.0.0
 
-#Use in your nodejs project
-
-##With express
+# Use in your Node.js project
 
 Add unifile lib to your project
 
@@ -36,7 +33,15 @@ Add unifile lib to your project
 $ npm install unifile --save
 ```
 
-Then write a small node.js server [like this one](./samples/simple-api-server.js). Or play with the sample:
+## Vanilla Node.js
+
+Unifile use an API similar to the native `fs` module but with Bluebird Promises instead of callbacks.
+
+You can find the all API documentation on the [project page](https://silexlabs.github.io/unifile/).
+
+## With Express
+
+Then write a small Node.js server [like this one](./samples/simple-api-server.js). Or play with the sample:
 
 ```
 $ cd samples
@@ -46,21 +51,27 @@ $ node simple-api-server.js
 
 Then open `http://localhost:6805/` and play with your cloud storages.
 
+## CloudExplorer
 
+You could also take a look at the UI called [CloudExplorer](https://github.com/lexoyo/CloudExplorer2): here's a [live demo](https://cloud-explorer2.herokuapp.com/).
 
-#License
+# Privacy
+
+Most of the service in Unifile uses [OAuth 2](http://wiki.oauth.net/w/page/25236487/OAuth%202) to connect the user into the service. This means Unifile doesn't have the user credential at any time.
+
+For the server that doesn't support OAuth, like FTP, the credentials are never stored.
+
+In all case, Unifile never uses any data of the user.
+
+# License
 
 [license: MIT](./LICENSE)
 
-#Developer guide
+# Developer guide
 
-Here is how to contribute
+## Add a service
 
-**FIXME**
-
-##Add a service
-
-**FIXME**
+Unifile is built on modularity, meaning you can create a connector to a service a plug it in Unifile withouth modifying Unifile. So feel free to add any services you need! Don't forget to let us know about it so we could tell everyone :wink:.
 
 Here is a list of services which could be useful
 
@@ -70,7 +81,7 @@ Here is a list of services which could be useful
 * SugarSync
 * Google drive if not too slow
 * Facebook if possibe?
-* a random list of other cloud storage services: Amazon Cloud Drive, Amazon S3, Bitcasa, Box, DollyDrive, Dropbox, Google Drive, iCloud Drive, Microsoft OneDrive, SpiderOak, SugarSync, Wuala
+* a random list of other cloud storage services: Amazon Cloud Drive, Amazon S3, Bitcasa, Box, DollyDrive, iCloud Drive, Microsoft OneDrive, SpiderOak, SugarSync, Wuala
 
 ## Roadmap
 

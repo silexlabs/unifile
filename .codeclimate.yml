@@ -1,0 +1,16 @@
+engines:
+  eslint:
+    enabled: true
+    channel: "eslint-2"
+  duplication:
+    enabled: true
+    config:
+      languages:
+        - javascript
+ratings:
+  paths:
+    - lib/**
+exclude_paths:
+- docs/**
+- test/**
+- samples/**
