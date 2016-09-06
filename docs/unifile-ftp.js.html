@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>unifile-ftp.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Unifile.html">Unifile</a><ul class='methods'><li data-type='method'><a href="Unifile.html#batch">batch</a></li><li data-type='method'><a href="Unifile.html#clearAccessToken">clearAccessToken</a></li><li data-type='method'><a href="Unifile.html#createReadStream">createReadStream</a></li><li data-type='method'><a href="Unifile.html#createWriteStream">createWriteStream</a></li><li data-type='method'><a href="Unifile.html#getAuthorizeURL">getAuthorizeURL</a></li><li data-type='method'><a href="Unifile.html#getInfos">getInfos</a></li><li data-type='method'><a href="Unifile.html#login">login</a></li><li data-type='method'><a href="Unifile.html#mkdir">mkdir</a></li><li data-type='method'><a href="Unifile.html#readdir">readdir</a></li><li data-type='method'><a href="Unifile.html#readFile">readFile</a></li><li data-type='method'><a href="Unifile.html#rename">rename</a></li><li data-type='method'><a href="Unifile.html#rmdir">rmdir</a></li><li data-type='method'><a href="Unifile.html#setAccessToken">setAccessToken</a></li><li data-type='method'><a href="Unifile.html#setBasicAuth">setBasicAuth</a></li><li data-type='method'><a href="Unifile.html#unlink">unlink</a></li><li data-type='method'><a href="Unifile.html#use">use</a></li><li data-type='method'><a href="Unifile.html#writeFile">writeFile</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#callAPI">callAPI</a></li><li><a href="global.html#commit">commit</a></li><li><a href="global.html#createBranch">createBranch</a></li><li><a href="global.html#move">move</a></li><li><a href="global.html#paginate">paginate</a></li><li><a href="global.html#PassThrough">PassThrough</a></li><li><a href="global.html#Promise">Promise</a></li><li><a href="global.html#removeFile">removeFile</a></li><li><a href="global.html#streamAPI">streamAPI</a></li><li><a href="global.html#transformTree">transformTree</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">unifile-ftp.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>'use strict';
+/**
+ * Service connector for FTP server
+ */
+const PassThrough = require('stream').PassThrough;
+
+const Promise = require('bluebird');
+const Ftp = require('ftp');
+
+const NAME = 'ftp';
+
+function callAPI(session, action, ...params){
+  return new Promise((resolve, reject) => {
+    var client = new Ftp();
+    client.on('ready', () => {
+      client[action](...params, (err, res) => {
+        if(err) return reject(err);
+        resolve(res);
+        client.end();
+      });
+    });
+
+    client.on('error', () => {
+      client.end();
+      reject();
+    });
+
+    client.connect(session);
+  });
+}
+
+class FtpConnector {
+  constructor(config){
+    this.config = config;
+    this.name = NAME;
+  }
+
+  getInfos(session){
+    return {
+      name: NAME,
+      display_name: 'FTP',
+      image_small: '../assets/ftp.png',
+      description: 'Edit files on a web FTP server.',
+      visible: true,
+      isLoggedIn: (session &amp;&amp; 'token' in session),
+      isOAuth: false,
+      user: session.user
+    };
+  }
+
+  getAuthorizeURL(session){
+    return this.config.redirectUri;
+  }
+
+  setAccessToken(session, token){
+    session.token = token;
+    return Promise.resolve(token);
+  }
+
+  /**
+   * Log in the FTP server
+   * @param {Object} session - the user session
+   * @param {Object} loginInfos - Options passed to the connection method
+   * @see https://www.npmjs.com/package/ftp#methods
+   */
+  login(session, loginInfos){
+    return new Promise((resolve, reject) => {
+      var client = new Ftp();
+      // Successful connection
+      client.on('ready', resolve);
+      // Error
+      client.on('error', reject);
+
+      client.connect(loginInfos);
+    })
+    .then(() => {
+      session.host = loginInfos.host;
+      session.port = loginInfos.port;
+      session.user = loginInfos.user;
+      session.password = loginInfos.password;
+      this.setAccessToken(session, loginInfos.user);
+    });
+  }
+
+  //Filesystem commands
+
+  readdir(session, path){
+    if (!session.token)
+      return Promise.reject('User not logged in yet. You need to call the login() first.');
+    else{
+      return callAPI(session, 'list', path)
+      .then(list => {
+        return list.reduce((memo, entry) => {
+          if(entry.name.charAt(0) != '.')
+            memo.push({
+              bytes: entry.size,
+              modified: entry.date,
+              name: entry.name,
+              is_dir: entry.type == 'd'
+            });
+          return memo;
+        }, []);
+      });
+    }
+  }
+
+  mkdir(session, path){
+    if (!session.token)
+      return Promise.reject('User not logged in yet. You need to call the login() first.');
+    else{
+      return callAPI(session, 'mkdir', path);
+    }
+  }
+
+  writeFile(session, path, data) {
+    if (!session.token)
+      return Promise.reject('User not logged in yet. You need to call the login() first.');
+    else{
+      return callAPI(session, 'put', data, path);
+    }
+  }
+
+  createWriteStream(session, path){
+    if(!session.token)
+      throw  'User not logged in yet. You need to call the login() first.';
+
+    var through = new PassThrough();
+    callAPI(session, 'put', through, path);
+    return through;
+  }
+
+  readFile(session, path) {
+    if (!session.token)
+      return Promise.reject('User not logged in yet. You need to call the login() first.');
+    else{
+      return callAPI(session, 'get', path)
+      .then(fileStream => {
+        return new Promise((resolve, reject) => {
+          let content = '';
+          fileStream.on('data', chunk => content += chunk);
+          fileStream.on('finish', () => resolve(content));
+          fileStream.on('error', reject);
+        });
+      });
+    }
+  }
+
+  createReadStream(session, path){
+    if(!session.token)
+      throw  'User not logged in yet. You need to call the login() first.';
+
+    var through = new PassThrough();
+    callAPI(session, 'get', path)
+    .then(fileStream => {
+      fileStream.pipe(through);
+    })
+    .catch(err => {throw err});
+
+    return through;
+  }
+
+  rename(session, src, dest) {
+    if (!session.token)
+      return Promise.reject('User not logged in yet. You need to call the login() first.');
+    else{
+      return callAPI(session, 'rename', src, dest);
+    }
+  }
+
+  unlink(session, path) {
+    if (!session.token)
+      return Promise.reject('User not logged in yet. You need to call the login() first.');
+    else{
+      return callAPI(session, 'delete', path);
+    }
+  }
+
+  rmdir(session, path){
+    if (!session.token)
+      return Promise.reject('User not logged in yet. You need to call the login() first.');
+    else{
+      return callAPI(session, 'rmdir', path);
+    }
+  }
+}
+
+module.exports = FtpConnector;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Sep 02 2016 15:05:37 GMT+0200 (CEST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
