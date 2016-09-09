@@ -1,6 +1,6 @@
 # Unifile, unified access to cloud storage services.
 
-[![Build Status](https://travis-ci.org/silexlabs/unifile.png?branch=master)](https://travis-ci.org/silexlabs/unifile) [![Code Climate](https://codeclimate.com/github/silexlabs/unifile/badges/gpa.svg)](https://codeclimate.com/github/silexlabs/unifile)
+[![Build Status](https://travis-ci.org/silexlabs/unifile.png?branch=master)](https://travis-ci.org/silexlabs/unifile) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/0aa235e2fa2f457b9e3f2d608ec608e3)](https://www.codacy.com/app/jeanbaptiste-richardet/unifile?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=silexlabs/unifile&amp;utm_campaign=Badge_Grade)
 
 Nodejs library to access cloud storage services with a common API.
 
