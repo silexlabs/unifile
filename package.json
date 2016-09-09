@@ -59,7 +59,9 @@
     "test": "mocha test/index.js -R nyan",
     "lint": "eslint lib test",
     "watch:test": "mocha -wd test/index.js",
-    "cover": "istanbul cover _mocha -- -R landing && cat ./coverage/lcov.info | codacy-coverage",
+    "cover": "istanbul cover _mocha -- -R landing",
+    "cover:check": "istanbul check-coverage --statements 100",
+    "cover:export": "cat ./coverage/lcov.info | codacy-coverage",
     "gen:docs": "jsdoc -c jsdoc.json",
     "preversion": "npm test && npm lint"
   },
