@@ -24,8 +24,10 @@
   },
   "devDependencies": {
     "chai": "^3.4.1",
+    "codacy-coverage": "^2.0.0",
     "docdash": "^0.4.0",
     "eslint": "^3.4.0",
+    "istanbul": "^0.4.5",
     "jsdoc": "^3.4.0",
     "mocha": "^3.0.2"
   },
@@ -57,8 +59,9 @@
     "test": "mocha test/index.js -R nyan",
     "lint": "eslint lib test",
     "watch:test": "mocha -wd test/index.js",
-    "cover": "istanbul cover _mocha -- -R landing",
-    "gen:docs": "jsdoc -c jsdoc.json"
+    "cover": "istanbul cover _mocha -- -R landing && cat ./coverage/lcov.info | codacy-coverage",
+    "gen:docs": "jsdoc -c jsdoc.json",
+    "preversion": "npm test && npm lint"
   },
   "readmeFilename": "README.md",
   "bugs": {
