@@ -37,6 +37,7 @@ rules:
   no-redeclare: 2
   no-self-assign: 2
   no-unused-labels: 2
+  complexity: [2, 8]
 
   # Strict Mode
   # http://eslint.org/docs/rules/#strict-mode
