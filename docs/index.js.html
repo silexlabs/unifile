@@ -22,7 +22,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Unifile.html">Unifile</a><ul class='methods'><li data-type='method'><a href="Unifile.html#batch">batch</a></li><li data-type='method'><a href="Unifile.html#clearAccessToken">clearAccessToken</a></li><li data-type='method'><a href="Unifile.html#createReadStream">createReadStream</a></li><li data-type='method'><a href="Unifile.html#createWriteStream">createWriteStream</a></li><li data-type='method'><a href="Unifile.html#getAuthorizeURL">getAuthorizeURL</a></li><li data-type='method'><a href="Unifile.html#getInfos">getInfos</a></li><li data-type='method'><a href="Unifile.html#login">login</a></li><li data-type='method'><a href="Unifile.html#mkdir">mkdir</a></li><li data-type='method'><a href="Unifile.html#readdir">readdir</a></li><li data-type='method'><a href="Unifile.html#readFile">readFile</a></li><li data-type='method'><a href="Unifile.html#rename">rename</a></li><li data-type='method'><a href="Unifile.html#rmdir">rmdir</a></li><li data-type='method'><a href="Unifile.html#setAccessToken">setAccessToken</a></li><li data-type='method'><a href="Unifile.html#setBasicAuth">setBasicAuth</a></li><li data-type='method'><a href="Unifile.html#unlink">unlink</a></li><li data-type='method'><a href="Unifile.html#use">use</a></li><li data-type='method'><a href="Unifile.html#writeFile">writeFile</a></li></ul></li></ul><h3>Externals</h3><ul><li><a href="external-Promise.html">Promise</a></li><li><a href="external-ReadableStream.html">ReadableStream</a></li><li><a href="external-WritableStream.html">WritableStream</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Unifile.html">Unifile</a><ul class='methods'><li data-type='method'><a href="Unifile.html#batch">batch</a></li><li data-type='method'><a href="Unifile.html#clearAccessToken">clearAccessToken</a></li><li data-type='method'><a href="Unifile.html#createReadStream">createReadStream</a></li><li data-type='method'><a href="Unifile.html#createWriteStream">createWriteStream</a></li><li data-type='method'><a href="Unifile.html#getAuthorizeURL">getAuthorizeURL</a></li><li data-type='method'><a href="Unifile.html#getInfos">getInfos</a></li><li data-type='method'><a href="Unifile.html#listConnectors">listConnectors</a></li><li data-type='method'><a href="Unifile.html#login">login</a></li><li data-type='method'><a href="Unifile.html#mkdir">mkdir</a></li><li data-type='method'><a href="Unifile.html#readdir">readdir</a></li><li data-type='method'><a href="Unifile.html#readFile">readFile</a></li><li data-type='method'><a href="Unifile.html#rename">rename</a></li><li data-type='method'><a href="Unifile.html#rmdir">rmdir</a></li><li data-type='method'><a href="Unifile.html#setAccessToken">setAccessToken</a></li><li data-type='method'><a href="Unifile.html#setBasicAuth">setBasicAuth</a></li><li data-type='method'><a href="Unifile.html#unlink">unlink</a></li><li data-type='method'><a href="Unifile.html#use">use</a></li><li data-type='method'><a href="Unifile.html#writeFile">writeFile</a></li></ul></li></ul><h3>Externals</h3><ul><li><a href="external-Promise.html">Promise</a></li><li><a href="external-ReadableStream.html">ReadableStream</a></li><li><a href="external-WritableStream.html">WritableStream</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <div id="main">
@@ -118,8 +118,8 @@ class Unifile {
    * @param {Connector} connector - A connector implementing all of Unifile functions
    */
   use(connector) {
-    if (!connector) throw new Error('Connector cannot be undefined');
-    if (!connector.name) throw new Error('Connector must have a name');
+    if(!connector) throw new Error('Connector cannot be undefined');
+    if(!connector.name) throw new Error('Connector must have a name');
     this.connectors.set(connector.name.toLowerCase(), connector);
   }
 
@@ -130,8 +130,16 @@ class Unifile {
    * @param {string} connectorName - Name of the connector
    * @return {ConnectorInfos} all the infos about this connector
    */
-  getInfos(connectorName){
+  getInfos(connectorName) {
     return this.callMethod(connectorName, null, 'getInfos');
+  }
+
+  /**
+   * List all the connectors currently used in this instance of Unifile
+   * @return {string[]} an array of connectors names
+   */
+  listConnectors() {
+    return Array.from(this.connectors.keys());
   }
 
   // Auth commands
@@ -159,7 +167,7 @@ class Unifile {
    * @param {string} password - Password for the service
    * @return {external:Promise&lt;null>} a successful promise if the credentials were correct
    */
-  setBasicAuth(session, connectorName, username, password){
+  setBasicAuth(session, connectorName, username, password) {
     return this.callMethod(connectorName, session, 'setBasicAuth', username, password);
   }
 
@@ -174,7 +182,7 @@ class Unifile {
    * @param {string} token - Service access token generated by OAuth
    * @return {external:Promise&lt;string|null>} a promise of OAuth token if the service uses it or null
    */
-  setAccessToken(session, connectorName, token){
+  setAccessToken(session, connectorName, token) {
     return this.callMethod(connectorName, session, 'setAccessToken', token);
   }
 
@@ -185,7 +193,7 @@ class Unifile {
    * @param {string} connectorName - Name of the connector
    * @return {external:Promise&lt;null>} an empty promise.
    */
-  clearAccessToken(session, connectorName){
+  clearAccessToken(session, connectorName) {
     return this.callMethod(connectorName, session, 'clearAccessToken');
   }
 
@@ -306,27 +314,31 @@ class Unifile {
   // Batch operation
   /**
    * Execute batch operation.
+   * Available actions are UNLINK, RMDIR, RENAME, MKDIR and WRITEFILE.
    * @param {Object} session - Object where session data will be stored
    * @param {string} connectorName - Name of the connector
    * @param {Object[]} actions - Array of actions to execute in this batch.
    * @param {string} actions[].name - Name of this action.
    * @param {string} actions[].path - Path parameter for this action.
    * @param {string} [actions[].destination] - Destination parameter for this action.
+   * @param {string} [actions[].content] - Content parameter for this action.
    * @param {string} [message] - Message to describe this batch
    * @return {external:Promise&lt;null>} an empty promise.
    */
-  batch(session, connectorName, actions, message){
+  batch(session, connectorName, actions, message) {
     return this.callMethod(connectorName, session, 'batch', actions, message);
   }
 
   // Privates
 
-  callMethod(connectorName = '', session, methodName, ...params) {
-    let name = connectorName.toLowerCase();
-    if (!this.connectors.has(name)) throw new Error(`Unknown connector: ${connectorName}`);
-    let connector = this.connectors.get(name);
-    if (!(methodName in connector)) throw new Error(`This connector does not implement ${methodName}()`);
-    if(!(name in session)) session[name] = {};
+  callMethod(connectorName, session, methodName, ...params) {
+    if(!connectorName) throw new Error('You should specify a connector name!');
+    const name = connectorName.toLowerCase();
+    if(!this.connectors.has(name)) throw new Error(`Unknown connector: ${connectorName}`);
+    const connector = this.connectors.get(name);
+    if(!(methodName in connector)) throw new Error(`This connector does not implement ${methodName}()`);
+    if(!session) session = {name: {}};
+    else if(!(name in session)) session[name] = {};
     return connector[methodName](session[name], ...params);
   }
 }
@@ -344,7 +356,7 @@ module.exports = Unifile;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Sep 02 2016 15:48:08 GMT+0200 (CEST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Sep 16 2016 18:18:53 GMT+0200 (CEST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

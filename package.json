@@ -64,7 +64,7 @@
     "cover:check": "istanbul check-coverage --statements 100",
     "cover:export": "cat ./coverage/lcov.info | codacy-coverage",
     "gen:docs": "jsdoc -c jsdoc.json",
-    "preversion": "npm test && npm lint"
+    "preversion": "npm test && npm run lint && npm run gen:docs"
   },
   "readmeFilename": "README.md",
   "bugs": {
