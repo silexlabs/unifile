@@ -40,8 +40,6 @@ unifile.use(rsconnector);
 
 // Register connector methods
 app.post('/:connector/authorize', function(req, res) {
-  // TODO make all connector return Promise
-  //let result = unifile.getAuthorizeURL(req.session.unifile, req.params.connector);
   if(req.body != null){
     if(req.session.unifile.remotestorage)
       req.session.unifile.remotestorage.userAddress = req.body.userAddress;
