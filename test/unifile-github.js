@@ -8,9 +8,10 @@ const proxyquire = require('proxyquire').noCallThru();
 /* eslint-disable complexity */
 const requireStub = {
   request: function(opts, callback) {
+    console.log('opts', opts);
     const res = {headers: {}};
     const auth = opts.headers ? opts.headers.Authorization : null;
-    const endPoint = opts.url.split('/').pop();
+    const endPoint = opts.url.split('/').pop().split('?').shift();
     switch (endPoint) {
       case 'access_token':
         switch (opts.body.code) {
@@ -41,7 +42,7 @@ const requireStub = {
         if(auth !== 'token token') {
           res.statusCode = 400;
           callback(null, res, '{"error": "Bad Credentials"}');
-        } else {
+        } else if(opts.method === 'GET') {
           callback(null, res, JSON.stringify([{
             name: 'repo1',
             size: 1,
@@ -51,9 +52,18 @@ const requireStub = {
             size: 2,
             updated_at: '2016-09-20T18:16:59Z'
           }]));
+        } else {
+          res.statusCode = 201;
+          callback(null, res, JSON.stringify({id: 1, name: JSON.parse(opts.body).name}));
         }
         break;
       case 'branches':
+        if(opts.url.includes('paginated') && !opts.url.includes('page=2')) {
+          res.headers.link = '<https://api.github.com/login/paginated/branches?page=2>; rel="next"';
+        }
+        if(opts.url.includes('paginated'))
+          res.headers.link += '<https://api.github.com/login/paginated/branches?page=2>; rel="last"';
+
         callback(null, res, JSON.stringify([{
           name: 'master',
           commit: {
@@ -66,6 +76,16 @@ const requireStub = {
           }
         }]));
         break;
+      case 'heads':
+        callback(null, res, JSON.stringify([{
+          ref: 'refs/heads/master',
+          object: {sha: 'aaaa'}
+        }]));
+        break;
+      case 'refs':
+        res.statusCode = 201;
+        callback(null, res, JSON.stringify({ref: JSON.parse(opts.body).ref}));
+        break;
       case 'commit1': //falls through
       case 'commit2':
         callback(null, res, JSON.stringify({
@@ -76,6 +96,39 @@ const requireStub = {
           }
         }));
         break;
+      case 'commits':
+        callback(null, res, JSON.stringify([{
+          commit: {
+            author: {
+              date: '2016-09-20T18:35:32Z'
+            }
+          }
+        }, {
+          commit: {
+            author: {
+              date: '2016-09-20T18:36:32Z'
+            }
+          }
+        }]));
+        break;
+      case '.gitkeep':
+        res.statusCode = 201;
+        callback(null, res, '{}');
+        break;
+      default:
+        if(opts.url.includes('contents') && opts.url.endsWith('/')) {
+          callback(null, res, JSON.stringify([{
+            type: 'file',
+            size: 3,
+            name: 'ping.gif',
+            path: 'folder/ping.gif'
+          }, {
+            type: 'dir',
+            size: 0,
+            name: 'folder',
+            path: 'folder'
+          }]));
+        }
     }
   }
 };
@@ -301,12 +354,127 @@ describe('GitHub connector', function() {
       });
     });
 
+    it('returns a list of repositories when path is a slash', function() {
+      return gh.readdir({token: 'token'}, '/')
+      .then((repos) => {
+        expect(repos.length).to.equal(2);
+        expect(repos[0]).to.deep.equal({
+          size: 1,
+          modified: '2016-09-20T18:15:59.000Z',
+          name: 'repo1',
+          isDir: true,
+          mime: 'application/git-repo'
+        });
+        expect(repos[1]).to.deep.equal({
+          size: 2,
+          modified: '2016-09-20T18:16:59.000Z',
+          name: 'repo2',
+          isDir: true,
+          mime: 'application/git-repo'
+        });
+      });
+    });
+
     it('fails if account is not set and path has one level', function() {
       return expect(gh.readdir({token: 'token'}, 'a')).to.be.rejectedWith('User account login is not set');
     });
 
     it('returns a list of branch when path has only one level', function() {
-      return gh.readdir({token: 'token', account: {login: 'login'}}, 'a');
+      return gh.readdir({token: 'token', account: {login: 'login'}}, 'a')
+      .then((branches) => {
+        expect(branches.length).to.equal(2);
+        expect(branches[0]).to.deep.equal({
+          size: 'N/A',
+          modified: '2016-09-20T18:35:32.000Z',
+          name: 'master',
+          isDir: true,
+          mime: 'application/git-branch'
+        });
+        expect(branches[1]).to.deep.equal({
+          size: 'N/A',
+          modified: '2016-09-20T18:35:32.000Z',
+          name: 'develop',
+          isDir: true,
+          mime: 'application/git-branch'
+        });
+      });
+    });
+
+    it('follows pagination if any', function() {
+      return gh.readdir({token: 'token', account: {login: 'login'}}, 'paginated')
+      .then((branches) => {
+        expect(branches.length).to.equal(4);
+        expect(branches[0]).to.deep.equal({
+          size: 'N/A',
+          modified: '2016-09-20T18:35:32.000Z',
+          name: 'master',
+          isDir: true,
+          mime: 'application/git-branch'
+        });
+        expect(branches[1]).to.deep.equal({
+          size: 'N/A',
+          modified: '2016-09-20T18:35:32.000Z',
+          name: 'develop',
+          isDir: true,
+          mime: 'application/git-branch'
+        });
+      });
+    });
+
+    it('returns a list of commits when path has two levels or more', function() {
+      return gh.readdir({token: 'token', account: {login: 'login'}}, 'a/test')
+      .then((commits) => {
+        expect(commits.length).to.equal(2);
+        expect(commits[0]).to.deep.equal({
+          size: 3,
+          modified: '2016-09-20T18:35:32.000Z',
+          name: 'ping.gif',
+          isDir: false,
+          mime: 'image/gif'
+        });
+        expect(commits[1]).to.deep.equal({
+          size: 0,
+          modified: '2016-09-20T18:35:32.000Z',
+          name: 'folder',
+          isDir: true,
+          mime: 'application/directory'
+        });
+      });
+    });
+  });
+
+  describe('mkdir()', function() {
+    let gh;
+    beforeEach('Instanciation', function() {
+      gh = new GitHubConnector({clientId: 'a', clientSecret: 'a'});
+    });
+
+    it('fails if an empty name is given', function() {
+      return Promise.all([
+        expect(gh.mkdir({token: 'token'}, '')).to.be.rejectedWith('Cannot create dir with an empty name'),
+        expect(gh.mkdir({token: 'token'}, '/')).to.be.rejectedWith('Cannot create dir with an empty name')
+      ]);
+    });
+
+    it('create a repository if path has one level', function() {
+      return expect(gh.mkdir({token: 'token'}, 'a')).to.become({id: 1, name: 'a'});
+    });
+
+    it('fails if account is not set and path has one level', function() {
+      return expect(gh.mkdir({token: 'token'}, 'a/test')).to.be.rejectedWith('User account login is not set');
+    });
+
+    it('create a branch if path has two level', function() {
+      return expect(gh.mkdir({token: 'token', account: {login: 'login'}}, 'a/test'))
+      .to.become({ref: 'refs/heads/test'});
+    });
+
+    it('fails if account is not set and path has one level', function() {
+      return expect(gh.mkdir({token: 'token'}, 'a/test/folder')).to.be.rejectedWith('User account login is not set');
+    });
+
+    it('create a folder if path has more than two level', function() {
+      return expect(gh.mkdir({token: 'token', account: {login: 'login'}}, 'a/test/folder')).to.be.fulfilled;
     });
   });
 });
