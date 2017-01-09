@@ -19,8 +19,33 @@ describe('Unifile class', function() {
     });
   });
 
+  describe('interface implementation', function() {
+    const unifile = new Unifile();
+    // Get all the Unifile connectors
+    const connectors = require('fs').readdirSync('./lib').filter((file) =>
+      file != 'index.js' && file.endsWith('.js') && !file.startsWith('.'));
+    // Get all the methods of Unifile
+    const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(unifile))
+    // Filter out the one that should be implemented
+    .filter((method) => !['callMethod', 'listConnectors', 'use'].includes(method))
+    // Sort them alphabetically
+    .sort();
+    for(const connectorName of connectors) {
+      describe(connectorName, function() {
+        it('have to implement all the Unifile functions', function() {
+          const Connector = require('../lib/' + connectorName);
+          const instance = new Connector({clientId: 'a', clientSecret: 'a'});
+          const connectorMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(instance))
+            .sort();
+          const missings = methods.filter((m) => !connectorMethods.includes(m));
+          expect(missings.length).to.equal(0, 'These methods are missing: ' + missings);
+        });
+      });
+    }
+  });
+
   describe('use()', function() {
-    var unifile;
+    let unifile;
     beforeEach('Instanciation', function() {
       unifile = new Unifile();
     });
@@ -124,36 +149,6 @@ describe('Unifile class', function() {
       const connector = {name: 'test', getAuthorizeURL: function() {return new Promise.resolve();}};
       unifile.use(connector);
       expect(unifile.getAuthorizeURL({}, connector.name)).to.be.an.instanceof(Promise);
-    });
-  });
-
-  describe('setBasicAuth()', function() {
-    var unifile;
-    beforeEach('Instanciation', function() {
-      unifile = new Unifile();
-    });
-
-    it('throws an error if connectorName is undefined', function() {
-      const fn = function() { unifile.setBasicAuth({});};
-      expect(fn).to.throw(/You should specify a connector name!/);
-    });
-
-    it('throws an error if connectorName is not registered', function() {
-      const fn = function() { unifile.setBasicAuth({}, 'test');};
-      expect(fn).to.throw('Unknown connector');
-    });
-
-    it('throws an error if connector does not implement it', function() {
-      const connector = {name: 'test'};
-      unifile.use(connector);
-      const fn = function() { unifile.setBasicAuth({}, connector.name); };
-      expect(fn).to.throw('This connector does not implement');
-    });
-
-    it('returns a promise of the setBasicAuth function of the connector', function() {
-      const connector = {name: 'test', setBasicAuth: function() {return new Promise.resolve();}};
-      unifile.use(connector);
-      expect(unifile.setBasicAuth({}, connector.name)).to.be.an.instanceof(Promise);
     });
   });
 

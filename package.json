@@ -65,7 +65,7 @@
     "lint:fix": "eslint lib test --fix",
     "watch:test": "mocha -wd test/",
     "cover": "istanbul cover _mocha -- -R landing",
-    "cover:check": "istanbul check-coverage --statements 60",
+    "cover:check": "istanbul check-coverage",
     "cover:export": "cat ./coverage/lcov.info | codacy-coverage",
     "gen:docs": "jsdoc -c jsdoc.json",
     "preversion": "npm test && npm run lint && npm run gen:docs"
