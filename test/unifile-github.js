@@ -8,7 +8,6 @@ const proxyquire = require('proxyquire').noCallThru();
 /* eslint-disable complexity */
 const requireStub = {
   request: function(opts, callback) {
-    console.log('opts', opts);
     const res = {headers: {}};
     const auth = opts.headers ? opts.headers.Authorization : null;
     const endPoint = opts.url.split('/').pop().split('?').shift();
@@ -39,7 +38,7 @@ const requireStub = {
           callback(null, res, '{"name": "a", "login": "a", "num_repos": 1}');
         break;
       case 'repos':
-        if(auth !== 'token token') {
+        if(auth !== 'token good_token') {
           res.statusCode = 400;
           callback(null, res, '{"error": "Bad Credentials"}');
         } else if(opts.method === 'GET') {
@@ -205,7 +204,7 @@ describe('GitHub connector', function() {
     });
 
     it('fails if state is different from the one generated', function() {
-      return expect(gh.login({state: 'a'}, {state: 'b'})).to.be.rejectedWith('Invalid request');
+      return expect(gh.login({state: 'a'}, {state: 'b', code: '1'})).to.be.rejectedWith('Invalid request');
     });
 
     it('fails if the credentials are wrong', function() {
@@ -239,27 +238,8 @@ describe('GitHub connector', function() {
       return expect(gh.login(session, {
         state: 'a',
         code: 'a'
-      })).to.eventually.equal('b')
-      .then(() => expect(session).to.have.property('token', 'b'));
-    });
-  });
-
-  describe('setBasicAuth()', function() {
-    let gh;
-    beforeEach('Instanciation', function() {
-      gh = new GitHubConnector({clientId: 'a', clientSecret: 'a'});
-    });
-
-    it('fails if the credentials are wrong', function() {
-      const session = {};
-      return expect(gh.setBasicAuth(session, 'name', 'wrong')).to.be.rejectedWith(Error)
-      .then(() => expect(session).to.not.have.property('basic'));
-    });
-
-    it('returns the username', function() {
-      const session = {};
-      return expect(gh.setBasicAuth(session, 'name', 'pwd')).to.become('name')
-      .then(() => expect(session).to.have.property('basic', 'bmFtZTpwd2Q='));
+      })).to.eventually.equal('token b')
+      .then(() => expect(session).to.have.property('token', 'token b'));
     });
   });
 
@@ -271,14 +251,14 @@ describe('GitHub connector', function() {
 
     it('fails if the credentials are wrong', function() {
       const session = {};
-      return expect(gh.setAccessToken(session, 'bad_token')).to.be.rejectedWith(Error)
+      return expect(gh.setAccessToken(session, 'token bad_token')).to.be.rejectedWith(Error)
       .then(() => expect(session).to.not.have.property('token'));
     });
 
     it('returns the username', function() {
       const session = {};
-      return expect(gh.setAccessToken(session, 'token')).to.become('token')
-      .then(() => expect(session).to.have.property('token', 'token'));
+      return expect(gh.setAccessToken(session, 'token good_token')).to.become('token good_token')
+      .then(() => expect(session).to.have.property('token', 'token good_token'));
     });
   });
 
@@ -297,7 +277,6 @@ describe('GitHub connector', function() {
       expect(gh.clearAccessToken(session)).to.be.fulfilled
       .then(() => {
         expect(session.token).to.be.null;
-        expect(session.basic).to.be.null;
         expect(session.account).to.be.null;
       });
     });
@@ -334,7 +313,7 @@ describe('GitHub connector', function() {
     });
 
     it('returns a list of repositories when path is empty', function() {
-      return gh.readdir({token: 'token'}, '')
+      return gh.readdir({token: 'token good_token'}, '')
       .then((repos) => {
         expect(repos.length).to.equal(2);
         expect(repos[0]).to.deep.equal({
@@ -355,7 +334,7 @@ describe('GitHub connector', function() {
     });
 
     it('returns a list of repositories when path is a slash', function() {
-      return gh.readdir({token: 'token'}, '/')
+      return gh.readdir({token: 'token good_token'}, '/')
       .then((repos) => {
         expect(repos.length).to.equal(2);
         expect(repos[0]).to.deep.equal({
@@ -376,11 +355,11 @@ describe('GitHub connector', function() {
     });
 
     it('fails if account is not set and path has one level', function() {
-      return expect(gh.readdir({token: 'token'}, 'a')).to.be.rejectedWith('User account login is not set');
+      return expect(gh.readdir({token: 'token good_token'}, 'a')).to.be.rejectedWith('User account login is not set');
     });
 
     it('returns a list of branch when path has only one level', function() {
-      return gh.readdir({token: 'token', account: {login: 'login'}}, 'a')
+      return gh.readdir({token: 'token good_token', account: {login: 'login'}}, 'a')
       .then((branches) => {
         expect(branches.length).to.equal(2);
         expect(branches[0]).to.deep.equal({
@@ -401,7 +380,7 @@ describe('GitHub connector', function() {
     });
 
     it('follows pagination if any', function() {
-      return gh.readdir({token: 'token', account: {login: 'login'}}, 'paginated')
+      return gh.readdir({token: 'token good_token', account: {login: 'login'}}, 'paginated')
       .then((branches) => {
         expect(branches.length).to.equal(4);
         expect(branches[0]).to.deep.equal({
@@ -422,7 +401,7 @@ describe('GitHub connector', function() {
     });
 
     it('returns a list of commits when path has two levels or more', function() {
-      return gh.readdir({token: 'token', account: {login: 'login'}}, 'a/test')
+      return gh.readdir({token: 'token good_token', account: {login: 'login'}}, 'a/test')
       .then((commits) => {
         expect(commits.length).to.equal(2);
         expect(commits[0]).to.deep.equal({
@@ -451,30 +430,32 @@ describe('GitHub connector', function() {
 
     it('fails if an empty name is given', function() {
       return Promise.all([
-        expect(gh.mkdir({token: 'token'}, '')).to.be.rejectedWith('Cannot create dir with an empty name'),
-        expect(gh.mkdir({token: 'token'}, '/')).to.be.rejectedWith('Cannot create dir with an empty name')
+        expect(gh.mkdir({token: 'token good_token'}, '')).to.be.rejectedWith('Cannot create dir with an empty name'),
+        expect(gh.mkdir({token: 'token good_token'}, '/')).to.be.rejectedWith('Cannot create dir with an empty name')
       ]);
     });
 
     it('create a repository if path has one level', function() {
-      return expect(gh.mkdir({token: 'token'}, 'a')).to.become({id: 1, name: 'a'});
+      return expect(gh.mkdir({token: 'token good_token'}, 'a')).to.become({id: 1, name: 'a'});
     });
 
     it('fails if account is not set and path has one level', function() {
-      return expect(gh.mkdir({token: 'token'}, 'a/test')).to.be.rejectedWith('User account login is not set');
+      return expect(gh.mkdir({token: 'token good_token'}, 'a/test'))
+        .to.be.rejectedWith('User account login is not set');
     });
 
     it('create a branch if path has two level', function() {
-      return expect(gh.mkdir({token: 'token', account: {login: 'login'}}, 'a/test'))
+      return expect(gh.mkdir({token: 'token good_token', account: {login: 'login'}}, 'a/test'))
       .to.become({ref: 'refs/heads/test'});
     });
 
     it('fails if account is not set and path has one level', function() {
-      return expect(gh.mkdir({token: 'token'}, 'a/test/folder')).to.be.rejectedWith('User account login is not set');
+      return expect(gh.mkdir({token: 'token good_token'}, 'a/test/folder'))
+        .to.be.rejectedWith('User account login is not set');
     });
 
     it('create a folder if path has more than two level', function() {
-      return expect(gh.mkdir({token: 'token', account: {login: 'login'}}, 'a/test/folder')).to.be.fulfilled;
+      return expect(gh.mkdir({token: 'token good_token', account: {login: 'login'}}, 'a/test/folder')).to.be.fulfilled;
     });
   });
 });
