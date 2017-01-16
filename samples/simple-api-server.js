@@ -4,6 +4,8 @@
  * https://github.com/silexlabs/unifile/
  * license: GPL v2
  */
+
+const PassThrough = require('stream').PassThrough;
 // node modules
 const express = require('express');
 const app = express();
@@ -149,9 +151,11 @@ app.delete(/\/(.*)\/rmdir\/(.*)/, function(req, res) {
 });
 
 app.post(/\/(.*)\/cp\/(.*)/, function(req, res) {
-  var read = unifile.createReadStream(req.session.unifile, req.params[0], req.params[1]);
-  var write = unifile.createWriteStream(req.session.unifile, req.params[0], req.body.destination);
-  read.pipe(write).pipe(res);
+  unifile.createReadStream(req.session.unifile, req.params[0], req.params[1])
+  // Use PassThrough to prevent request from copying headers between requests
+  .pipe(new PassThrough())
+  .pipe(unifile.createWriteStream(req.session.unifile, req.params[0], req.body.destination))
+  .pipe(res);
 });
 
 // register callback url
