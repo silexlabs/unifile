@@ -37,7 +37,7 @@ $ npm install unifile --save
 
 Unifile use an API similar to the native `fs` module but with Bluebird Promises instead of callbacks.
 
-You can find the all API documentation on the [project page](https://silexlabs.github.io/unifile/).
+You can find the whole API documentation on the [project page](https://silexlabs.github.io/unifile/).
 
 ## With Express
 
