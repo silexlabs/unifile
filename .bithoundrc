@@ -1,0 +1,13 @@
+{
+  "ignore": [
+    "**/node_modules/**",
+    "**/docs/**"
+  ],
+  "test": [
+    "**/test/**",
+  "**/samples/**"
+  ],
+  "critics": {
+    "wc": { "limit": 500 }
+  }
+}
