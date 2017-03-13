@@ -62,7 +62,7 @@
   },
   "scripts": {
     "test": "mocha test/ -R nyan",
-    "lint": "eslint lib test samples",
+    "lint": "eslint lib test samples --ignore-pattern node_modules",
     "lint:fix": "eslint lib test samples --fix",
     "watch:test": "mocha -wd test/",
     "cover": "istanbul cover _mocha -- -R landing",

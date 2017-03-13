@@ -107,7 +107,6 @@ app.put(/\/(.*)\/mkdir\/(.*)/, function(req, res) {
 app.put(/\/(.*)\/put\/(.*)/, function(req, res) {
   unifile.writeFile(req.session.unifile, req.params[0], req.params[1], req.body.content)
   .then(function(result) {
-    console.log('res', result);
     res.send(result);
   })
   .catch(function(err) {
@@ -161,10 +160,10 @@ app.delete(/\/(.*)\/rmdir\/(.*)/, function(req, res) {
 });
 
 app.post(/\/(.*)\/cp\/(.*)/, function(req, res) {
-  unifile.createReadStream(req.session.unifile, req.params[0], req.params[1])
+  let stream = unifile.createReadStream(req.session.unifile, req.params[0], req.params[1]);
   // Use PassThrough to prevent request from copying headers between requests
-  .pipe(new PassThrough())
-  .pipe(unifile.createWriteStream(req.session.unifile, req.params[0], req.body.destination))
+  if(req.params[0] != 'webdav') stream = stream.pipe(new PassThrough());
+  stream.pipe(unifile.createWriteStream(req.session.unifile, req.params[0], req.body.destination))
   .pipe(res);
 });
 
@@ -197,7 +196,7 @@ app.get('/webdav/signin', function(req, res) {
 });
 
 // server 'loop'
-var port = process.env.PORT || 6805; // 6805 is the date of sexual revolution started in paris france 8-)
+const port = process.env.PORT || 6805; // 6805 is the date of sexual revolution started in paris france 8-)
 app.listen(port, function() {
   console.log('Listening on ' + port);
 });
