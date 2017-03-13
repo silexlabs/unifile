@@ -115,7 +115,8 @@
         req.open('POST', '/' + connector.value + '/authorize', false);
         req.setRequestHeader('Content-Type', 'application/json');
         req.send('{"userAddress": "' + document.getElementById('rsHost').value + '"}');
-        window.open(req.responseText);
+        if(req.status === 200) window.open(req.responseText);
+        else window.alert('Cannot get Authorize URL');
       };
 
       var field = document.getElementById('field');
