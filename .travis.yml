@@ -1,5 +1,19 @@
 language: node_js
 node_js:
-  - "0.10"
-before_script:
-  - npm install -g grunt@0.3.17
+  - "6"
+env:
+    - CXX=g++-4.8
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.8
+install:
+  - npm install
+script:
+  - npm test
+  - npm run lint
+  - npm run cover && npm run cover:check
+after_script:
+  - npm run cover:export
