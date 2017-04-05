@@ -3,4 +3,4 @@ docs
 jsdoc.json
 samples
 test
-
+.*

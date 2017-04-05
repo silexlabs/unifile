@@ -50,7 +50,6 @@
     "npm": "^3.9.5"
   },
   "scripts": {
-    "postinstall": "cd node_modules/iconv; node-gyp rebuild",
     "test": "mocha test/ -R nyan",
     "lint": "eslint lib test samples --ignore-pattern node_modules",
     "lint:fix": "eslint lib test samples --fix",
