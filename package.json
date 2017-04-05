@@ -2,19 +2,9 @@
   "name": "unifile",
   "description": "Library to provide a unified API for cloud storage services. ",
   "version": "1.0.0",
+  "author": "Jean-Baptiste Richardet <jeanbaptiste.richardet@gmail.com> (https://github.com/JbIPS)",
   "contributors": [
-    {
-      "name": "@lexoyo"
-    },
-    {
-      "name": "@JbIPS"
-    },
-    {
-      "name": "@zabojad"
-    },
-    {
-      "name": "@tfeserver"
-    }
+    "Alex Hoyau <a.hoyau@silexlabs.org> (https://lexoyo.me/)"
   ],
   "dependencies": {
     "bluebird": "^3.0.5",
@@ -42,18 +32,18 @@
   },
   "keywords": [
     "cloud",
-    "cms",
-    "rest",
     "dropbox",
-    "google-drive",
     "github",
     "storage",
-    "filepicker",
-    "api"
+    "webdav",
+    "remotestorage",
+    "ftp"
   ],
   "main": "./lib/index.js",
   "directories": {
-    "lib": "./lib"
+    "lib": "./lib",
+    "test": "./test",
+    "example": "./samples"
   },
   "license": "MIT",
   "engines": {
@@ -61,6 +51,7 @@
     "npm": "^3.9.5"
   },
   "scripts": {
+    "postinstall": "cd node_modules/iconv; node-gyp rebuild",
     "test": "mocha test/ -R nyan",
     "lint": "eslint lib test samples --ignore-pattern node_modules",
     "lint:fix": "eslint lib test samples --fix",
@@ -71,8 +62,8 @@
     "gen:docs": "jsdoc -c jsdoc.json",
     "preversion": "npm test && npm run lint && npm run gen:docs"
   },
-  "readmeFilename": "README.md",
   "bugs": {
     "url": "https://github.com/silexlabs/unifile/issues"
-  }
+  },
+  "homepage": "https://github.com/silexlabs/unifile"
 }
