@@ -8,7 +8,6 @@
   ],
   "dependencies": {
     "bluebird": "^3.0.5",
-    "chai-as-promised": "^6.0.0",
     "ftp": "^0.3.10",
     "mime": "^1.3.4",
     "request": "^2.72.0",
@@ -51,7 +50,6 @@
     "npm": "^3.9.5"
   },
   "scripts": {
-    "postinstall": "cd node_modules/iconv; node-gyp rebuild",
     "test": "mocha test/ -R nyan",
     "lint": "eslint lib test samples --ignore-pattern node_modules",
     "lint:fix": "eslint lib test samples --fix",
