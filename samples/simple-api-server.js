@@ -188,15 +188,19 @@ app.post(/\/(.*)\/batch\/(.*)/, function(req, res) {
 
 // register callback url
 app.get('/:connector/oauth-callback', function(req, res) {
-  unifile.login(req.session.unifile, req.params.connector, req.query)
-  .then(function(result) {
-    res.cookie('unifile_' + req.params.connector, result);
-    res.end('<script>window.close();</script>');
-  })
-  .catch(function(err) {
-    console.error('ERROR', err);
-    res.status(500).send(err);
-  });
+  if('error' in req.query) {
+    res.status(500).send(req.query);
+  } else {
+    unifile.login(req.session.unifile, req.params.connector, req.query)
+    .then(function(result) {
+      res.cookie('unifile_' + req.params.connector, result);
+      res.end('<script>window.close();</script>');
+    })
+    .catch(function(err) {
+      console.error('ERROR', err);
+      res.status(500).send(err);
+    });
+  }
 });
 
 app.get('/remotestorage/callback', function(req, res) {

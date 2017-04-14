@@ -154,6 +154,7 @@ describe('GitHub connector', function() {
       expect(gh.name).to.equal('github');
       expect(gh.serviceHost).to.equal('github.com');
       expect(gh.oauthCallbackUrl).to.equal('https://github.com/login/oauth');
+      expect(gh.redirectUri).to.equal(null);
     });
 
     it('returns a new instance with defaults overriden if provided', function() {
@@ -161,7 +162,8 @@ describe('GitHub connector', function() {
         clientId: 'a',
         clientSecret: 'a',
         name: 'ghtest',
-        serviceHost: 'localhost'
+        serviceHost: 'localhost',
+        redirectUri: 'http://localhost:3000/test'
       });
       expect(gh).to.be.an.instanceof(GitHubConnector);
       expect(gh.clientId).to.equal('a');
@@ -169,6 +171,7 @@ describe('GitHub connector', function() {
       expect(gh.name).to.equal('ghtest');
       expect(gh.serviceHost).to.equal('localhost');
       expect(gh.oauthCallbackUrl).to.equal('https://localhost/login/oauth');
+      expect(gh.redirectUri).to.equal('http://localhost:3000/test');
     });
   });
 
