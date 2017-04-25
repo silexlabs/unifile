@@ -26,6 +26,7 @@ const DropboxConnector = require('../lib/unifile-dropbox.js');
 const FtpConnector = require('../lib/unifile-ftp.js');
 const RSConnector = require('../lib/unifile-remoteStorage.js');
 const WebDavConnector = require('../lib/unifile-webdav.js');
+const FsConnector = require('../lib/unifile-fs.js');
 
 // Configure connectors
 const ghconnector = new GitHubConnector({
@@ -40,6 +41,7 @@ const dbxconnector = new DropboxConnector({
 const ftpconnector = new FtpConnector({redirectUri: 'http://localhost:6805/ftp/signin'});
 const wdconnector = new WebDavConnector({redirectUri: 'http://localhost:6805/webdav/signin'});
 const rsconnector = new RSConnector({redirectUri: 'http://localhost:6805/remotestorage/callback'});
+const fsconnector = new FsConnector({showHiddenFile: true});
 
 // Register connectors
 unifile.use(ghconnector);
@@ -47,6 +49,7 @@ unifile.use(dbxconnector);
 unifile.use(ftpconnector);
 unifile.use(rsconnector);
 unifile.use(wdconnector);
+unifile.use(fsconnector);
 
 // Expose connector methods
 app.post('/:connector/authorize', function(req, res) {
@@ -162,9 +165,11 @@ app.delete(/\/(.*)\/rmdir\/(.*)/, function(req, res) {
 app.post(/\/(.*)\/cp\/(.*)/, function(req, res) {
   let stream = unifile.createReadStream(req.session.unifile, req.params[0], req.params[1]);
   // Use PassThrough to prevent request from copying headers between requests
-  if(req.params[0] != 'webdav') stream = stream.pipe(new PassThrough());
+  if(req.params[0] != 'webdav' && req.params[0] != 'fs') stream = stream.pipe(new PassThrough());
   stream.pipe(unifile.createWriteStream(req.session.unifile, req.params[0], req.body.destination))
-  .pipe(res);
+  .on('finish', () => {
+    res.status(200).send('OK');
+  });
 });
 
 // register callback url

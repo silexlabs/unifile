@@ -11,7 +11,7 @@ Currently supported services
 * GitHub: use git as a cloud with repository and branches as folder
 * [RemoteStorage](https://remotestorage.io/)
 * WebDAV
-
+* Local filesystem (might be useful to copy from your drive to your cloud)
 
 # Motivation
 

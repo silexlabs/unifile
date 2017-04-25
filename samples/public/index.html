@@ -18,6 +18,7 @@
       <option value="ftp">FTP</option>
       <option value="remotestorage">RemoteStorage</option>
       <option value="webdav" selected>WebDAV</option>
+      <option value="fs" selected>Local</option>
     </select>
   <button type="button" id="authButton" class="btn btn-primary">Log in</button>
   <label for="rsHost">rsHost</label><input type="text/submit/hidden/button" id="rsHost" name="rsHost" placeholder="me@remotestorage.io" id="rsHost">
@@ -139,7 +140,6 @@
         else if(Array.isArray(res))
           return res.map(item => item.name).join('\n');
         else if(typeof res === 'object'){
-          console.log('json');
           return JSON.toString(res);
         }
         else{
