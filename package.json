@@ -38,11 +38,14 @@
     "remotestorage",
     "ftp"
   ],
-  "main": "./lib/index.js",
+  "main": "lib/index.js",
+  "files": [
+    "lib/"
+  ],
   "directories": {
-    "lib": "./lib",
-    "test": "./test",
-    "example": "./samples"
+    "lib": "lib",
+    "test": "test",
+    "example": "samples"
   },
   "license": "MIT",
   "engines": {
