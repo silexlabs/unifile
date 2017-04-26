@@ -82,26 +82,26 @@ describe('Unifile class', function() {
     });
 
     it('throws an error if connectorName is undefined', function() {
-      const fn = function() { unifile.getInfos();};
+      const fn = function() { unifile.getInfos({});};
       expect(fn).to.throw(/You should specify a connector name!/);
     });
 
     it('throws an error if connectorName is not registered', function() {
-      const fn = function() { unifile.getInfos('test');};
+      const fn = function() { unifile.getInfos({}, 'test');};
       expect(fn).to.throw('Unknown connector');
     });
 
     it('throws an error if connector does not implement it', function() {
       const connector = {name: 'test'};
       unifile.use(connector);
-      const fn = function() { unifile.getInfos(connector.name); };
+      const fn = function() { unifile.getInfos({}, connector.name); };
       expect(fn).to.throw('This connector does not implement');
     });
 
     it('returns an infos object', function() {
-      const connector = {name: 'test', getInfos: function() {return {name: this.name};}};
+      const connector = {name: 'test', getInfos: function(session) {return {name: this.name};}};
       unifile.use(connector);
-      const infos = unifile.getInfos(connector.name);
+      const infos = unifile.getInfos({}, connector.name);
       expect(infos).to.be.an.instanceof(Object);
       expect(infos.name).to.equal('test');
     });
