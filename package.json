@@ -1,7 +1,7 @@
 {
   "name": "unifile",
   "description": "Express middleware to provide a common API for cloud storage services. ",
-  "version": "0.0.60",
+  "version": "0.0.61",
   "contributors": [
     {
       "name": "@lexoyo"
@@ -27,7 +27,6 @@
     "mime": "~1.2.11",
     "path": "~0.4.9",
     "request": "^2.53.0",
-    "sqlite3": "^3.1.0",
     "unorm": "~1.3.3",
     "xml2js": "^0.4.16"
   },
