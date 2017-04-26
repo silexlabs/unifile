@@ -4,6 +4,8 @@
 
 Nodejs library to access cloud storage services with a common API.
 
+[![NPM](https://nodei.co/npm/unifile.png)](https://npmjs.org/package/unifile)
+
 Currently supported services
 
 * FTP
