@@ -3,21 +3,10 @@
   "description": "Example of an unifile integration with Express",
   "version": "0.0.1",
   "dependencies": {
-    "bluebird": "^3.0.5",
     "body-parser": "^1.15.2",
     "cookie-parser": "^1.4.3",
-    "dropbox": "^2.0.0",
     "express": "^4.0.0",
-    "express-session": "^1.13.0",
-    "ftp": "^0.3.10",
-    "remotestoragejs": "^0.12.1",
-    "request": "^2.72.0",
-    "serve-static": "^1.11.1",
-    "webfinger.js": "^2.4.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/silexlabs/unifile.git"
+    "express-session": "^1.13.0"
   },
   "main": "simple-api-server.js",
   "license": "MIT",

@@ -21,27 +21,21 @@ app.use(session({
   saveUninitialized: false
 }));
 
-const GitHubConnector = require('../lib/unifile-github.js');
-const DropboxConnector = require('../lib/unifile-dropbox.js');
-const FtpConnector = require('../lib/unifile-ftp.js');
-const RSConnector = require('../lib/unifile-remoteStorage.js');
-const WebDavConnector = require('../lib/unifile-webdav.js');
-const FsConnector = require('../lib/unifile-fs.js');
-
 // Configure connectors
-const ghconnector = new GitHubConnector({
+const ghconnector = new Unifile.GitHubConnector({
   clientId: 'b4e46028bf36d871f68d',
   clientSecret: 'c39806c4d0906cfeaac932012996a1919475cc78'
 });
-const dbxconnector = new DropboxConnector({
+const dbxconnector = new Unifile.DropboxConnector({
   clientId: '37mo489tld3rdi2',
   clientSecret: 'kqfzd11vamre6xr',
   redirectUri: 'http://localhost:6805/dropbox/oauth-callback'
 });
-const ftpconnector = new FtpConnector({redirectUri: 'http://localhost:6805/ftp/signin'});
-const wdconnector = new WebDavConnector({redirectUri: 'http://localhost:6805/webdav/signin'});
-const rsconnector = new RSConnector({redirectUri: 'http://localhost:6805/remotestorage/callback'});
-const fsconnector = new FsConnector({showHiddenFile: true});
+const ftpconnector = new Unifile.FtpConnector({redirectUri: 'http://localhost:6805/ftp/signin'});
+const wdconnector = new Unifile.WebDavConnector({redirectUri: 'http://localhost:6805/webdav/signin'});
+const rsconnector = new Unifile.RemoteStorageConnector({redirectUri: 'http://localhost:6805/remotestorage/callback'});
+const fsconnector = new Unifile.FsConnector({showHiddenFile: true});
+const sftpconnector = new Unifile.SftpConnector({redirectUri: 'http://localhost:6805/sftp/signin'});
 
 // Register connectors
 unifile.use(ghconnector);
@@ -50,6 +44,7 @@ unifile.use(ftpconnector);
 unifile.use(rsconnector);
 unifile.use(wdconnector);
 unifile.use(fsconnector);
+unifile.use(sftpconnector);
 
 // Expose connector methods
 app.post('/:connector/authorize', function(req, res) {
@@ -172,6 +167,25 @@ app.post(/\/(.*)\/cp\/(.*)/, function(req, res) {
   });
 });
 
+app.post(/\/(.*)\/batch\/(.*)/, function(req, res) {
+  const path = req.params[1];
+  const batch = [
+    {name: 'mkdir', path: path},
+    {name: 'writeFile', path: path + '/test.txt', content: 'Hello world'},
+    {name: 'rename', path: path + '/test.txt', destination: path + '/test2.txt'},
+    {name: 'unlink', path: path + '/test2.txt'},
+    {name: 'rmdir', path: path}
+  ];
+  unifile.batch(req.session.unifile, req.params[0], batch)
+  .then((result) => {
+    res.send(result);
+  })
+  .catch((err) => {
+    console.error(err);
+    res.status(400).send(err);
+  });
+});
+
 // register callback url
 app.get('/:connector/oauth-callback', function(req, res) {
   unifile.login(req.session.unifile, req.params.connector, req.query)
@@ -192,12 +206,8 @@ app.get('/remotestorage/callback', function(req, res) {
     '</script>');
 });
 
-app.get('/ftp/signin', function(req, res) {
-  res.sendFile(Path.join(__dirname, 'public', 'ftp_login.html'));
-});
-
-app.get('/webdav/signin', function(req, res) {
-  res.sendFile(Path.join(__dirname, 'public', 'webdav_login.html'));
+app.get('/:connector/signin', function(req, res) {
+  res.sendFile(Path.join(__dirname, 'public', req.params.connector + '_login.html'));
 });
 
 // server 'loop'

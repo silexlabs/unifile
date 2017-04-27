@@ -19,6 +19,7 @@
       <option value="remotestorage">RemoteStorage</option>
       <option value="webdav" selected>WebDAV</option>
       <option value="fs" selected>Local</option>
+      <option value="sftp" selected>SFTP</option>
     </select>
   <button type="button" id="authButton" class="btn btn-primary">Log in</button>
   <label for="rsHost">rsHost</label><input type="text/submit/hidden/button" id="rsHost" name="rsHost" placeholder="me@remotestorage.io" id="rsHost">
@@ -101,6 +102,16 @@
         <input id="cpdestination" type="text" class="form-control" placeholder="Destination...">
         <span class="input-group-btn">
           <button class="btn btn-default" style="padding: 24px 12px;" type="button">Copy</button>
+        </span>
+      </div><!-- /input-group -->
+    </div><!-- /.col-lg-6 -->
+  </div><!-- /.row -->
+  <div class="row">
+    <div class="col-lg-3">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Path...">
+        <span class="input-group-btn">
+          <button class="btn btn-default" type="button">Batch run</button>
         </span>
       </div><!-- /input-group -->
     </div><!-- /.col-lg-6 -->
@@ -201,6 +212,10 @@
             req.send(JSON.stringify({"destination": dest}));
             var result = JSON.parse(req.response);
             res.textContent = formatRes(result);
+            break;
+          case 'Batch run':
+            var result = request('POST', '/' + connector.value + '/batch/' + path);
+            res.textContent = result;
             break;
         }
       }

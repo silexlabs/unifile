@@ -9,6 +9,7 @@ Nodejs library to access cloud storage services with a common API.
 Currently supported services
 
 * FTP
+* SFTP
 * Dropbox
 * GitHub: use git as a cloud with repository and branches as folder
 * [RemoteStorage](https://remotestorage.io/)
@@ -78,13 +79,13 @@ Unifile is built on modularity, meaning you can create a connector to a service 
 
 Here is a list of services which could be useful
 
-* owncloud, cozy cloud, BTSync
-* Box, SkyDrive, RapidShare, CloudMine, FilesAnywhere
-* Amazon S3 and WebDav
+* Google Drive
+* Amazon S3
+* CozyCloud, BTSync
+* SkyDrive, RapidShare, CloudMine, FilesAnywhere
 * SugarSync
-* Google drive if not too slow
-* Facebook if possibe?
-* a random list of other cloud storage services: Amazon Cloud Drive, Amazon S3, Bitcasa, Box, DollyDrive, iCloud Drive, Microsoft OneDrive, SpiderOak, SugarSync, Wuala
+* Facebook (if possibe?)
+* a random list of other cloud storage services: Amazon Cloud Drive, Bitcasa, Box, DollyDrive, iCloud Drive, Microsoft OneDrive, SpiderOak, SugarSync, Wuala
 
 ## Roadmap
 
