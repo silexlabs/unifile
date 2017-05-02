@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Fixed
 - `.getInfos()` now correctly get the session
 - Takes GitHub `redirectUri` into account for OAuth requests
+- Fix Dropbox batch operation
+
+### Changed
+- Dropbox is now more tolerant with the path (first `/` is optional)
 
 ## [1.1.0] - 2017-04-26
 ### Added

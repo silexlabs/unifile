@@ -160,11 +160,9 @@ app.delete(/\/(.*)\/rmdir\/(.*)/, function(req, res) {
 app.post(/\/(.*)\/cp\/(.*)/, function(req, res) {
   let stream = unifile.createReadStream(req.session.unifile, req.params[0], req.params[1]);
   // Use PassThrough to prevent request from copying headers between requests
-  if(req.params[0] != 'webdav' && req.params[0] != 'fs') stream = stream.pipe(new PassThrough());
+  if(req.params[0] !== 'webdav' && req.params[0] !== 'fs') stream = stream.pipe(new PassThrough());
   stream.pipe(unifile.createWriteStream(req.session.unifile, req.params[0], req.body.destination))
-  .on('finish', () => {
-    res.status(200).send('OK');
-  });
+  .pipe(res);
 });
 
 app.post(/\/(.*)\/batch\/(.*)/, function(req, res) {
@@ -172,7 +170,8 @@ app.post(/\/(.*)\/batch\/(.*)/, function(req, res) {
   const batch = [
     {name: 'mkdir', path: path},
     {name: 'writeFile', path: path + '/test.txt', content: 'Hello world'},
-    {name: 'rename', path: path + '/test.txt', destination: path + '/test2.txt'},
+    {name: 'writeFile', path: path + '/test2.txt', content: 'Hello world too'},
+    {name: 'rename', path: path + '/test.txt', destination: path + '/test_old.txt'},
     {name: 'unlink', path: path + '/test2.txt'},
     {name: 'rmdir', path: path}
   ];
