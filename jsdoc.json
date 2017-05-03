@@ -3,7 +3,7 @@
         "allowUnknownTags": false
     },
     "source": {
-        "include": "lib/index.js",
+        "include": "lib",
         "includePattern": ".+\\.js$",
         "excludePattern": "(node_modules/|docs)"
     },
