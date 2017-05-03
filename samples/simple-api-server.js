@@ -185,6 +185,16 @@ app.post(/\/(.*)\/batch\/(.*)/, function(req, res) {
   });
 });
 
+app.get(/\/(.*)\/stat\/(.*)/, function(req, res) {
+  unifile.stat(req.session.unifile, req.params[0], req.params[1])
+  .then((result) => {
+    res.send(result);
+  })
+  .catch((err) => {
+    res.status(400).send(err.message);
+  });
+});
+
 // register callback url
 app.get('/:connector/oauth-callback', function(req, res) {
   if('error' in req.query) {

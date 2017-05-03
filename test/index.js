@@ -300,9 +300,9 @@ describe('Unifile class', function() {
     });
 
     it('returns a rejected promise if user is not authenticated', function() {
-      const connector = {name: 'test', readdir: function() {return new Promise.resolve();}, getInfos: notLoggedInfos};
+      const connector = {name: 'test', mkdir: function() {return new Promise.resolve();}, getInfos: notLoggedInfos};
       unifile.use(connector);
-      unifile.readdir({}, connector.name)
+      return unifile.mkdir({}, connector.name)
       // Should fail and go to catch
       .then(() => expect(false).to.be.true)
       .catch((e) => {
@@ -336,9 +336,9 @@ describe('Unifile class', function() {
     });
 
     it('returns a rejected promise if user is not authenticated', function() {
-      const connector = {name: 'test', readdir: function() {return new Promise.resolve();}, getInfos: notLoggedInfos};
+      const connector = {name: 'test', writeFile: function() {return new Promise.resolve();}, getInfos: notLoggedInfos};
       unifile.use(connector);
-      unifile.readdir({}, connector.name)
+      return unifile.writeFile({}, connector.name)
       // Should fail and go to catch
       .then(() => expect(false).to.be.true)
       .catch((e) => {
@@ -372,9 +372,9 @@ describe('Unifile class', function() {
     });
 
     it('returns a rejected promise if user is not authenticated', function() {
-      const connector = {name: 'test', readdir: function() {return new Promise.resolve();}, getInfos: notLoggedInfos};
+      const connector = {name: 'test', createWriteStream: function() {return ;}, getInfos: notLoggedInfos};
       unifile.use(connector);
-      unifile.readdir({}, connector.name)
+      return unifile.createWriteStream({}, connector.name)
       // Should fail and go to catch
       .then(() => expect(false).to.be.true)
       .catch((e) => {
@@ -413,9 +413,45 @@ describe('Unifile class', function() {
     });
 
     it('returns a rejected promise if user is not authenticated', function() {
-      const connector = {name: 'test', readdir: function() {return new Promise.resolve();}, getInfos: notLoggedInfos};
+      const connector = {name: 'test', readFile: function() {return new Promise.resolve();}, getInfos: notLoggedInfos};
       unifile.use(connector);
-      unifile.readdir({}, connector.name)
+      return unifile.readFile({}, connector.name)
+      // Should fail and go to catch
+      .then(() => expect(false).to.be.true)
+      .catch((e) => {
+        expect(e).to.have.string('User not logged in yet');
+      });
+    });
+
+    it('returns a promise of the writeFilefunction of the connector', function() {
+      const connector = {name: 'test', readFile: function() {return new Promise.resolve();}, getInfos: loggedInfos};
+      unifile.use(connector);
+      expect(unifile.readFile({[connector.name]: {token: 'a'}}, connector.name)).to.be.an.instanceof(Promise);
+    });
+  });
+
+  describe('stat()', function() {
+    var unifile;
+    beforeEach('Instanciation', function() {
+      unifile = new Unifile();
+    });
+
+    it('throws an error if connectorName is undefined', function() {
+      const fn = function() { unifile.stat({});};
+      expect(fn).to.throw(/You should specify a connector name!/);
+    });
+
+    it('throws an error if connector does not implement it', function() {
+      const connector = {name: 'test'};
+      unifile.use(connector);
+      const fn = function() { unifile.stat({}, connector.name); };
+      expect(fn).to.throw('This connector does not implement');
+    });
+
+    it('returns a rejected promise if user is not authenticated', function() {
+      const connector = {name: 'test', stat: function() {return new Promise.resolve();}, getInfos: notLoggedInfos};
+      unifile.use(connector);
+      return unifile.stat({}, connector.name)
       // Should fail and go to catch
       .then(() => expect(false).to.be.true)
       .catch((e) => {
@@ -449,12 +485,13 @@ describe('Unifile class', function() {
     });
 
     it('returns a rejected promise if user is not authenticated', function() {
-      const connector = {name: 'test', readdir: function() {return new Promise.resolve();}, getInfos: notLoggedInfos};
+      const connector = {name: 'test', createReadStream: function() {return ;}, getInfos: notLoggedInfos};
       unifile.use(connector);
-      unifile.readdir({}, connector.name)
+      return unifile.createReadStream({}, connector.name)
       // Should fail and go to catch
       .then(() => expect(false).to.be.true)
       .catch((e) => {
+
         expect(e).to.have.string('User not logged in yet');
       });
     });
@@ -486,9 +523,9 @@ describe('Unifile class', function() {
     });
 
     it('returns a rejected promise if user is not authenticated', function() {
-      const connector = {name: 'test', readdir: function() {return new Promise.resolve();}, getInfos: notLoggedInfos};
+      const connector = {name: 'test', rename: function() {return new Promise.resolve();}, getInfos: notLoggedInfos};
       unifile.use(connector);
-      unifile.readdir({}, connector.name)
+      return unifile.rename({}, connector.name)
       // Should fail and go to catch
       .then(() => expect(false).to.be.true)
       .catch((e) => {
@@ -522,9 +559,9 @@ describe('Unifile class', function() {
     });
 
     it('returns a rejected promise if user is not authenticated', function() {
-      const connector = {name: 'test', readdir: function() {return new Promise.resolve();}, getInfos: notLoggedInfos};
+      const connector = {name: 'test', unlink: function() {return new Promise.resolve();}, getInfos: notLoggedInfos};
       unifile.use(connector);
-      unifile.readdir({}, connector.name)
+      return unifile.unlink({}, connector.name)
       // Should fail and go to catch
       .then(() => expect(false).to.be.true)
       .catch((e) => {
@@ -558,9 +595,9 @@ describe('Unifile class', function() {
     });
 
     it('returns a rejected promise if user is not authenticated', function() {
-      const connector = {name: 'test', readdir: function() {return new Promise.resolve();}, getInfos: notLoggedInfos};
+      const connector = {name: 'test', rmdir: function() {return new Promise.resolve();}, getInfos: notLoggedInfos};
       unifile.use(connector);
-      unifile.readdir({}, connector.name)
+      return unifile.rmdir({}, connector.name)
       // Should fail and go to catch
       .then(() => expect(false).to.be.true)
       .catch((e) => {
@@ -594,9 +631,9 @@ describe('Unifile class', function() {
     });
 
     it('returns a rejected promise if user is not authenticated', function() {
-      const connector = {name: 'test', readdir: function() {return new Promise.resolve();}, getInfos: notLoggedInfos};
+      const connector = {name: 'test', batch: function() {return new Promise.resolve();}, getInfos: notLoggedInfos};
       unifile.use(connector);
-      unifile.readdir({}, connector.name)
+      return unifile.batch({}, connector.name)
       // Should fail and go to catch
       .then(() => expect(false).to.be.true)
       .catch((e) => {

@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ## [Unreleased]
 ### Addded
 - SFTP support
+- `.stat()` method that return information abouth the given path
 
 ### Fixed
 - `.getInfos()` now correctly get the session

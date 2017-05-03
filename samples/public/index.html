@@ -116,6 +116,16 @@
       </div><!-- /input-group -->
     </div><!-- /.col-lg-6 -->
   </div><!-- /.row -->
+  <div class="row">
+    <div class="col-lg-3">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Path...">
+        <span class="input-group-btn">
+          <button class="btn btn-default" type="button">Stat</button>
+        </span>
+      </div><!-- /input-group -->
+    </div><!-- /.col-lg-6 -->
+  </div><!-- /.row -->
     <h3>Result</h3>
     <p id='result'></p>
     <script type="text/javascript" charset="utf-8">
@@ -151,7 +161,11 @@
         else if(Array.isArray(res))
           return res.map(item => item.name).join('\n');
         else if(typeof res === 'object'){
-          return JSON.toString(res);
+          var fields = [];
+          for(key in res) {
+            fields.push(key + ': ' + res[key]);
+          }
+          return '{' + fields.join(', ') + '}';
         }
         else{
           return res;
@@ -181,7 +195,7 @@
             break;
           case 'Get':
             var result = request('GET', '/' + connector.value + '/get/' + path);
-            res.textContent = result;
+            res.textContent = formatRes(result);
             break;
           case 'Move':
             var dest = document.getElementById('destination').value;
@@ -196,11 +210,11 @@
             break;
           case 'Remove':
             var result = request('DELETE', '/' + connector.value + '/rm/' + path);
-            res.textContent = result;
+            res.textContent = formatRes(result);
             break;
           case 'Remove dir':
             var result = request('DELETE', '/' + connector.value + '/rmdir/' + path);
-            res.textContent = result;
+            res.textContent = formatRes(result);
             break;
           case 'Copy':
             var dest = document.getElementById('cpdestination').value;
@@ -215,7 +229,11 @@
             break;
           case 'Batch run':
             var result = request('POST', '/' + connector.value + '/batch/' + path);
-            res.textContent = result;
+            res.textContent = formatRes(result);
+            break;
+          case 'Stat':
+            var result = request('GET', '/' + connector.value + '/stat/' + path);
+            res.textContent = formatRes(result);
             break;
         }
       }

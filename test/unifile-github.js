@@ -321,14 +321,14 @@ describe('GitHub connector', function() {
         expect(repos.length).to.equal(2);
         expect(repos[0]).to.deep.equal({
           size: 1,
-          modified: '2016-09-20T18:15:59.000Z',
+          modified: '2016-09-20T18:15:59Z',
           name: 'repo1',
           isDir: true,
           mime: 'application/git-repo'
         });
         expect(repos[1]).to.deep.equal({
           size: 2,
-          modified: '2016-09-20T18:16:59.000Z',
+          modified: '2016-09-20T18:16:59Z',
           name: 'repo2',
           isDir: true,
           mime: 'application/git-repo'
@@ -342,23 +342,19 @@ describe('GitHub connector', function() {
         expect(repos.length).to.equal(2);
         expect(repos[0]).to.deep.equal({
           size: 1,
-          modified: '2016-09-20T18:15:59.000Z',
+          modified: '2016-09-20T18:15:59Z',
           name: 'repo1',
           isDir: true,
           mime: 'application/git-repo'
         });
         expect(repos[1]).to.deep.equal({
           size: 2,
-          modified: '2016-09-20T18:16:59.000Z',
+          modified: '2016-09-20T18:16:59Z',
           name: 'repo2',
           isDir: true,
           mime: 'application/git-repo'
         });
       });
-    });
-
-    it('fails if account is not set and path has one level', function() {
-      return expect(gh.readdir({token: 'token good_token'}, 'a')).to.be.rejectedWith('User account login is not set');
     });
 
     it('returns a list of branch when path has only one level', function() {
@@ -367,14 +363,14 @@ describe('GitHub connector', function() {
         expect(branches.length).to.equal(2);
         expect(branches[0]).to.deep.equal({
           size: 'N/A',
-          modified: '2016-09-20T18:35:32.000Z',
+          modified: '2016-09-20T18:35:32Z',
           name: 'master',
           isDir: true,
           mime: 'application/git-branch'
         });
         expect(branches[1]).to.deep.equal({
           size: 'N/A',
-          modified: '2016-09-20T18:35:32.000Z',
+          modified: '2016-09-20T18:35:32Z',
           name: 'develop',
           isDir: true,
           mime: 'application/git-branch'
@@ -388,14 +384,14 @@ describe('GitHub connector', function() {
         expect(branches.length).to.equal(4);
         expect(branches[0]).to.deep.equal({
           size: 'N/A',
-          modified: '2016-09-20T18:35:32.000Z',
+          modified: '2016-09-20T18:35:32Z',
           name: 'master',
           isDir: true,
           mime: 'application/git-branch'
         });
         expect(branches[1]).to.deep.equal({
           size: 'N/A',
-          modified: '2016-09-20T18:35:32.000Z',
+          modified: '2016-09-20T18:35:32Z',
           name: 'develop',
           isDir: true,
           mime: 'application/git-branch'
@@ -409,14 +405,14 @@ describe('GitHub connector', function() {
         expect(commits.length).to.equal(2);
         expect(commits[0]).to.deep.equal({
           size: 3,
-          modified: '2016-09-20T18:35:32.000Z',
+          modified: '2016-09-20T18:35:32Z',
           name: 'ping.gif',
           isDir: false,
           mime: 'image/gif'
         });
         expect(commits[1]).to.deep.equal({
           size: 0,
-          modified: '2016-09-20T18:35:32.000Z',
+          modified: '2016-09-20T18:35:32Z',
           name: 'folder',
           isDir: true,
           mime: 'application/directory'
