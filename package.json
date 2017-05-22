@@ -61,11 +61,11 @@
     "cover": "istanbul cover _mocha -- -R landing",
     "cover:check": "istanbul check-coverage",
     "cover:export": "cat ./coverage/lcov.info | codacy-coverage",
-    "gen:docs": "jsdoc -c jsdoc.json",
+    "gen:docs": "jsdoc -R README.md -c jsdoc.json",
     "preversion": "npm test && npm run lint && npm run gen:docs"
   },
   "bugs": {
     "url": "https://github.com/silexlabs/unifile/issues"
   },
-  "homepage": "https://github.com/silexlabs/unifile"
+  "homepage": "http://projects.silexlabs.org/unifile/"
 }

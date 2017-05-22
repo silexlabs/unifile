@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Changed
 - Dropbox is now more tolerant with the path (first `/` is optional)
 - Include connector documentation to the global one
+- Include README in documentation
 
 ## [1.1.0] - 2017-04-26
 ### Added

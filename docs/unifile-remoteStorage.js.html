@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>unifile-remoteStorage.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Unifile.html">Unifile</a><ul class='methods'><li data-type='method'><a href="Unifile.html#use">use</a></li><li data-type='method'><a href="Unifile.html#getInfos">getInfos</a></li><li data-type='method'><a href="Unifile.html#listConnectors">listConnectors</a></li><li data-type='method'><a href="Unifile.html#login">login</a></li><li data-type='method'><a href="Unifile.html#setAccessToken">setAccessToken</a></li><li data-type='method'><a href="Unifile.html#clearAccessToken">clearAccessToken</a></li><li data-type='method'><a href="Unifile.html#getAuthorizeURL">getAuthorizeURL</a></li><li data-type='method'><a href="Unifile.html#readdir">readdir</a></li><li data-type='method'><a href="Unifile.html#stat">stat</a></li><li data-type='method'><a href="Unifile.html#mkdir">mkdir</a></li><li data-type='method'><a href="Unifile.html#writeFile">writeFile</a></li><li data-type='method'><a href="Unifile.html#createWriteStream">createWriteStream</a></li><li data-type='method'><a href="Unifile.html#readFile">readFile</a></li><li data-type='method'><a href="Unifile.html#createReadStream">createReadStream</a></li><li data-type='method'><a href="Unifile.html#rename">rename</a></li><li data-type='method'><a href="Unifile.html#unlink">unlink</a></li><li data-type='method'><a href="Unifile.html#rmdir">rmdir</a></li><li data-type='method'><a href="Unifile.html#batch">batch</a></li></ul></li><li><a href="DropboxConnector.html">DropboxConnector</a></li><li><a href="FsConnector.html">FsConnector</a></li><li><a href="FtpConnector.html">FtpConnector</a></li><li><a href="GitHubConnector.html">GitHubConnector</a></li><li><a href="RemoteStorageConnector.html">RemoteStorageConnector</a></li><li><a href="SftpConnector.html">SftpConnector</a></li><li><a href="WebDavConnector.html">WebDavConnector</a></li></ul><h3>Externals</h3><ul><li><a href="external-WritableStream.html">WritableStream</a></li><li><a href="external-ReadableStream.html">ReadableStream</a></li><li><a href="external-Promise.html">Promise</a></li></ul><h3><a href="global.html">Global</a></h3>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">unifile-remoteStorage.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>'use strict';
+
+const Promise = require('bluebird');
+const WebFinger = require('webfinger.js');
+const request = require('request');
+const Mime = require('mime');
+
+const NAME = 'remotestorage';
+
+/**
+ * Create the commons option for the API request
+ * @param {string} url - URL of the request
+ * @param {string} path - Path of the endpoint
+ * @param {string} token - Bearer token for OAuth
+ * @return {Object} request options
+ * @private
+ */
+function getRequestOptions(url, path, token) {
+  return {
+    url: url + '/' + path,
+    headers: {
+      'Authorization': 'Bearer ' + token
+    }
+  };
+}
+
+/**
+ * Performs a GET request to the API
+ * @param {string} url - URL of the request
+ * @param {string} path - Path of the endpoint
+ * @param {string} token - Bearer token for OAuth
+ * @param {boolean} isStream - Access the API as a stream or not
+ * @return {Promise&lt;Object>} a promise of the body returned
+ * @private
+ */
+function get(url, path, token, isStream = false) {
+  const opts = getRequestOptions(url, path, token);
+  if(isStream) return request.get(opts);
+  else {
+    return new Promise(function(resolve, reject) {
+      request.get(opts, function(err, res, body) {
+        resolve(body);
+      });
+    });
+  }
+}
+
+/**
+ * Performs a PUT request to the API
+ * @param {string} url - URL of the request
+ * @param {string} path - Path of the endpoint
+ * @param {Object} content - Content of the request body
+ * @param {string} token - Bearer token for OAuth
+ * @param {boolean} isStream - Access the API as a stream or not
+ * @return {Promise&lt;Object>} a promise of the body returned
+ * @private
+ */
+function put(url, path, content, token, isStream = false) {
+  const opts = getRequestOptions(url, path, token);
+  if(isStream) return request.put(opts);
+  else {
+    opts.body = content;
+    return new Promise(function(resolve, reject) {
+      request.put(opts, function(err, res, body) {
+        resolve(body);
+      });
+    });
+  }
+}
+
+/**
+ * Performs a DELETE request to the API
+ * @param {string} url - URL of the request
+ * @param {string} path - Path of the endpoint
+ * @param {string} token - Bearer token for OAuth
+ * @return {Promise&lt;Object>} a promise of the body returned
+ * @private
+ */
+function del(url, path, token) {
+  const opts = getRequestOptions(url, path, token);
+  return new Promise(function(resolve, reject) {
+    request.del(opts, function(err, res, body) {
+      resolve(body);
+    });
+  });
+}
+
+function toFileInfos(filename, stat) {
+  return {
+    size: stat['Content-Length'] || 'N/A',
+    modified: 'N/A',
+    name: filename,
+    isDir: filename.endsWith('/'),
+    mime: Mime.lookup(filename)
+  };
+}
+
+/**
+ * Service connector for {@link https://remotestorage.io/|remoteStorage} server.
+ *
+ * This connector use WebFinger to find the endpoint of your server.
+ */
+class RemoteStorageConnector {
+  constructor(config) {
+    this.config = config;
+    this.name = NAME;
+  }
+
+  getInfos(session) {
+    return {
+      name: NAME,
+      displayName: 'RemoteStorage',
+      icon: '../assets/rs.png',
+      description: 'Edit files on a RemoteStorage service',
+      isLoggedIn: (session &amp;&amp; 'token' in session),
+      isOAuth: true,
+      username: this.config.userAddress
+    };
+  }
+
+  getAuthorizeURL(session) {
+    return new Promise((resolve, reject) => {
+      new WebFinger().lookup(session.userAddress, (err, res) => {
+        if(err)
+          reject(err);
+        else {
+          const infos = res.object.links[0];
+          session.infos = {
+            href: infos.href,
+            storageType: infos.properties['http://remotestorage.io/spec/version'],
+            authURL: infos.properties['http://tools.ietf.org/html/rfc6749#section-4.2'],
+            properties: infos.properties
+          };
+          let query = 'redirect_uri=' + this.config.redirectUri
+          + '&amp;client_id=Unifile'
+          + '&amp;scope=*:rw'
+          + '&amp;response_type=token';
+          if(session.infos.authURL.indexOf('?') > -1) query = '&amp;' + query;
+          else query = '?' + query;
+
+          resolve(session.infos.authURL + query);
+        }
+      });
+    });
+  }
+
+  setAccessToken(session, token) {
+    session.token = token;
+    return Promise.resolve(token);
+  }
+
+  clearAccessToken(session) {
+    session.token = null;
+    return Promise.resolve();
+  }
+
+  login(session, loginInfos) {
+    if(loginInfos.constructor === String) {
+      return this.setAccessToken(session, loginInfos);
+    } else {
+      return this.setAccessToken(session, loginInfos.token);
+    }
+  }
+
+  readdir(session, path) {
+    if(!path.endsWith('/')) {
+      return Promise.reject('Folder path must end with a /.'
+        + 'If you want to see a file content, call readFile() instead');
+    } else {
+      return get(session.infos.href, path, session.token)
+      .then((result) => {
+        var obj = JSON.parse(result);
+        return Object.keys(obj.items).map((key) => {
+          return toFileInfos(key, obj.items[key]);
+        });
+      });
+    }
+  }
+
+  stat(session, path) {
+    return new Promise(function(resolve, reject) {
+      request.get(getRequestOptions(session.infos.href, path, session.token), function(err, res, body) {
+        resolve(body, res.headers['content-length']);
+      });
+    })
+    .then((body, size) => {
+      var obj = JSON.parse(body);
+      return toFileInfos(obj.name, {'Content-Length': size});
+    });
+  }
+
+  mkdir(session, path) {
+    if(!path.endsWith('/')) {
+      return Promise.reject('Folder path must end with a /. If you want to create a file, call writeFile() instead');
+    } else {
+      return put(session.infos.href, path + '/.keep', '', session.token);
+    }
+  }
+
+  writeFile(session, path, content) {
+    if(path.endsWith('/')) {
+      return Promise.reject('File path cannot end with a /. If you want to create a folder, call mkdir() instead');
+    } else {
+      return put(session.infos.href, path, content, session.token);
+    }
+  }
+
+  createWriteStream(session, path) {
+    if(path.endsWith('/')) {
+      return Promise.reject('File path cannot end with a /. If you want to create a folder, call mkdir() instead');
+    } else {
+      return put(session.infos.href, path, null, session.token, true);
+    }
+  }
+
+  readFile(session, path) {
+    if(path.endsWith('/')) {
+      return Promise.reject('File path cannot end with a /.'
+        + 'If you want to see a folder listing, call readdir() instead');
+    } else {
+      return get(session.infos.href, path, session.token);
+    }
+  }
+
+  createReadStream(session, path) {
+    if(path.endsWith('/')) {
+      return Promise.reject('File path cannot end with a /.'
+        + 'If you want to see a folder listing, call readdir() instead');
+    } else {
+      return get(session.infos.href, path, session.token, true);
+    }
+  }
+
+  rename(session, src, dest) {
+    let originContent;
+    return get(session.infos.href, src, session.token)
+    .then((content) => originContent = content)
+    .then(() => del(session.infos.href, src, session.token))
+    .then(() => put(session.infos.href, dest, originContent, session.token));
+  }
+
+  unlink(session, path) {
+    if(path.endsWith('/')) {
+      return Promise.reject('File path cannot end with a /. If you want to delete a folder, call rmdir() instead');
+    } else {
+      return del(session.infos.href, path, session.token);
+    }
+  }
+
+  rmdir(session, path) {
+    if(!path.endsWith('/')) {
+      return Promise.reject('Folder path must end with a /. If you want to delete a file, call unlink() instead');
+    } else {
+      return del(session.infos.href, path + '/.keep', session.token);
+    }
+  }
+
+  batch(session, actions, message) {
+    return Promise.each(actions, (action) => {
+      const act = action.name.toLowerCase();
+      switch (act) {
+        case 'unlink':
+        case 'rmdir':
+        case 'mkdir':
+          this[act](session, action.path);
+          break;
+        case 'rename':
+          this[act](session, action.path, action.destination);
+          break;
+        case 'writefile':
+          this.writeFile(session, action.path, action.content);
+          break;
+        default:
+          console.warn(`Unsupported batch action: ${action.name}`);
+      }
+    });
+  }
+}
+
+module.exports = RemoteStorageConnector;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Mon May 22 2017 16:45:01 GMT+0200 (CEST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>

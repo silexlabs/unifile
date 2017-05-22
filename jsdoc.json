@@ -12,7 +12,7 @@
     ],
     "docdash": {
       "static": true,
-      "sort": true
+      "sort": false
     },
     "opts": {
         "template": "node_modules/docdash/",

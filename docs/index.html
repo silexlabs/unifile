@@ -22,7 +22,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Unifile.html">Unifile</a><ul class='methods'><li data-type='method'><a href="Unifile.html#batch">batch</a></li><li data-type='method'><a href="Unifile.html#clearAccessToken">clearAccessToken</a></li><li data-type='method'><a href="Unifile.html#createReadStream">createReadStream</a></li><li data-type='method'><a href="Unifile.html#createWriteStream">createWriteStream</a></li><li data-type='method'><a href="Unifile.html#getAuthorizeURL">getAuthorizeURL</a></li><li data-type='method'><a href="Unifile.html#getInfos">getInfos</a></li><li data-type='method'><a href="Unifile.html#listConnectors">listConnectors</a></li><li data-type='method'><a href="Unifile.html#login">login</a></li><li data-type='method'><a href="Unifile.html#mkdir">mkdir</a></li><li data-type='method'><a href="Unifile.html#readdir">readdir</a></li><li data-type='method'><a href="Unifile.html#readFile">readFile</a></li><li data-type='method'><a href="Unifile.html#rename">rename</a></li><li data-type='method'><a href="Unifile.html#rmdir">rmdir</a></li><li data-type='method'><a href="Unifile.html#setAccessToken">setAccessToken</a></li><li data-type='method'><a href="Unifile.html#unlink">unlink</a></li><li data-type='method'><a href="Unifile.html#use">use</a></li><li data-type='method'><a href="Unifile.html#writeFile">writeFile</a></li></ul></li></ul><h3>Externals</h3><ul><li><a href="external-Promise.html">Promise</a></li><li><a href="external-ReadableStream.html">ReadableStream</a></li><li><a href="external-WritableStream.html">WritableStream</a></li></ul><h3>Global</h3><ul><li><a href="global.html#isAuthentifiedFunction">isAuthentifiedFunction</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Unifile.html">Unifile</a><ul class='methods'><li data-type='method'><a href="Unifile.html#use">use</a></li><li data-type='method'><a href="Unifile.html#getInfos">getInfos</a></li><li data-type='method'><a href="Unifile.html#listConnectors">listConnectors</a></li><li data-type='method'><a href="Unifile.html#login">login</a></li><li data-type='method'><a href="Unifile.html#setAccessToken">setAccessToken</a></li><li data-type='method'><a href="Unifile.html#clearAccessToken">clearAccessToken</a></li><li data-type='method'><a href="Unifile.html#getAuthorizeURL">getAuthorizeURL</a></li><li data-type='method'><a href="Unifile.html#readdir">readdir</a></li><li data-type='method'><a href="Unifile.html#stat">stat</a></li><li data-type='method'><a href="Unifile.html#mkdir">mkdir</a></li><li data-type='method'><a href="Unifile.html#writeFile">writeFile</a></li><li data-type='method'><a href="Unifile.html#createWriteStream">createWriteStream</a></li><li data-type='method'><a href="Unifile.html#readFile">readFile</a></li><li data-type='method'><a href="Unifile.html#createReadStream">createReadStream</a></li><li data-type='method'><a href="Unifile.html#rename">rename</a></li><li data-type='method'><a href="Unifile.html#unlink">unlink</a></li><li data-type='method'><a href="Unifile.html#rmdir">rmdir</a></li><li data-type='method'><a href="Unifile.html#batch">batch</a></li></ul></li><li><a href="DropboxConnector.html">DropboxConnector</a></li><li><a href="FsConnector.html">FsConnector</a></li><li><a href="FtpConnector.html">FtpConnector</a></li><li><a href="GitHubConnector.html">GitHubConnector</a></li><li><a href="RemoteStorageConnector.html">RemoteStorageConnector</a></li><li><a href="SftpConnector.html">SftpConnector</a></li><li><a href="WebDavConnector.html">WebDavConnector</a></li></ul><h3>Externals</h3><ul><li><a href="external-WritableStream.html">WritableStream</a></li><li><a href="external-ReadableStream.html">ReadableStream</a></li><li><a href="external-Promise.html">Promise</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <div id="main">
@@ -45,6 +45,52 @@
     
 
 
+    <section class="readme">
+        <article><h1>Unifile, unified access to cloud storage services.</h1><p><a href="https://travis-ci.org/silexlabs/unifile"><img src="https://travis-ci.org/silexlabs/unifile.png?branch=master" alt="Build Status"></a> <a href="https://www.codacy.com/app/jeanbaptiste-richardet/unifile?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=silexlabs/unifile&amp;utm_campaign=Badge_Grade"><img src="https://api.codacy.com/project/badge/Grade/0aa235e2fa2f457b9e3f2d608ec608e3" alt="Codacy Badge"></a> <a href="https://snyk.io/test/github/silexlabs/unifile"><img src="https://snyk.io/test/github/silexlabs/unifile/badge.svg" alt="Known Vulnerabilities"></a> <a href="https://www.bithound.io/github/silexlabs/unifile"><img src="https://www.bithound.io/github/silexlabs/unifile/badges/score.svg" alt="bitHound Overall Score"></a></p>
+<p>Nodejs library to access cloud storage services with a common API.</p>
+<p><a href="https://npmjs.org/package/unifile"><img src="https://nodei.co/npm/unifile.png" alt="NPM"></a></p>
+<p>Currently supported services</p>
+<ul>
+<li>FTP</li>
+<li>SFTP</li>
+<li>Dropbox</li>
+<li>GitHub: use git as a cloud with repository and branches as folder</li>
+<li><a href="https://remotestorage.io/">RemoteStorage</a></li>
+<li>WebDAV</li>
+<li>Local filesystem (might be useful to copy from your drive to your cloud)</li>
+</ul>
+<h1>Motivation</h1><p>With the rise of cloud services and the need to be independant of such or such provider, we decided to create a common tool to access a lot of online plateform.</p>
+<p>This aim to give the user of your app the liberty of choosing where they want to store their data.</p>
+<h1>Use</h1><p>Requirements</p>
+<ul>
+<li><a href="http://nodejs.org/">Node.js</a> &gt; 6.0.0</li>
+</ul>
+<h1>Use in your Node.js project</h1><p>Add unifile lib to your project</p>
+<pre class="prettyprint source"><code>$ npm install unifile --save</code></pre><h2>Vanilla Node.js</h2><p>Unifile use an API similar to the native <code>fs</code> module but with Bluebird Promises instead of callbacks.</p>
+<p>You can find the whole API documentation on the <a href="https://silexlabs.github.io/unifile/">project page</a>.</p>
+<h2>With Express</h2><p>Then write a small Node.js server <a href="./samples/simple-api-server.js">like this one</a>. Or play with the sample:</p>
+<pre class="prettyprint source"><code>$ cd samples
+$ npm install
+$ node simple-api-server.js</code></pre><p>Then open <code>http://localhost:6805/</code> and play with your cloud storages.</p>
+<h2>CloudExplorer</h2><p>You could also take a look at the UI called <a href="https://github.com/lexoyo/CloudExplorer2">CloudExplorer</a>: here's a <a href="https://cloud-explorer2.herokuapp.com/">live demo</a>.</p>
+<h1>Privacy</h1><p>Most of the service in Unifile uses <a href="http://wiki.oauth.net/w/page/25236487/OAuth%202">OAuth 2</a> to connect the user into the service. This means Unifile doesn't have the user credential at any time.</p>
+<p>For the server that doesn't support OAuth, like FTP, the credentials are never stored.</p>
+<p>In all case, Unifile never uses any data of the user.</p>
+<h1>License</h1><p><a href="./LICENSE">license: MIT</a></p>
+<h1>Developer guide</h1><h2>Add a service</h2><p>Unifile is built on modularity, meaning you can create a connector to a service a plug it in Unifile withouth modifying Unifile. So feel free to add any services you need! Don't forget to let us know about it so we could tell everyone :wink:.</p>
+<p>Here is a list of services which could be useful</p>
+<ul>
+<li>Google Drive</li>
+<li>Amazon S3</li>
+<li>CozyCloud, BTSync</li>
+<li>SkyDrive, RapidShare, CloudMine, FilesAnywhere</li>
+<li>SugarSync</li>
+<li>Facebook (if possibe?)</li>
+<li>a random list of other cloud storage services: Amazon Cloud Drive, Bitcasa, Box, DollyDrive, iCloud Drive, Microsoft OneDrive, SpiderOak, SugarSync, Wuala</li>
+</ul>
+<h2>Roadmap</h2><p><strong>Let's discuss <a href="https://github.com/silexlabs/unifile/labels/enhancement">this list of issues which set the future of unifile</a></strong></p></article>
+    </section>
+
 
 
 
@@ -55,7 +101,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Apr 26 2017 10:02:08 GMT+0200 (CEST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Mon May 22 2017 16:45:01 GMT+0200 (CEST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

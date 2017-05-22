@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>unifile-ftp.js - Documentation</title>
+    <title>unifile-webdav.js - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -27,7 +27,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">unifile-ftp.js</h1>
+    <h1 class="page-title">unifile-webdav.js</h1>
     
 
     
@@ -38,58 +38,40 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>'use strict';
+
 const Url = require('url');
-const Path = require('path');
-
-const PassThrough = require('stream').PassThrough;
-
+const request = require('request');
 const Promise = require('bluebird');
-const Ftp = require('ftp');
-const Mime = require('mime');
+const XmlStream = require('xml-stream');
 
-const NAME = 'ftp';
+const NAME = 'webdav';
 
-function callAPI(session, action, ...params) {
-  return new Promise((resolve, reject) => {
-    var client = new Ftp();
-    client.on('ready', () => {
-      client[action](...params, (err, res) => {
-        if(err) return reject(err);
-        resolve(res);
-        // Wait for stream ending before closing
-        if(res &amp;&amp; res.readable) res.on('end', () => client.end());
-      });
-    });
+const callAPI = Symbol('callAPI');
 
-    client.on('error', () => {
-      client.end();
-      reject();
-    });
+function toFileInfos(stat) {
 
-    client.connect(session);
-  });
-}
+  let name = decodeURI(stat['d:href']);
+  const isDir = name.endsWith('/');
+  name = isDir ? name.slice(0, -1) : name;
+  name = name.split('/').pop();
 
-function toFileInfos(entry) {
-  const isDir = entry.type === 'd';
   return {
-    size: entry.size,
-    modified: entry.date,
-    name: entry.name,
+    size: stat['d:propstat']['d:prop']['d:getcontentlength'] || 'n/a',
+    modified: new Date(stat['d:propstat']['d:prop']['d:getlastmodified']),
+    name: name,
     isDir: isDir,
-    mime: isDir ? 'application/directory' : Mime.lookup(entry.name)
+    mime: isDir ? 'application/directory' : stat['d:propstat']['d:prop']['d:getcontenttype']
   };
 }
 
 /**
- * Service connector for {@link https://en.wikipedia.org/wiki/File_Transfer_Protocol|FTP} server
+ * Service connector for {@link https://en.wikipedia.org/wiki/WebDAV|WebDAV} server.
  */
-class FtpConnector {
+class WebDavConnector {
   /**
    * @constructor
    * @param {Object} config - Configuration object
    * @param {string} config.redirectUri - URI of the login page
-   * @param {boolean} [config.showHiddenFiles=false] - Flag to show hidden files.
    */
   constructor(config) {
     this.config = config;
@@ -99,12 +81,12 @@ class FtpConnector {
   getInfos(session) {
     return {
       name: NAME,
-      displayName: 'FTP',
-      icon: '../assets/ftp.png',
-      description: 'Edit files on a web FTP server.',
+      displayName: 'WebDAV',
+      icon: '../assets/webdav.png',
+      description: 'Edit files on a WebDAV server',
       isLoggedIn: (session &amp;&amp; 'token' in session),
       isOAuth: false,
-      username: session.user
+      username: session.user || 'Unauthentified'
     };
   }
 
@@ -123,107 +105,74 @@ class FtpConnector {
   }
 
   login(session, loginInfos) {
-    let ftpConf;
     if(loginInfos.constructor === String) {
-      const url = Url.parse(loginInfos);
-      const ftpConf = {
-        host: url.hostname,
-        port: url.port
-      };
-      [ftpConf.user, ftpConf.password] = url.auth.split(':');
+      session.url = Url.parse(loginInfos);
+      [session.user, session.password] = session.url.auth.split(':');
     } else {
-      ftpConf = Object.assign({}, loginInfos);
+      session.url = Url.parse(loginInfos.host);
+      Object.assign(session, loginInfos);
     }
-
-    return new Promise((resolve, reject) => {
-      var client = new Ftp();
-      // Successful connection
-      client.on('ready', resolve);
-      // Error
-      client.on('error', reject);
-
-      client.connect(ftpConf);
-    })
-    .then(() => {
-      Object.assign(session, ftpConf);
-      this.setAccessToken(session, ftpConf.user);
-    });
+    return Promise.resolve(this.setAccessToken(session, session.user));
   }
 
-  //Filesystem commands
+  // Filesystem commands
 
   readdir(session, path) {
-    return callAPI(session, 'list', path)
+    return this[callAPI](session, path, {}, 'PROPFIND', false, {
+      Depth: 1
+    })
     .then((list) => {
-      return list.reduce((memo, entry) => {
-        if(this.config.showHiddenFile || entry.name.charAt(0) != '.')
-          memo.push(toFileInfos(entry));
+      return list.reduce((memo, entry, index) => {
+        // Don't return the first element as it's '.'
+        if(index == 0) return memo;
+
+        memo.push(toFileInfos(entry));
         return memo;
       }, []);
     });
   }
 
   stat(session, path) {
-    return callAPI(session, 'list', path)
+    return this[callAPI](session, path, {}, 'PROPFIND', false, {
+      Depth: 0
+    })
     .then((entries) => {
-      // It's a file
-      if(entries.length === 1) return toFileInfos(entries[0]);
-      // It's a folder
-      const folder = entries.find((stat) => stat.name === '.');
-      folder.name = Path.basename(path);
-      return toFileInfos(folder);
+      return toFileInfos(entries[0]);
     });
   }
 
   mkdir(session, path) {
-    return callAPI(session, 'mkdir', path);
+    return this[callAPI](session, path, {}, 'MKCOL');
   }
 
   writeFile(session, path, data) {
-    return callAPI(session, 'put', data, path);
+    return this[callAPI](session, path, data, 'PUT');
   }
 
   createWriteStream(session, path) {
-
-    var through = new PassThrough();
-    callAPI(session, 'put', through, path);
-    return through;
+    return this[callAPI](session, path, {}, 'PUT', true);
   }
 
   readFile(session, path) {
-    return callAPI(session, 'get', path)
-    .then((fileStream) => {
-      return new Promise((resolve, reject) => {
-        const chunks = [];
-        fileStream.on('data', (chunk) => chunks.push(chunk));
-        fileStream.on('finish', () => resolve(Buffer.concat(chunks).toString()));
-        fileStream.on('error', reject);
-      });
-    });
+    return this[callAPI](session, path, {}, 'GET');
   }
 
   createReadStream(session, path) {
-
-    var through = new PassThrough();
-    callAPI(session, 'get', path)
-    .then((fileStream) => {
-      fileStream.pipe(through);
-    })
-    .catch((err) => {throw err;});
-
-    return through;
+    return this[callAPI](session, path, {}, 'GET', true);
   }
 
   rename(session, src, dest) {
-    return callAPI(session, 'rename', src, dest);
+    return this[callAPI](session, src, {}, 'MOVE', false, {
+      'Destination': session.url.href + dest
+    });
   }
 
   unlink(session, path) {
-    return callAPI(session, 'delete', path);
+    return this[callAPI](session, path, {}, 'DELETE');
   }
 
   rmdir(session, path) {
-    return callAPI(session, 'rmdir', path);
+    return this.unlink(session, path);
   }
 
   batch(session, actions, message) {
@@ -246,9 +195,70 @@ class FtpConnector {
       }
     });
   }
+
+  /**
+   * Make a call to the WebDAV server
+   * @param {Object} session - WebDAV session storage
+   * @param {string} path - End point path
+   * @param {Object} data - Data to pass. Will be ignored if method is GET
+   * @param {string} method - HTTP verb to use
+   * @param {boolean} [isStream=false] - Use the API as a stream
+   * @param {Object} [headers={}] - Additionals headers to send
+   * @return {Promise|Stream} a Promise of the result send by server or a stream to the endpoint
+   * @private
+   */
+  [callAPI](session, path, data, method, isStream = false, headers = {}) {
+    const opts = {
+      url: session.url.href + path,
+      method: method,
+      auth: {
+        user: session.user,
+        password: session.password
+      },
+      headers: headers
+    };
+
+
+    if(isStream) return request(opts);
+    else {
+      if(Object.keys(data).length !== 0) opts.body = data;
+      return new Promise((resolve, reject) => {
+        const req = request(opts);
+        req.on('response', (res) => {
+          if(res.statusCode >= 400) {
+            const error = new Error(res.statusMessage);
+            error.statusCode = res.statusCode;
+            res.pipe(process.stdout);
+            return reject(error);
+          }
+
+          if(res.headers['content-type'].includes('application/xml')) {
+            const results = [];
+            const resStream = new XmlStream(req);
+            resStream.on('endElement: d:response', (item) => {
+              results.push(item);
+            });
+            resStream.on('end', () => {
+              return resolve(results);
+            });
+            resStream.on('error', (err) => {
+              return reject(err);
+            });
+          } else {
+            const encoding = (res.headers['content-type'].match(/charset=(\S+)/) || ['utf8']).pop();
+            const chunks = [];
+            res.on('data', (chunk) => chunks.push(chunk));
+            res.on('end', () => {
+              return resolve(Buffer.concat(chunks).toString(encoding));
+            });
+          }
+        });
+      });
+    }
+  }
 }
 
-module.exports = FtpConnector;
+module.exports = WebDavConnector;
 </code></pre>
         </article>
     </section>

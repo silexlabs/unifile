@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>unifile-ftp.js - Documentation</title>
+    <title>unifile-fs.js - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -27,7 +27,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">unifile-ftp.js</h1>
+    <h1 class="page-title">unifile-fs.js</h1>
     
 
     
@@ -38,57 +38,32 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>'use strict';
-const Url = require('url');
-const Path = require('path');
-
-const PassThrough = require('stream').PassThrough;
 
 const Promise = require('bluebird');
-const Ftp = require('ftp');
-const Mime = require('mime');
+const mime = require('mime');
+const Fs = Promise.promisifyAll(require('fs'), {suffix: 'Promised'});
+const Path = require('path');
 
-const NAME = 'ftp';
+const NAME = 'fs';
 
-function callAPI(session, action, ...params) {
-  return new Promise((resolve, reject) => {
-    var client = new Ftp();
-    client.on('ready', () => {
-      client[action](...params, (err, res) => {
-        if(err) return reject(err);
-        resolve(res);
-        // Wait for stream ending before closing
-        if(res &amp;&amp; res.readable) res.on('end', () => client.end());
-      });
-    });
-
-    client.on('error', () => {
-      client.end();
-      reject();
-    });
-
-    client.connect(session);
-  });
-}
-
-function toFileInfos(entry) {
-  const isDir = entry.type === 'd';
+function statToFileInfos(filename, stat) {
+  const isDir = stat.isDirectory();
   return {
-    size: entry.size,
-    modified: entry.date,
-    name: entry.name,
+    size: stat.size,
+    modified: stat.mtime,
+    name: filename,
     isDir: isDir,
-    mime: isDir ? 'application/directory' : Mime.lookup(entry.name)
+    mime: isDir ? 'application/directory' : mime.lookup(filename)
   };
 }
 
 /**
- * Service connector for {@link https://en.wikipedia.org/wiki/File_Transfer_Protocol|FTP} server
+ * Service connector for the local filesystem.
  */
-class FtpConnector {
+class FsConnector {
   /**
    * @constructor
    * @param {Object} config - Configuration object
-   * @param {string} config.redirectUri - URI of the login page
    * @param {boolean} [config.showHiddenFiles=false] - Flag to show hidden files.
    */
   constructor(config) {
@@ -99,131 +74,87 @@ class FtpConnector {
   getInfos(session) {
     return {
       name: NAME,
-      displayName: 'FTP',
-      icon: '../assets/ftp.png',
-      description: 'Edit files on a web FTP server.',
-      isLoggedIn: (session &amp;&amp; 'token' in session),
+      displayName: 'Local',
+      icon: '',
+      description: 'Edit files on your local drive.',
+      isLoggedIn: true,
       isOAuth: false,
-      username: session.user
+      username: ''
     };
   }
 
+  // Auth methods are useless here
+
   getAuthorizeURL(session) {
-    return Promise.resolve(this.config.redirectUri);
+    return Promise.resolve('');
   }
 
   setAccessToken(session, token) {
-    session.token = token;
     return Promise.resolve(token);
   }
 
   clearAccessToken(session) {
-    session.token = null;
     return Promise.resolve();
   }
 
   login(session, loginInfos) {
-    let ftpConf;
-    if(loginInfos.constructor === String) {
-      const url = Url.parse(loginInfos);
-      const ftpConf = {
-        host: url.hostname,
-        port: url.port
-      };
-      [ftpConf.user, ftpConf.password] = url.auth.split(':');
-    } else {
-      ftpConf = Object.assign({}, loginInfos);
-    }
-
-    return new Promise((resolve, reject) => {
-      var client = new Ftp();
-      // Successful connection
-      client.on('ready', resolve);
-      // Error
-      client.on('error', reject);
-
-      client.connect(ftpConf);
-    })
-    .then(() => {
-      Object.assign(session, ftpConf);
-      this.setAccessToken(session, ftpConf.user);
-    });
+    return new Promise.resolve();
   }
 
   //Filesystem commands
 
   readdir(session, path) {
-    return callAPI(session, 'list', path)
-    .then((list) => {
-      return list.reduce((memo, entry) => {
-        if(this.config.showHiddenFile || entry.name.charAt(0) != '.')
-          memo.push(toFileInfos(entry));
+    return Fs.readdirPromised(path)
+    .reduce((memo, entry) => {
+      if(this.config.showHiddenFile || entry.charAt(0) != '.') {
+        return Fs.statPromised(Path.resolve(path, entry))
+        .then((stat) => {
+          memo.push(statToFileInfos(entry, stat));
+          return memo;
+        });
+      } else {
         return memo;
-      }, []);
-    });
+      }
+    }, []);
   }
 
   stat(session, path) {
-    return callAPI(session, 'list', path)
-    .then((entries) => {
-      // It's a file
-      if(entries.length === 1) return toFileInfos(entries[0]);
-      // It's a folder
-      const folder = entries.find((stat) => stat.name === '.');
-      folder.name = Path.basename(path);
-      return toFileInfos(folder);
+    return Fs.statPromised(path)
+    .then((stat) => {
+      return statToFileInfos(Path.basename(path), stat);
     });
   }
 
   mkdir(session, path) {
-    return callAPI(session, 'mkdir', path);
+    return Fs.mkdirPromised(path);
   }
 
   writeFile(session, path, data) {
-    return callAPI(session, 'put', data, path);
+    return Fs.writeFilePromised(path, data);
   }
 
   createWriteStream(session, path) {
-
-    var through = new PassThrough();
-    callAPI(session, 'put', through, path);
-    return through;
+    return Fs.createWriteStream(path);
   }
 
   readFile(session, path) {
-    return callAPI(session, 'get', path)
-    .then((fileStream) => {
-      return new Promise((resolve, reject) => {
-        const chunks = [];
-        fileStream.on('data', (chunk) => chunks.push(chunk));
-        fileStream.on('finish', () => resolve(Buffer.concat(chunks).toString()));
-        fileStream.on('error', reject);
-      });
-    });
+    return Fs.readFilePromised(path);
   }
 
   createReadStream(session, path) {
-
-    var through = new PassThrough();
-    callAPI(session, 'get', path)
-    .then((fileStream) => {
-      fileStream.pipe(through);
-    })
-    .catch((err) => {throw err;});
-
-    return through;
+    return Fs.createReadStream(path);
   }
 
   rename(session, src, dest) {
-    return callAPI(session, 'rename', src, dest);
+    return Fs.renamePromised(src, dest);
   }
 
   unlink(session, path) {
-    return callAPI(session, 'delete', path);
+    return Fs.unlinkPromised(path);
   }
 
   rmdir(session, path) {
-    return callAPI(session, 'rmdir', path);
+    return Fs.rmdirPromised(path);
   }
 
   batch(session, actions, message) {
@@ -248,7 +179,7 @@ class FtpConnector {
   }
 }
 
-module.exports = FtpConnector;
+module.exports = FsConnector;
 </code></pre>
         </article>
     </section>

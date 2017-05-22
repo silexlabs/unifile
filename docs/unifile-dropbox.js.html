@@ -22,7 +22,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Unifile.html">Unifile</a><ul class='methods'><li data-type='method'><a href="Unifile.html#batch">batch</a></li><li data-type='method'><a href="Unifile.html#clearAccessToken">clearAccessToken</a></li><li data-type='method'><a href="Unifile.html#createReadStream">createReadStream</a></li><li data-type='method'><a href="Unifile.html#createWriteStream">createWriteStream</a></li><li data-type='method'><a href="Unifile.html#getAuthorizeURL">getAuthorizeURL</a></li><li data-type='method'><a href="Unifile.html#getInfos">getInfos</a></li><li data-type='method'><a href="Unifile.html#login">login</a></li><li data-type='method'><a href="Unifile.html#mkdir">mkdir</a></li><li data-type='method'><a href="Unifile.html#readdir">readdir</a></li><li data-type='method'><a href="Unifile.html#readFile">readFile</a></li><li data-type='method'><a href="Unifile.html#rename">rename</a></li><li data-type='method'><a href="Unifile.html#rmdir">rmdir</a></li><li data-type='method'><a href="Unifile.html#setAccessToken">setAccessToken</a></li><li data-type='method'><a href="Unifile.html#setBasicAuth">setBasicAuth</a></li><li data-type='method'><a href="Unifile.html#unlink">unlink</a></li><li data-type='method'><a href="Unifile.html#use">use</a></li><li data-type='method'><a href="Unifile.html#writeFile">writeFile</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#callAPI">callAPI</a></li><li><a href="global.html#commit">commit</a></li><li><a href="global.html#createBranch">createBranch</a></li><li><a href="global.html#move">move</a></li><li><a href="global.html#paginate">paginate</a></li><li><a href="global.html#PassThrough">PassThrough</a></li><li><a href="global.html#Promise">Promise</a></li><li><a href="global.html#removeFile">removeFile</a></li><li><a href="global.html#streamAPI">streamAPI</a></li><li><a href="global.html#transformTree">transformTree</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Unifile.html">Unifile</a><ul class='methods'><li data-type='method'><a href="Unifile.html#use">use</a></li><li data-type='method'><a href="Unifile.html#getInfos">getInfos</a></li><li data-type='method'><a href="Unifile.html#listConnectors">listConnectors</a></li><li data-type='method'><a href="Unifile.html#login">login</a></li><li data-type='method'><a href="Unifile.html#setAccessToken">setAccessToken</a></li><li data-type='method'><a href="Unifile.html#clearAccessToken">clearAccessToken</a></li><li data-type='method'><a href="Unifile.html#getAuthorizeURL">getAuthorizeURL</a></li><li data-type='method'><a href="Unifile.html#readdir">readdir</a></li><li data-type='method'><a href="Unifile.html#stat">stat</a></li><li data-type='method'><a href="Unifile.html#mkdir">mkdir</a></li><li data-type='method'><a href="Unifile.html#writeFile">writeFile</a></li><li data-type='method'><a href="Unifile.html#createWriteStream">createWriteStream</a></li><li data-type='method'><a href="Unifile.html#readFile">readFile</a></li><li data-type='method'><a href="Unifile.html#createReadStream">createReadStream</a></li><li data-type='method'><a href="Unifile.html#rename">rename</a></li><li data-type='method'><a href="Unifile.html#unlink">unlink</a></li><li data-type='method'><a href="Unifile.html#rmdir">rmdir</a></li><li data-type='method'><a href="Unifile.html#batch">batch</a></li></ul></li><li><a href="DropboxConnector.html">DropboxConnector</a></li><li><a href="FsConnector.html">FsConnector</a></li><li><a href="FtpConnector.html">FtpConnector</a></li><li><a href="GitHubConnector.html">GitHubConnector</a></li><li><a href="RemoteStorageConnector.html">RemoteStorageConnector</a></li><li><a href="SftpConnector.html">SftpConnector</a></li><li><a href="WebDavConnector.html">WebDavConnector</a></li></ul><h3>Externals</h3><ul><li><a href="external-WritableStream.html">WritableStream</a></li><li><a href="external-ReadableStream.html">ReadableStream</a></li><li><a href="external-Promise.html">Promise</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <div id="main">
@@ -38,200 +38,266 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>'use strict';
-/**
- * Service connector for the dropbox api
- */
 
 const Promise = require('bluebird');
 const request = require('request');
+const Mime = require('mime');
 
 const NAME = 'dropbox';
 const DB_OAUTH_URL = 'https://www.dropbox.com/oauth2';
 
-/**
+/** ehehe
  * Make a call to the Dropbox API
  * @param {Object} session - Dropbox session storage
  * @param {string} path - End point path
  * @param {Object} data - Data to pass. Convert to querystring if method is GET or to the request body
+ * @param {string} [subdomain=api] - Subdomain of the endpoint to call (api/content)
+ * @param {boolean} [isJson=true] - Whether to stringify the body or not
+ * @param {Object} [headers={}] - Override of addition to the request headers
  * @return {Promise} a Promise of the result send by server
+ * @private
  */
-function callAPI(session, path, data) {
+function callAPI(session, path, data, subdomain = 'api', isJson = true, headers = {}) {
   let authorization;
   if(session.basic) authorization = 'Basic ' + session.basic;
   else authorization = 'Bearer ' + session.token;
 
-  let reqOptions = {
-    url: 'https://api.dropboxapi.com/2' + path,
+  const reqOptions = {
+    url: `https://${subdomain}.dropboxapi.com/2${path}`,
     method: 'POST',
     headers: {
       'Authorization': authorization,
-      'Content-Type': 'application/json',
       'User-Agent': 'Unifile'
     },
-    body: JSON.stringify(data)
+    json: isJson
   };
 
-  //console.log('Calling', reqOptions.url, 'with', data, '/ auth:', authorization);
+  if(Object.keys(data).length !== 0) reqOptions.body = data;
+
+  if(headers) {
+    for(const header in headers) {
+      reqOptions.headers[header] = headers[header];
+    }
+  }
+
   return new Promise(function(resolve, reject) {
-    request(reqOptions, function (err, res, body) {
-      if (err) {
+    request(reqOptions, function(err, res, body) {
+      if(err) {
         return reject(err);
       }
-      if (res.statusCode >= 400) {
-        console.error(body);
+      if(res.statusCode >= 400) {
         return reject({statusCode: res.statusCode, message: body});
       }
-      try {
-        let result = res.statusCode !== 204 ? JSON.parse(body) : null;
-        if(res.headers.hasOwnProperty('link')){
-          paginate(reqOptions, res.headers.link, result).then(resolve);
-        }
-        else resolve(result);
-      } catch (e) {
-        reject(e);
-      }
+      resolve(body);
     });
   });
 }
 
+function openUploadSession(session, data, autoclose) {
+  return callAPI(session, '/files/upload_session/start', data, 'content', false, {
+    'Content-Type': 'application/octet-stream',
+    'Dropbox-API-Arg': JSON.stringify({
+      close: autoclose
+    })
+  })
+  .then((result) => JSON.parse(result));
+}
+
+/**
+ * Close an upload batch session
+ * @param {Object} session - Dropbox session
+ * @param {Object[]} entries - Files identifiers that have been uploaded during this session
+ * @param {Object} entries[].cursor - Upload cursor
+ * @param {string} entries[].cursor.session_id - Id of the upload session for this file
+ * @param {string} entries[].cursor.offset - The amount of data already transfered
+ * @param {string} entries[].commit - Path and modifier for the file
+ * @param {string} entries[].commit.path - Path of the file
+ * @param {string} entries[].commit.mode - Write mode of the file
+ * @param {string} [entries[].commit.autorename=false] - Rename strategy in case of conflict
+ * @param {string} [entries[].commit.client_modified] - Force this timestamp as the last modification
+ * @param {string} [entries[].commit.mute=false] - Don't notify the client about this change
+ * @return {Promise&lt;string, string>} a Promise of an async_job_id or a 'complete' tag
+ * @private
+ */
+function closeUploadBatchSession(session, entries) {
+  return callAPI(session, '/files/upload_session/finish_batch', {
+    entries: entries
+  });
+}
+
+function checkBatchEnd(session, result, checkRoute, jobId) {
+  switch (result['.tag']) {
+    case 'async_job_id':
+      jobId = result.async_job_id;
+      // falls through
+    case 'in_progress':
+      return callAPI(session, checkRoute, {
+        async_job_id: jobId
+      })
+      .then((result) => checkBatchEnd(session, result, checkRoute, jobId));
+    case 'complete':
+      return Promise.resolve();
+  }
+}
+
+function makePathAbsolute(path) {
+  return path === '' ? path : '/' + path.split('/').filter((token) => token != '').join('/');
+}
+
+/**
+ * Service connector for {@link https://dropbox.com|Dropbox} plateform.
+ *
+ * This will need a registered Dropbox application with valid redirection for your server.
+ * You can register a new application {@link https://www.dropbox.com/developers/apps|here} and
+ * learn more about Dropbox OAuth Web application flow
+ * {@link https://www.dropbox.com/developers/reference/oauth-guide|here}
+ */
 class DropboxConnector {
-  constructor(config){
-    this.config = config;
+  /**
+   * @constructor
+   * @param {Object} config - Configuration object
+   * @param {string} config.redirectUri - Dropbox application redirect URI
+   * @param {string} config.clientId - Dropbox application client ID
+   * @param {string} config.clientSecret - Dropbox application client secret
+   */
+  constructor(config) {
+    this.redirectUri = config.redirectUri;
+    this.clientId = config.clientId;
+    this.clientSecret = config.clientSecret;
     this.name = NAME;
   }
 
-  /**
-   * info about this service
-   * @return an object with these attributes: display_name, description, visible. These attributes determine the response to the request /v1.0/services/list/
-   */
   getInfos(session) {
     return {
       name: NAME,
-      display_name: 'Dropbox',
-      image_small: '../assets/dropbox.png',
+      displayName: 'Dropbox',
+      icon: '../assets/dropbox.png',
       description: 'Edit html files from your Dropbox.',
-      visible: ('clientId' in this.config), // true if user set an app clientId
       isLoggedIn: (session &amp;&amp; 'token' in session),
       isOAuth: true,
-      user: session.account
+      username: session.account.name.display_name
     };
   }
 
-  setAccessToken(session, token){
+  setAccessToken(session, token) {
     session.token = token;
-    console.log(session);
-    if(session.account &amp;&amp; 'id' in session.account){
+    if(session.account &amp;&amp; 'id' in session.account) {
       return callAPI(session, '/users/get_account', {
         account_id: session.account.id
       })
-      .then(account => {
+      .then((account) => {
         session.account = account;
-        console.log(session);
         return token;
       });
+    } else return Promise.resolve(token);
+  }
+
+  clearAccessToken(session) {
+    session.token = null;
+    session.account = null;
+    return Promise.resolve();
+  }
+
+  getAuthorizeURL(session) {
+    // Generate a random string for the state
+    session.state = (+new Date() * Math.random()).toString(36).replace('.', '');
+    let url = DB_OAUTH_URL
+      + '/authorize?response_type=code&amp;client_id=' + this.clientId
+      + '&amp;state=' + session.state;
+
+    // For CLI, don't use redirectUri and ask for `code` to be paste in the app
+    if(this.redirectUri) url += '&amp;redirect_uri=' + this.redirectUri;
+
+    return Promise.resolve(url);
+  }
+
+  login(session, loginInfos) {
+    let returnPromise;
+    function processResponse(resolve, reject, err, response, body) {
+      if(err) return reject('Error while calling Dropbox API. ' + err);
+      session.account = {id: body.account_id};
+      return resolve(body.access_token);
     }
-    else return Promise.resolve(token);
-  }
 
-  getAuthorizeURL(session){
-    return Promise.resolve(DB_OAUTH_URL +
-      '/authorize?response_type=code&amp;client_id=' + this.config.clientId +
-        '&amp;redirect_uri=' + this.config.redirectUri +
-        '&amp;state=' + this.config.state);
-  }
-
-  login(session, loginInfos){
-    if(loginInfos.state !== this.config.state) return Promise.reject('Invalid request (cross-site request)');
-
-    return new Promise((resolve, reject) => {
-      request({
-        url: 'https://api.dropboxapi.com/oauth2/token',
-        method: 'POST',
-        form: {
-          code: loginInfos.code,
-          grant_type: 'authorization_code',
-          client_id: this.config.clientId,
-          client_secret: this.config.clientSecret,
-          redirect_uri: this.config.redirectUri
-        },
-        json: true
-      }, function (err, response, body) {
-        if (err) return reject('Error while calling Dropbox API. ' + err);
-        session.account = {id: body.account_id};
-        return resolve(body.access_token);
+    if(loginInfos.constructor === String) {
+      returnPromise = new Promise((resolve, reject) =>
+        request(loginInfos, processResponse.bind(this, resolve, reject)));
+    } else if(loginInfos.state !== session.state) {
+      return Promise.reject('Invalid request (cross-site request)');
+    } else {
+      returnPromise = new Promise((resolve, reject) => {
+        request({
+          url: 'https://api.dropboxapi.com/oauth2/token',
+          method: 'POST',
+          form: {
+            code: loginInfos.code,
+            grant_type: 'authorization_code',
+            client_id: this.clientId,
+            client_secret: this.clientSecret,
+            redirect_uri: this.redirectUri
+          },
+          json: true
+        }, processResponse.bind(this, resolve, reject));
       });
-    })
-    .then(token => {
+    }
+    return returnPromise.then((token) => {
       return this.setAccessToken(session, token);
     });
   }
 
   //Filesystem commands
 
-  readdir(session, path){
-    if (!session.token)
-      return Promise.reject('User not logged in yet. You need to call the login() first.');
-    else{
-      return callAPI(session, '/files/list_folder', {
-        path: path,
-        recursive: false,
-        include_media_info: false,
-        include_deleted: false,
-        include_has_explicit_shared_members: false
-      })
-      .then(result => {
-        return result.entries.map(entry => {
-          return {
-            bytes: entry.size,
-            modified: entry.client_modified,
-            name: entry.name,
-            is_dir: entry['.tag'] == 'folder'
-          }
-        });
+  readdir(session, path) {
+    return callAPI(session, '/files/list_folder', {
+      path: makePathAbsolute(path)
+    })
+    .then((result) => {
+      return result.entries.map((entry) => {
+        return {
+          size: entry.size,
+          modified: entry.client_modified,
+          name: entry.name,
+          isDir: entry['.tag'] == 'folder',
+          mime: Mime.lookup(entry.name)
+        };
       });
-    }
+    });
   }
 
-  mkdir(session, path){
-    if (!session.token)
-      return Promise.reject('User not logged in yet. You need to call the login() first.');
-    else{
-      return callAPI(session, '/files/create_folder', {
-        path: path
-      });
-    }
+  stat(session, path) {
+    return callAPI(session, '/files/get_metadata', {
+      path: makePathAbsolute(path)
+    })
+    .then((stat) => {
+      return {
+        size: stat.size,
+        modified: stat.client_modified,
+        name: stat.name,
+        isDir: stat['.tag'] == 'folder',
+        mime: Mime.lookup(stat.name)
+      };
+    });
+  }
+
+  mkdir(session, path) {
+    return callAPI(session, '/files/create_folder', {
+      path: makePathAbsolute(path)
+    });
   }
 
   writeFile(session, path, data) {
-    if (!session.token)
-      return Promise.reject('User not logged in yet. You need to call the login() first.');
-    else{
-      // TODO Use upload session for files bigger than 150Mo (https://www.dropbox.com/developers/documentation/http/documentation#files-upload_session-start)
-      // TODO Handle file conflict and write mode
-      return new Promise((resolve, reject) => {
-        request({
-          url: 'https://content.dropboxapi.com/2/files/upload',
-          method: 'POST',
-          headers: {
-            'Authorization': 'Bearer ' + session.token,
-            'Content-Type': 'application/octet-stream',
-            'User-Agent': 'Unifile',
-            'Dropbox-API-Arg': JSON.stringify({
-              path: path
-            })
-          },
-          body: data
-        }, function (err, response, body) {
-          if (err) return reject('Error while calling Dropbox API. ' + err);
-          resolve(body);
-        });
-      });
-    }
+    // TODO Use upload session for files bigger than 150Mo
+    // (https://www.dropbox.com/developers/documentation/http/documentation#files-upload_session-start)
+    // TODO Handle file conflict and write mode
+    return callAPI(session, '/files/upload', data, 'content', false, {
+      'Content-Type': 'application/octet-stream',
+      'Dropbox-API-Arg': JSON.stringify({
+        path: makePathAbsolute(path)
+      })
+    });
   }
 
-  createWriteStream(session, path){
-    if(!session.token)
-      throw  'User not logged in yet. You need to call the login() first.';
+  createWriteStream(session, path) {
 
     return request({
       url: 'https://content.dropboxapi.com/2/files/upload',
@@ -241,38 +307,21 @@ class DropboxConnector {
         'Content-Type': 'application/octet-stream',
         'User-Agent': 'Unifile',
         'Dropbox-API-Arg': JSON.stringify({
-          path: path
+          path: makePathAbsolute(path)
         })
       }
     });
   }
 
   readFile(session, path) {
-    if (!session.token)
-      return Promise.reject('User not logged in yet. You need to call the login() first.');
-    else{
-      return new Promise((resolve, reject) => {
-        request({
-          url: 'https://content.dropboxapi.com/2/files/download',
-          method: 'POST',
-          headers: {
-            'Authorization': 'Bearer ' + session.token,
-            'User-Agent': 'Unifile',
-            'Dropbox-API-Arg': JSON.stringify({
-              path: path
-            })
-          }
-        }, function (err, response, body) {
-          if (err) return reject('Error while calling Dropbox API. ' + err);
-          resolve(body);
-        });
-      });
-    }
+    return callAPI(session, '/files/download', {}, 'content', false, {
+      'Dropbox-API-Arg': JSON.stringify({
+        path: makePathAbsolute(path)
+      })
+    });
   }
 
-  createReadStream(session, path){
-    if(!session.token)
-      throw  'User not logged in yet. You need to call the login() first.';
+  createReadStream(session, path) {
 
     return request({
       url: 'https://content.dropboxapi.com/2/files/download',
@@ -281,35 +330,137 @@ class DropboxConnector {
         'Authorization': 'Bearer ' + session.token,
         'User-Agent': 'Unifile',
         'Dropbox-API-Arg': JSON.stringify({
-          path: path
+          path: makePathAbsolute(path)
         })
       }
     });
   }
 
   rename(session, src, dest) {
-    if (!session.token)
-      return Promise.reject('User not logged in yet. You need to call the login() first.');
-    else{
-      return callAPI(session, '/files/move', {
-        from_path: src,
-        to_path: dest
-      });
-    }
+    return callAPI(session, '/files/move', {
+      from_path: makePathAbsolute(src),
+      to_path: makePathAbsolute(dest)
+    });
   }
 
   unlink(session, path) {
-    if (!session.token)
-      return Promise.reject('User not logged in yet. You need to call the login() first.');
-    else{
-      return callAPI(session, '/files/delete', {
-        path: path
-      });
-    }
+    return callAPI(session, '/files/delete', {
+      path: makePathAbsolute(path)
+    });
   }
 
-  rmdir(session, path){
-    return unlink(session, path);
+  rmdir(session, path) {
+    return this.unlink(session, path);
+  }
+
+  batch(session, actions, message) {
+    let actionsChain = Promise.resolve();
+
+    let uploadEntries = [];
+    let deleteEntries = [];
+    let moveEntries = [];
+
+    const batchMap = {
+      writefile: uploadBatch,
+      rmdir: deleteBatch,
+      rename: moveBatch
+    };
+
+    function closeBatchs(action) {
+      for(const key in batchMap) {
+        if(key !== action) {
+          batchMap[key]();
+        }
+      }
+    }
+
+    function moveBatch() {
+      if(moveEntries.length === 0) return Promise.resolve();
+
+      const toMove = moveEntries.slice();
+      actionsChain = actionsChain.then(() => {
+        return callAPI(session, '/files/move_batch', {
+          entries: toMove
+        })
+        .then((result) => checkBatchEnd(session, result, '/files/move_batch/check'));
+      });
+      moveEntries = [];
+    }
+
+    function deleteBatch() {
+      if(deleteEntries.length === 0) return Promise.resolve();
+
+      const toDelete = deleteEntries.slice();
+      actionsChain = actionsChain.then(() => {
+        return callAPI(session, '/files/delete_batch', {
+          entries: toDelete
+        })
+        .then((result) => checkBatchEnd(session, result, '/files/delete_batch/check'));
+      });
+      deleteEntries = [];
+    }
+
+    function uploadBatch() {
+      if(uploadEntries.length === 0) return Promise.resolve();
+
+      const toUpload = uploadEntries.slice();
+      actionsChain = actionsChain.then(() => {
+        return Promise.map(toUpload, (action) => {
+          return openUploadSession(session, action.content, true)
+          .then((result) => {
+            return {
+              cursor: {
+                session_id: result.session_id,
+                offset: action.content.length
+              },
+              commit: {
+                path: makePathAbsolute(action.path),
+                mode: {'.tag': 'add'}
+              }
+            };
+          });
+        })
+        .then((commits) => closeUploadBatchSession(session, commits))
+        .then((result) => checkBatchEnd(session, result, '/files/upload_session/finish_batch/check'));
+      });
+      uploadEntries = [];
+    }
+
+    for(const action of actions) {
+      switch (action.name.toLowerCase()) {
+        case 'unlink':
+        case 'rmdir':
+          closeBatchs('rmdir');
+          deleteEntries.push({
+            path: makePathAbsolute(action.path)
+          });
+          break;
+        case 'rename':
+          closeBatchs(action.name.toLowerCase());
+          if(!action.destination)
+            return Promise.reject('Rename action must have a `destination` field');
+          moveEntries.push({
+            from_path: makePathAbsolute(action.path),
+            to_path: makePathAbsolute(action.destination)
+          });
+          break;
+        case 'writefile':
+          closeBatchs(action.name.toLowerCase());
+          uploadEntries.push(action);
+          break;
+        case 'mkdir':
+          closeBatchs(action.name.toLowerCase());
+          actionsChain = actionsChain.then(() => {
+            this.mkdir(session, action.path);
+          });
+          break;
+        default:
+          console.warn(`Unsupported batch action: ${action.name}`);
+      }
+    }
+    closeBatchs('');
+
+    return actionsChain;
   }
 }
 
@@ -326,7 +477,7 @@ module.exports = DropboxConnector;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Sep 02 2016 15:05:37 GMT+0200 (CEST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Mon May 22 2017 16:45:01 GMT+0200 (CEST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
