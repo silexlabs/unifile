@@ -31,7 +31,7 @@ describe('Unifile class', function() {
     const unifile = new Unifile();
     // Get all the Unifile connectors
     const connectors = require('fs').readdirSync('./lib').filter((file) =>
-      file != 'index.js' && file.endsWith('.js') && !file.startsWith('.'));
+      file != 'index.js' && file != 'tools.js' && file.endsWith('.js') && !file.startsWith('.'));
     // Get all the methods of Unifile
     const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(unifile))
     // Filter out the one that should be implemented
@@ -42,7 +42,7 @@ describe('Unifile class', function() {
       describe(connectorName, function() {
         it('have to implement all the Unifile functions', function() {
           const Connector = require('../lib/' + connectorName);
-          const instance = new Connector({clientId: 'a', clientSecret: 'a'});
+          const instance = new Connector({clientId: 'a', clientSecret: 'a', redirectUri: 'a'});
           const connectorMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(instance))
             .sort();
           const missings = methods.filter((m) => !connectorMethods.includes(m));

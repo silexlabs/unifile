@@ -114,7 +114,7 @@
 
         
                 
-<h4 class="name" id="ConnectorInfos">ConnectorInfos</h4>
+<h4 class="name" id="ConnectorState">ConnectorState</h4>
 
 
 
@@ -126,6 +126,177 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="index.js.html">index.js</a>, <a href="index.js.html#line22">line 22</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>isLoggedIn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Flag wether the user is logged in.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>isOAuth</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Flag wether the connector uses OAuth as authentication mechanism.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>username</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Name used to log in.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<div class="description">
+    <p>State of the connector</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="ConnectorStaticInfos">ConnectorStaticInfos</h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line30">line 30</a>
     </li></ul></dd>
     
 
@@ -204,7 +375,7 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>ID of the connector. Must be lowercase without spaces.</p></td>
         </tr>
 
     
@@ -227,7 +398,7 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>Name that should be display. Allows characters forbidden in name.</p></td>
         </tr>
 
     
@@ -250,7 +421,7 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>Path to an icon for this connector.</p></td>
         </tr>
 
     
@@ -273,7 +444,208 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>Description of the connector.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<div class="description">
+    <p>Static infos of the connector</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="ConnectorInfos">ConnectorInfos</h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line39">line 39</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-todo">To Do:</dt>
+    <dd class="tag-todo">
+        <ul>
+            <li>Use ConnectorState and ConnectorStaticInfos docs</li>
+        </ul>
+    </dd>
+    
+</dl>
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>ID of the connector. Must be lowercase without spaces.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>displayName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Name that should be display. Allows characters forbidden in name.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>icon</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Path to an icon for this connector.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>description</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Description of the connector.</p></td>
         </tr>
 
     
@@ -296,7 +668,7 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>Flag wether the user is logged in.</p></td>
         </tr>
 
     
@@ -319,7 +691,7 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>Flag wether the connector uses OAuth as authentication mechanism.</p></td>
         </tr>
 
     
@@ -342,7 +714,7 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>Name used to log in.</p></td>
         </tr>
 
     
@@ -388,7 +760,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line34">line 34</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line52">line 52</a>
     </li></ul></dd>
     
 
@@ -679,7 +1051,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line49">line 49</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line67">line 67</a>
     </li></ul></dd>
     
 
@@ -899,7 +1271,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Mon May 22 2017 16:45:01 GMT+0200 (CEST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Mon May 22 2017 17:38:29 GMT+0200 (CEST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

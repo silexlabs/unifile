@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Addded
 - SFTP support
 - `.stat()` method that return information abouth the given path
+- Connector constructor now accepts `infos` to override static infos
 
 ### Fixed
 - `.getInfos()` now correctly get the session

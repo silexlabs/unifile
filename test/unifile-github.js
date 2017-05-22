@@ -161,9 +161,11 @@ describe('GitHub connector', function() {
       var gh = new GitHubConnector({
         clientId: 'a',
         clientSecret: 'a',
-        name: 'ghtest',
         serviceHost: 'localhost',
-        redirectUri: 'http://localhost:3000/test'
+        redirectUri: 'http://localhost:3000/test',
+        infos: {
+          name: 'ghtest'
+        }
       });
       expect(gh).to.be.an.instanceof(GitHubConnector);
       expect(gh.clientId).to.equal('a');
