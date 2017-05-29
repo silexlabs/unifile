@@ -99,4 +99,6 @@ globals:
   describe: false
   it: false
   beforeEach: false
+  before: false
+  after: false
 
