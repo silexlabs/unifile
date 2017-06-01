@@ -205,13 +205,24 @@ describe('FsConnector', function() {
 
     it('lists files in any directory if sandbox is empty', function() {
       const connector = new FsConnector({sandbox: []});
-      return connector.readdir({}, '/')
+      return connector.readdir({}, '/tmp')
       .then((list) => {
         expect(list).to.be.an.instanceof(Array);
         list.every((file) => {
+          // Hidden file stay hidden by default
+          file.name.startsWith('.').should.be.false;
           const keys = Object.keys(file);
           return ['isDir', 'mime', 'modified', 'name', 'size'].every((key) => keys.includes(key));
         }).should.be.true;
+      })
+      .then(() => {
+        Fs.writeFileSync('/tmp/.test');
+        connector.showHiddenFile = true;
+        return connector.readdir({}, '/tmp');
+      })
+      .then((list) => {
+        expect(list).to.be.an.instanceof(Array);
+        list.some((file) => file.name.startsWith('.')).should.be.true;
       });
     });
   });
