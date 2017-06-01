@@ -44,7 +44,11 @@ const mime = require('mime');
 const Fs = Promise.promisifyAll(require('fs'), {suffix: 'Promised'});
 const Path = require('path');
 
+const Tools = require('./tools');
+
 const NAME = 'fs';
+
+const validatePath = Symbol('validatePath');
 
 function statToFileInfos(filename, stat) {
   const isDir = stat.isDirectory();
@@ -64,23 +68,41 @@ class FsConnector {
   /**
    * @constructor
    * @param {Object} config - Configuration object
+   * @param {string|Array&lt;string>} [config.sandbox] - Restrict connector access to this path (if string)
+   * or these paths (if array)
+   * @param {string} [config.rootPath] - Path against all relative paths will be resolved.
+   * Default to the first sandbox path if given or /.
    * @param {boolean} [config.showHiddenFiles=false] - Flag to show hidden files.
+   * @param {ConnectorStaticInfos} [config.infos] - Connector infos to override
+   * @throws {Error} Invalid sandbox path.
    */
   constructor(config) {
-    this.config = config;
-    this.name = NAME;
-  }
-
-  getInfos(session) {
-    return {
+    const conf = config || {};
+    this.showHiddenFile = conf.showHiddenFile;
+    this.infos = Tools.mergeInfos(conf.infos, {
       name: NAME,
       displayName: 'Local',
       icon: '',
-      description: 'Edit files on your local drive.',
+      description: 'Edit files on your local drive.'
+    });
+    this.name = this.infos.name;
+
+    if(!conf.sandbox) this.sandbox = [];
+    else if(conf.sandbox.constructor === String) this.sandbox = [conf.sandbox];
+    else if(Array.isArray(conf.sandbox)) this.sandbox = conf.sandbox;
+    else throw new Error('Invalid sandbox path. Must be a string or an array');
+
+    if(conf.rootPath) this.rootPath = conf.rootPath;
+    else if(this.sandbox.length > 0) this.rootPath = this.sandbox[0];
+    else this.rootPath = '/';
+  }
+
+  getInfos(session) {
+    return Object.assign({
       isLoggedIn: true,
       isOAuth: false,
-      username: ''
-    };
+      username: process.env.USER
+    }, this.infos);
   }
 
   // Auth methods are useless here
@@ -104,57 +126,91 @@ class FsConnector {
   //Filesystem commands
 
   readdir(session, path) {
-    return Fs.readdirPromised(path)
-    .reduce((memo, entry) => {
-      if(this.config.showHiddenFile || entry.charAt(0) != '.') {
-        return Fs.statPromised(Path.resolve(path, entry))
-        .then((stat) => {
-          memo.push(statToFileInfos(entry, stat));
+    try {
+      const securePath = this[validatePath](path);
+      return Fs.readdirPromised(securePath)
+      .reduce((memo, entry) => {
+        if(this.showHiddenFile || entry.charAt(0) != '.') {
+          return Fs.statPromised(Path.resolve(securePath, entry))
+            .then((stat) => {
+              memo.push(statToFileInfos(entry, stat));
+              return memo;
+            });
+        } else {
           return memo;
-        });
-      } else {
-        return memo;
-      }
-    }, []);
+        }
+      }, []);
+    } catch (e) {
+      return Promise.reject(e);
+    }
   }
 
   stat(session, path) {
-    return Fs.statPromised(path)
-    .then((stat) => {
-      return statToFileInfos(Path.basename(path), stat);
-    });
+    try {
+      const securePath = this[validatePath](path);
+      return Fs.statPromised(securePath)
+      .then((stat) => {
+        return statToFileInfos(Path.basename(securePath), stat);
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
   }
 
   mkdir(session, path) {
-    return Fs.mkdirPromised(path);
+    try {
+      return Fs.mkdirPromised(this[validatePath](path));
+    } catch (e) {
+      return Promise.reject(e);
+    }
   }
 
   writeFile(session, path, data) {
-    return Fs.writeFilePromised(path, data);
+    try {
+      return Fs.writeFilePromised(this[validatePath](path), data);
+    } catch (e) {
+      return Promise.reject(e);
+    }
   }
 
   createWriteStream(session, path) {
-    return Fs.createWriteStream(path);
+    return Fs.createWriteStream(this[validatePath](path));
   }
 
   readFile(session, path) {
-    return Fs.readFilePromised(path);
+    try {
+      return Fs.readFilePromised(this[validatePath](path), 'utf8');
+    } catch (e) {
+      return Promise.reject(e);
+    }
   }
 
   createReadStream(session, path) {
-    return Fs.createReadStream(path);
+    return Fs.createReadStream(this[validatePath](path), {encoding: 'utf8'});
   }
 
   rename(session, src, dest) {
-    return Fs.renamePromised(src, dest);
+    try {
+      return Fs.renamePromised(this[validatePath](src), this[validatePath](dest));
+    } catch (e) {
+      return Promise.reject(e);
+    }
   }
 
   unlink(session, path) {
-    return Fs.unlinkPromised(path);
+    try {
+      return Fs.unlinkPromised(this[validatePath](path));
+    } catch (e) {
+      return Promise.reject(e);
+    }
   }
 
   rmdir(session, path) {
-    return Fs.rmdirPromised(path);
+    try {
+      return Fs.rmdirPromised(this[validatePath](path));
+    } catch (e) {
+      return Promise.reject(e);
+    }
   }
 
   batch(session, actions, message) {
@@ -177,6 +233,17 @@ class FsConnector {
       }
     });
   }
+
+  /**
+   * Ensure the given path is in the user-defined sandbox
+   * @private
+   */
+  [validatePath](path) {
+    const absolutePath = Path.resolve(this.rootPath, path);
+    if(this.sandbox.length !== 0 &amp;&amp; !this.sandbox.some((sandboxPath) => absolutePath.startsWith(sandboxPath)))
+      throw new Error(`Path is out of the sandbox: ${absolutePath}`);
+    return absolutePath;
+  }
 }
 
 module.exports = FsConnector;
@@ -192,7 +259,7 @@ module.exports = FsConnector;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Mon May 22 2017 17:38:29 GMT+0200 (CEST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Thu Jun 01 2017 17:12:38 GMT+0200 (CEST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
