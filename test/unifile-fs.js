@@ -1,5 +1,6 @@
 'use strict';
 
+const Path = require('path');
 const Fs = require('fs');
 const {Readable, Writable} = require('stream');
 const chai = require('chai');
@@ -55,9 +56,12 @@ describe('FsConnector', function() {
       let connector = new FsConnector({sandbox: ''});
       expect(connector.sandbox).to.be.an.instanceof(Array);
       expect(connector.sandbox).to.deep.equal([]);
+
       connector = new FsConnector({sandbox: '/'});
       expect(connector.sandbox).to.be.an.instanceof(Array);
       expect(connector.sandbox).to.deep.equal(['/']);
+      expect(connector.rootPath).to.equal('/');
+
       connector = new FsConnector({sandbox: new String('/a')});
       expect(connector.sandbox).to.be.an.instanceof(Array);
       expect(connector.sandbox.length).to.equal(1);
@@ -68,13 +72,20 @@ describe('FsConnector', function() {
       expect(connector.sandbox).to.be.an.instanceof(Array);
       expect(connector.sandbox).to.deep.equal([]);
 
-      connector = new FsConnector({sandbox: ['/']});
+      connector = new FsConnector({sandbox: ['/home']});
       expect(connector.sandbox).to.be.an.instanceof(Array);
-      expect(connector.sandbox).to.deep.equal(['/']);
+      expect(connector.sandbox).to.deep.equal(['/home']);
+      expect(connector.rootPath).to.equal('/home');
 
-      connector = new FsConnector({sandbox: ['/', 'a']});
+      connector = new FsConnector({sandbox: ['/home', 'a']});
       expect(connector.sandbox).to.be.an.instanceof(Array);
-      expect(connector.sandbox).to.deep.equal(['/', 'a']);
+      expect(connector.sandbox).to.deep.equal(['/home', 'a']);
+      expect(connector.rootPath).to.equal('/home');
+    });
+
+    it('sets a rootPath even if a sandbox is set', function() {
+      const connector = new FsConnector({sandbox: ['/home', '/usr'], rootPath: '/etc'});
+      expect(connector.rootPath).to.equal('/etc');
     });
 
     it('throws an error if sandbox is nor a string nor an array', function() {
@@ -175,14 +186,21 @@ describe('FsConnector', function() {
     });
 
     it('lists files in the directory with proper entry infomations', function() {
-      return connector.readdir({}, 'test')
-      .then((list) => {
+      const checkFiles = (list) => {
         expect(list).to.be.an.instanceof(Array);
         list.every((file) => {
           const keys = Object.keys(file);
           return ['isDir', 'mime', 'modified', 'name', 'size'].every((key) => keys.includes(key));
         }).should.be.true;
-      });
+      };
+      return connector.readdir({}, __dirname)
+      .then(checkFiles)
+      // Try with relative path and rootPath
+      .then(() => {
+        connector.rootPath = __dirname;
+        return connector.readdir({}, '.');
+      })
+      .then(checkFiles);
     });
 
     it('lists files in any directory if sandbox is empty', function() {
@@ -201,7 +219,7 @@ describe('FsConnector', function() {
   describe('stat()', function() {
     var connector;
     beforeEach('Instanciation', function() {
-      connector = new FsConnector({sandbox: ['/home']});
+      connector = new FsConnector({sandbox: ['/home'], rootPath: Path.dirname(__dirname)});
     });
 
     it('rejects the promise if the path is not in the sandbox', function() {
