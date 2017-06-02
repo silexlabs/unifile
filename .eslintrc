@@ -27,6 +27,7 @@ rules:
   no-unsafe-negation: 2
   use-isnan: 2
   valid-typeof: 2
+  no-param-reassign: 2
 
   # Best Practices
   # http://eslint.org/docs/rules/#best-practices

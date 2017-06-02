@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ## [Unreleased]
 ### Changed
 - Code factorization
+- Remove parameters mutations
+
+### Added
+- Tools, index and FS are 100% covered
 
 ## [1.2.0] - 2017-06-01
 ### Added

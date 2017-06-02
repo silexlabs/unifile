@@ -274,15 +274,14 @@ describe('GitHub connector', function() {
     });
 
     it('does not change a thing when not logged', function() {
-      expect(gh.clearAccessToken({})).to.be.fulfilled;
+      return expect(gh.clearAccessToken({})).to.be.fulfilled;
     });
 
     it('clears all authentification', function() {
       const session = {token: 'token', basic: 'basic', account: {}};
-      expect(gh.clearAccessToken(session)).to.be.fulfilled
+      return gh.clearAccessToken(session)
       .then(() => {
-        expect(session.token).to.be.null;
-        expect(session.account).to.be.null;
+        expect(session).to.deep.equal({});
       });
     });
   });
@@ -294,13 +293,13 @@ describe('GitHub connector', function() {
     });
 
     it('returns the OAuth authorize URL', function() {
-      expect(gh.getAuthorizeURL({})).to.eventually
+      return expect(gh.getAuthorizeURL({})).to.eventually
       .include('https://github.com/login/oauth/authorize?scope=repo,delete_repo&client_id=a&state=');
     });
 
     it('uses a different state each call', function() {
       let state;
-      gh.getAuthorizeURL({})
+      return gh.getAuthorizeURL({})
       .then((url) => state = url.split('=').pop())
       .then(() => gh.getAuthorizeURL({}))
       .then((url) => expect(url.split('=').pop()).to.not.equal(state));

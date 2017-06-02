@@ -52,6 +52,11 @@ describe('FsConnector', function() {
       });
     });
 
+    it('ignores invalid infos', function() {
+      const connector = new FsConnector({infos: 3});
+      expect(connector.infos).to.deep.equal(fsDefaultInfos);
+    });
+
     it('creates a sandbox from a string', function() {
       let connector = new FsConnector({sandbox: ''});
       expect(connector.sandbox).to.be.an.instanceof(Array);
@@ -501,6 +506,21 @@ describe('FsConnector', function() {
     });
 
     it('executes action in order', function() {
+      return connector.batch({}, creation)
+      .then(() => {
+        expect(Fs.statSync('/tmp/test')).to.exist;
+        expect(() => Fs.statSync('/tmp/test/a')).to.throw('ENOENT');
+        expect(Fs.statSync('/tmp/test/b')).to.exist;
+
+        return connector.batch({}, destruction);
+      })
+      .then(() => {
+        expect(() => Fs.statSync('/tmp/test')).to.throw('ENOENT');
+      });
+    });
+
+    it('executes action in order and ignores unsupported ones', function() {
+      creation.unshift({name: 'createReadStream', path: '/tmp/test'});
       return connector.batch({}, creation)
       .then(() => {
         expect(Fs.statSync('/tmp/test')).to.exist;

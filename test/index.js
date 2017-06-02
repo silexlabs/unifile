@@ -238,6 +238,12 @@ describe('Unifile class', function() {
       expect(fn).to.throw('This connector does not implement');
     });
 
+    it('throws an error if no session is given', function() {
+      const connector = {name: 'test', login: function() {return new Promise.resolve();}};
+      unifile.use(connector);
+      return expect(() => unifile.login(null, connector.name)).to.throw('No session');
+    });
+
     it('returns a promise of the login function of the connector', function() {
       const connector = {name: 'test', login: function() {return new Promise.resolve();}};
       unifile.use(connector);
