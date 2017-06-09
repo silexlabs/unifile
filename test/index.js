@@ -429,7 +429,7 @@ describe('Unifile class', function() {
       });
     });
 
-    it('returns a promise of the writeFilefunction of the connector', function() {
+    it('returns a promise of the readFile of the connector', function() {
       const connector = {name: 'test', readFile: function() {return new Promise.resolve();}, getInfos: loggedInfos};
       unifile.use(connector);
       expect(unifile.readFile({[connector.name]: {token: 'a'}}, connector.name)).to.be.an.instanceof(Promise);
@@ -465,10 +465,10 @@ describe('Unifile class', function() {
       });
     });
 
-    it('returns a promise of the writeFilefunction of the connector', function() {
-      const connector = {name: 'test', readFile: function() {return new Promise.resolve();}, getInfos: loggedInfos};
+    it('returns a promise of the stat of the connector', function() {
+      const connector = {name: 'test', stat: function() {return new Promise.resolve();}, getInfos: loggedInfos};
       unifile.use(connector);
-      expect(unifile.readFile({[connector.name]: {token: 'a'}}, connector.name)).to.be.an.instanceof(Promise);
+      expect(unifile.stat({[connector.name]: {token: 'a'}}, connector.name)).to.be.an.instanceof(Promise);
     });
   });
 

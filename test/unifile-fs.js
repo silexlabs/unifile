@@ -132,7 +132,7 @@ describe('FsConnector', function() {
   });
 
   describe('getAuthorizeURL()', function() {
-    var connector;
+    let connector;
     beforeEach('Instanciation', function() {
       connector = new FsConnector();
     });
@@ -143,7 +143,7 @@ describe('FsConnector', function() {
   });
 
   describe('setAccessToken()', function() {
-    var connector;
+    let connector;
     beforeEach('Instanciation', function() {
       connector = new FsConnector();
     });
@@ -155,7 +155,7 @@ describe('FsConnector', function() {
   });
 
   describe('clearAccessToken()', function() {
-    var connector;
+    let connector;
     beforeEach('Instanciation', function() {
       connector = new FsConnector();
     });
@@ -166,7 +166,7 @@ describe('FsConnector', function() {
   });
 
   describe('login()', function() {
-    var connector;
+    let connector;
     beforeEach('Instanciation', function() {
       connector = new FsConnector();
     });
@@ -177,7 +177,7 @@ describe('FsConnector', function() {
   });
 
   describe('readdir()', function() {
-    var connector;
+    let connector;
     beforeEach('Instanciation', function() {
       connector = new FsConnector({sandbox: ['/home']});
     });
@@ -233,7 +233,7 @@ describe('FsConnector', function() {
   });
 
   describe('stat()', function() {
-    var connector;
+    let connector;
     beforeEach('Instanciation', function() {
       connector = new FsConnector({sandbox: ['/home'], rootPath: Path.dirname(__dirname)});
     });
@@ -256,7 +256,7 @@ describe('FsConnector', function() {
       });
     });
 
-    it('lists files in any directory if sandbox is empty', function() {
+    it('gives stat of any file if sandbox is empty', function() {
       const connector = new FsConnector({sandbox: ['/']});
       return connector.stat({}, '/')
       .then((stat) => {
@@ -269,7 +269,7 @@ describe('FsConnector', function() {
   });
 
   describe('mkdir()', function() {
-    var connector;
+    let connector;
     beforeEach('Instanciation', function() {
       connector = new FsConnector({sandbox: ['/home', '/tmp']});
     });
@@ -295,7 +295,7 @@ describe('FsConnector', function() {
   });
 
   describe('writeFile()', function() {
-    var connector;
+    let connector;
     const data = 'lorem ipsum';
     beforeEach('Instanciation', function() {
       connector = new FsConnector({sandbox: '/tmp'});
@@ -318,7 +318,7 @@ describe('FsConnector', function() {
   });
 
   describe('createWriteStream()', function() {
-    var connector;
+    let connector;
     const data = 'lorem ipsum';
     beforeEach('Instanciation', function() {
       connector = new FsConnector({sandbox: '/tmp'});
@@ -346,7 +346,7 @@ describe('FsConnector', function() {
   });
 
   describe('readFile()', function() {
-    var connector;
+    let connector;
     const data = 'lorem ipsum';
     beforeEach('Instanciation', function() {
       connector = new FsConnector({sandbox: ['/tmp', '/home']});
@@ -377,7 +377,7 @@ describe('FsConnector', function() {
   });
 
   describe('createReadStream()', function() {
-    var connector;
+    let connector;
     const data = 'lorem ipsum';
     beforeEach('Instanciation', function() {
       connector = new FsConnector({sandbox: '/tmp'});
@@ -405,7 +405,7 @@ describe('FsConnector', function() {
   });
 
   describe('rename()', function() {
-    var connector;
+    let connector;
     beforeEach('Instanciation', function() {
       connector = new FsConnector({sandbox: ['/tmp', '/home']});
     });
@@ -439,7 +439,7 @@ describe('FsConnector', function() {
   });
 
   describe('unlink()', function() {
-    var connector;
+    let connector;
     beforeEach('Instanciation', function() {
       connector = new FsConnector({sandbox: ['/tmp', '/home']});
     });
@@ -465,7 +465,7 @@ describe('FsConnector', function() {
   });
 
   describe('rmdir()', function() {
-    var connector;
+    let connector;
     beforeEach('Instanciation', function() {
       connector = new FsConnector({sandbox: ['/tmp', '/home']});
     });
@@ -491,7 +491,7 @@ describe('FsConnector', function() {
   });
 
   describe('batch()', function() {
-    var connector;
+    let connector;
     const creation = [
       {name: 'mkdir', path: '/tmp/test'},
       {name: 'writeFile', path: '/tmp/test/a', content: 'aaa'},
