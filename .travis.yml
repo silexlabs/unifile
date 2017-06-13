@@ -15,5 +15,5 @@ script:
   - npm test
   - npm run lint
   - npm run cover && npm run cover:check
-after_script:
+after_success:
   - npm run cover:export
