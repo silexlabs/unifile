@@ -12,7 +12,7 @@ chai.should();
 // Shut up console logging
 console.warn = function() {};
 
-const ftpDefaultInfos = {
+const webdavDefaultInfos = {
   name: 'webdav',
   displayName: 'WebDAV',
   icon: '../assets/webdav.png',
@@ -84,20 +84,20 @@ describe('WebDAVConnector', function() {
         expect(connector).to.exist;
         Object.keys(connector.infos).forEach((info) => {
           if(info !== key)
-            expect(connector.infos[info]).to.equal(ftpDefaultInfos[info]);
+            expect(connector.infos[info]).to.equal(webdavDefaultInfos[info]);
           else
             expect(connector.infos[info]).to.equal(overrides[info]);
         });
         if(key === 'name')
           expect(connector.name).to.equal(overrides.name);
         else
-          expect(connector.name).to.equal(ftpDefaultInfos.name);
+          expect(connector.name).to.equal(webdavDefaultInfos.name);
       });
     });
 
     it('ignores invalid infos', function() {
       const connector = new WebDavConnector({infos: 3, redirectUri: 'a'});
-      expect(connector.infos).to.deep.equal(ftpDefaultInfos);
+      expect(connector.infos).to.deep.equal(webdavDefaultInfos);
     });
   });
 
@@ -110,10 +110,10 @@ describe('WebDAVConnector', function() {
     it('returns an infos object', function() {
       const infos = connector.getInfos({});
       expect(infos).to.be.an.instanceof(Object);
-      expect(infos.name).to.equal(ftpDefaultInfos.name);
-      expect(infos.displayName).to.equal(ftpDefaultInfos.displayName);
-      expect(infos.icon).to.equal(ftpDefaultInfos.icon);
-      expect(infos.description).to.equal(ftpDefaultInfos.description);
+      expect(infos.name).to.equal(webdavDefaultInfos.name);
+      expect(infos.displayName).to.equal(webdavDefaultInfos.displayName);
+      expect(infos.icon).to.equal(webdavDefaultInfos.icon);
+      expect(infos.description).to.equal(webdavDefaultInfos.description);
       expect(infos.isLoggedIn).to.be.false;
       expect(infos.isOAuth).to.be.false;
       expect(infos.username).to.be.undefined;
@@ -122,10 +122,10 @@ describe('WebDAVConnector', function() {
     it('returns a customed infos object is told so', function() {
       const infos = new WebDavConnector({infos: {icon: 'ooo'}, redirectUri: 'a'}).getInfos({});
       expect(infos).to.be.an.instanceof(Object);
-      expect(infos.name).to.equal(ftpDefaultInfos.name);
-      expect(infos.displayName).to.equal(ftpDefaultInfos.displayName);
+      expect(infos.name).to.equal(webdavDefaultInfos.name);
+      expect(infos.displayName).to.equal(webdavDefaultInfos.displayName);
       expect(infos.icon).to.equal('ooo');
-      expect(infos.description).to.equal(ftpDefaultInfos.description);
+      expect(infos.description).to.equal(webdavDefaultInfos.description);
       expect(infos.isLoggedIn).to.be.false;
       expect(infos.isOAuth).to.be.false;
       expect(infos.username).to.be.undefined;
@@ -375,7 +375,7 @@ describe('WebDAVConnector', function() {
         password: 'a'
       }, 'aouoeuoeu');
       stream.on('error', (err) => {
-        expect(err.message).to.equal('Internal Server Error');
+        expect(err.message).to.equal('Unauthorized');
         done();
       });
       stream.on('data', () => {

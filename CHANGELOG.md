@@ -11,6 +11,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Added
 - Tools, index and FS are 100% covered
 
+### Fixed
+- In SFTP, directory type is now set to 'application/directory'
+
 ## [1.2.0] - 2017-06-01
 ### Added
 - SFTP support
