@@ -38,6 +38,8 @@ rules:
   no-redeclare: 2
   no-self-assign: 2
   no-unused-labels: 2
+  no-useless-escape: 2
+  no-compare-neg-zero: 2
   complexity: [2, 8]
 
   # Strict Mode
@@ -63,7 +65,7 @@ rules:
   comma-spacing: 2
   eol-last: 2
   func-call-spacing: 2
-  indent: [2, 2, {"SwitchCase": 1}]
+  indent: [2, "tab", {"SwitchCase": 1, "MemberExpression": 0}]
   key-spacing: [2, {"mode": minimum}]
   keyword-spacing: [2, {"overrides": {"if":{"after": false}, "for":{"after": false}, "while":{"after": false}}}]
   linebreak-style: [2, unix]
