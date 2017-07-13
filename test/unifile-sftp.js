@@ -483,7 +483,7 @@ describe('SFTPConnector', function() {
 		it('creates a new directory', function() {
 			return connector.mkdir(session, 'newDir')
 			.then(() => {
-				return expect(Fs.statPromised('newDir')).to.be.fullfilled;
+				return expect(Fs.statPromised('newDir')).to.be.fulfilled;
 			})
 			.then(() => Fs.rmdirPromised('newDir'));
 		});

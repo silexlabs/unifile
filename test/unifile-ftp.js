@@ -299,7 +299,7 @@ describe('FtpConnector', function() {
 		it('creates a new directory', function() {
 			return connector.mkdir(session, 'tmp2')
 			.then(() => {
-				Fs.statPromised('tmp2').should.be.fullfilled;
+				Fs.statPromised('tmp2').should.be.fulfilled;
 			});
 		});
 

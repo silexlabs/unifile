@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## [Unreleased]
 ### Changed
+- GitHub batch fixes and optimization
 - Code factorization
 - Remove parameters mutations
 
@@ -29,17 +30,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ### Changed
 - Dropbox is now more tolerant with the path (first `/` is optional)
-- Includes connector documentation to the global one
-- Includes README in documentation
+  - Includes connector documentation to the global one
+  - Includes README in documentation
 
 ## [1.1.0] - 2017-04-26
 ### Added
-- Local filesystem support
+  - Local filesystem support
 
 ## 1.0.0 - 2017-04-05
 ### Changed
-- Total rework of the philosphy
+  - Total rework of the philosphy
 
-[Unreleased]: https://github.com/silexlabs/unifile/compare/v1.2.0...HEAD
-[1.2.0]: https://github.com/silexlabs/unifile/compare/v1.1.0...v1.2.0
-[1.1.0]: https://github.com/silexlabs/unifile/compare/v1.0.0...v1.1.0
+  [Unreleased]: https://github.com/silexlabs/unifile/compare/v1.2.0...HEAD
+  [1.2.0]: https://github.com/silexlabs/unifile/compare/v1.1.0...v1.2.0
+  [1.1.0]: https://github.com/silexlabs/unifile/compare/v1.0.0...v1.1.0

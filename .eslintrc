@@ -40,7 +40,7 @@ rules:
   no-unused-labels: 2
   no-useless-escape: 2
   no-compare-neg-zero: 2
-  complexity: [2, 8]
+  complexity: [1, 8]
 
   # Strict Mode
   # http://eslint.org/docs/rules/#strict-mode

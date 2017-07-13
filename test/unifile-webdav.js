@@ -298,7 +298,7 @@ describe('WebDAVConnector', function() {
 		it('creates a new directory', function() {
 			return connector.mkdir(session, 'testFolder2')
 			.then(() => {
-				return expect(connector.readdir(session, 'testFolder2')).to.be.fullfilled;
+				return expect(connector.readdir(session, 'testFolder2')).to.be.fulfilled;
 			});
 		});
 	});
