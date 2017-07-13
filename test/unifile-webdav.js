@@ -313,7 +313,10 @@ describe('WebDAVConnector', function() {
 		it('writes into a file', function() {
 			return connector.writeFile(session, 'tmp.test', data)
 			.then(() => {
-				return connector.readFile(session, 'tmp.test').should.become(data);
+				return connector.readFile(session, 'tmp.test')
+				.then((content) => {
+					return expect(content.toString()).to.equal(data);
+				});
 			});
 		});
 	});
@@ -331,7 +334,7 @@ describe('WebDAVConnector', function() {
 			stream.on('end', () => {
 				return connector.readFile(session, 'tmp.test')
 				.then((result) => {
-					expect(result).to.equal(data);
+					expect(result.toString()).to.equal(data);
 					done();
 				})
 				// Needed because the promise would catch the expect thrown exception
@@ -426,7 +429,10 @@ describe('WebDAVConnector', function() {
 				return connector.readFile(session, 'testFolder/testA.txt').should.be.rejectedWith('Not Found');
 			})
 			.then(() => {
-				return connector.readFile(session, 'testFolder/testB.txt').should.become('lorem ipsum');
+				return connector.readFile(session, 'testFolder/testB.txt')
+				.then((content) => {
+					return expect(content.toString()).to.equal('lorem ipsum');
+				});
 			});
 		});
 	});

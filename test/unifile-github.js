@@ -30,7 +30,7 @@ function checkSession(session) {
 	expect(session.account).to.have.all.keys('display_name', 'login', 'num_repos');
 }
 
-describe.only('GitHubConnector', function() {
+describe('GitHubConnector', function() {
 	this.slow(500);
 	this.timeout(20000);
 
@@ -643,11 +643,7 @@ describe.only('GitHubConnector', function() {
 		});
 
 		it('returns the content of a file', function() {
-			return connector.readFile(session, 'unifile_readFile/test/file1.txt')
-			.then((content) => {
-				expect(content.toString()).to.equal(data);
-				expect(content).to.be.an.instanceof(Buffer);
-			});
+			return connector.readFile(session, 'unifile_readFile/test/file1.txt').should.become(data);
 		});
 
 		after('Remove repo', function() {
@@ -783,6 +779,13 @@ describe.only('GitHubConnector', function() {
 			.then(() => {
 				return connector.readFile(session, 'unifile_rename/test/fileB.txt').should.become(data);
 			});
+			stream.on('error', done);
+			stream.on('data', (content) => chunks.push(content));
+		});
+
+		after('Remove repo', function() {
+			if(isEnvValid()) connector.rmdir(session, 'unifile_readstream');
+			else this.skip();
 		});
 
 		after('Remove repo', function() {

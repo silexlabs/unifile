@@ -604,8 +604,12 @@ describe('SFTPConnector', function() {
 			const sftp = new SFTPClient();
 			return sftp.session(session)
 			.then((sftpSession) => {
-				return connector.readFile(session, 'testRead.txt', sftpSession).should.become(data)
-				.then(() => sftpSession.end());
+				return connector.readFile(session, 'testRead.txt', sftpSession)
+				.then((content) => {
+					expect(content.toString()).to.equal(data);
+					expect(content).to.be.an.instanceof(Buffer);
+					return sftpSession.end();
+				});
 			});
 		});
 
