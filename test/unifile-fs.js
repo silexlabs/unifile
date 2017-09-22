@@ -368,6 +368,7 @@ describe('FsConnector', function() {
 			return connector.readFile({}, '/tmp/test')
 			.then((content) => {
 				expect(content.toString()).to.equal(data);
+				expect(content).to.be.an.instanceof(Buffer);
 			});
 		});
 

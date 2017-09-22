@@ -643,7 +643,11 @@ describe.only('GitHubConnector', function() {
 		});
 
 		it('returns the content of a file', function() {
-			return connector.readFile(session, 'unifile_readFile/test/file1.txt').should.become(data);
+			return connector.readFile(session, 'unifile_readFile/test/file1.txt')
+			.then((content) => {
+				expect(content.toString()).to.equal(data);
+				expect(content).to.be.an.instanceof(Buffer);
+			});
 		});
 
 		after('Remove repo', function() {

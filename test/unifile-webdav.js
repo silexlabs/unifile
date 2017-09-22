@@ -355,7 +355,11 @@ describe('WebDAVConnector', function() {
 		});
 
 		it('returns the content of a file', function() {
-			return connector.readFile(session, 'testFolder/testA.txt').should.become(data);
+			return connector.readFile(session, 'testFolder/testA.txt')
+			.then((content) => {
+				expect(content.toString()).to.equal(data);
+				expect(content).to.be.an.instanceof(Buffer);
+			});
 		});
 	});
 

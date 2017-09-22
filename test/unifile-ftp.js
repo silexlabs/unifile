@@ -390,6 +390,7 @@ describe('FtpConnector', function() {
 			return connector.readFile(session, 'tmp.test')
 			.then((content) => {
 				expect(content.toString()).to.equal(data);
+				expect(content).to.be.an.instanceof(Buffer);
 			});
 		});
 

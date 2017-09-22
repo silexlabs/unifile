@@ -593,7 +593,11 @@ describe('SFTPConnector', function() {
 		});
 
 		it('returns the content of a file', function() {
-			return connector.readFile(session, 'testRead.txt').should.become(data);
+			return connector.readFile(session, 'testRead.txt')
+			.then((content) => {
+				expect(content.toString()).to.equal(data);
+				expect(content).to.be.an.instanceof(Buffer);
+			});
 		});
 
 		it('reuses a session if one is given', function() {
