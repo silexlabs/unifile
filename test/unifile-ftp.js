@@ -299,7 +299,7 @@ describe('FtpConnector', function() {
 		it('creates a new directory', function() {
 			return connector.mkdir(session, 'tmp2')
 			.then(() => {
-				Fs.statPromised('tmp2').should.be.fullfilled;
+				Fs.statPromised('tmp2').should.be.fulfilled;
 			});
 		});
 
@@ -387,7 +387,11 @@ describe('FtpConnector', function() {
 		});
 
 		it('returns the content of a file', function() {
-			return connector.readFile(session, 'tmp.test').should.become(data);
+			return connector.readFile(session, 'tmp.test')
+			.then((content) => {
+				expect(content.toString()).to.equal(data);
+				expect(content).to.be.an.instanceof(Buffer);
+			});
 		});
 
 		after('Cleaning', function() {
