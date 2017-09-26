@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 - GitHub batch fixes and optimization
 - Code factorization
 - Remove parameters mutations
+- `.readFile()` now always return a `Buffer`
 
 ### Added
 - Tools, index and FS are 100% covered
