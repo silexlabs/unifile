@@ -779,8 +779,6 @@ describe('GitHubConnector', function() {
 			.then(() => {
 				return connector.readFile(session, 'unifile_rename/test/fileB.txt').should.become(data);
 			});
-			stream.on('error', done);
-			stream.on('data', (content) => chunks.push(content));
 		});
 
 		after('Remove repo', function() {

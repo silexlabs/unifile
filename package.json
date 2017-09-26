@@ -8,16 +8,10 @@
   ],
   "dependencies": {
     "bluebird": "^3.0.5",
-    "chai": "^4.0.2",
-    "chai-as-promised": "^7.0.0",
-    "eslint": "^4.1.1",
     "ftp": "^0.3.10",
-    "jsdoc": "^3.5.5",
     "mime": "^2.0.3",
-    "mocha": "^4.0.1",
     "request": "^2.72.0",
     "sftp-promises": "^1.4.1",
-    "webdav-server": "^2.3.5",
     "webfinger.js": "^2.4.2",
     "xml-stream": "^0.4.5"
   },
@@ -29,12 +23,12 @@
     "eslint": "^4.1.1",
     "ftp-srv": "^2.7.2",
     "istanbul": "^0.4.5",
-    "jsdoc": "^3.4.0",
-    "mocha": "^3.0.2",
+    "jsdoc": "^3.5.5",
+    "mocha": "^4.0.1",
     "pem": "^1.9.7",
     "proxyquire": "^1.7.10",
     "ssh2": "^0.5.5",
-    "webdav-server": "^1.5.5"
+    "webdav-server": "^2.3.5"
   },
   "repository": {
     "type": "git",
