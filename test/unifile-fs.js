@@ -19,6 +19,10 @@ const fsDefaultInfos = {
 	description: 'Edit files on your local drive.'
 };
 
+function createDefaultConnector() {
+	return new FsConnector({sandbox: [Os.homedir(), Os.tmpdir()]});
+}
+
 describe('FsConnector', function() {
 	describe('constructor', function() {
 		it('create a new instance with empty config', function() {
@@ -195,11 +199,11 @@ describe('FsConnector', function() {
 					return ['isDir', 'mime', 'modified', 'name', 'size'].every((key) => keys.includes(key));
 				}).should.be.true;
 			};
-			return connector.readdir({}, __dirname)
+			return connector.readdir({}, Os.homedir())
 			.then(checkFiles)
 			// Try with relative path and rootPath
 			.then(() => {
-				connector.rootPath = __dirname;
+				connector.rootPath = Os.homedir();
 				return connector.readdir({}, '.');
 			})
 			.then(checkFiles);
@@ -232,7 +236,7 @@ describe('FsConnector', function() {
 	describe('stat()', function() {
 		let connector;
 		beforeEach('Instanciation', function() {
-			connector = new FsConnector({sandbox: [Os.homedir()], rootPath: Path.dirname(__dirname)});
+			connector = new FsConnector({sandbox: [Os.homedir(), __dirname], rootPath: Path.dirname(__dirname)});
 		});
 
 		it('rejects the promise if the path is not in the sandbox', function() {
@@ -254,7 +258,7 @@ describe('FsConnector', function() {
 		});
 
 		it('gives stat of any file if sandbox is empty', function() {
-			const connector = new FsConnector({sandbox: ['/']});
+			const connector = new FsConnector({});
 			return connector.stat({}, '/')
 			.then((stat) => {
 				expect(stat).to.be.an.instanceof(Object);
@@ -269,7 +273,7 @@ describe('FsConnector', function() {
 		let connector;
 		const dirname = 'test' + Date.now();
 		beforeEach('Instanciation', function() {
-			connector = new FsConnector({sandbox: [Os.homedir(), Os.tmpdir()]});
+			connector = createDefaultConnector();
 		});
 
 		it('rejects the promise if the path is not in the sandbox', function() {
@@ -347,7 +351,7 @@ describe('FsConnector', function() {
 		let connector;
 		const data = 'lorem ipsum';
 		beforeEach('Instanciation', function() {
-			connector = new FsConnector({sandbox: [Os.tmpdir(), Os.homedir()]});
+			connector = createDefaultConnector();
 		});
 
 		it('rejects the promise if the path is not in the sandbox', function() {
@@ -406,7 +410,7 @@ describe('FsConnector', function() {
 	describe('rename()', function() {
 		let connector;
 		beforeEach('Instanciation', function() {
-			connector = new FsConnector({sandbox: [Os.tmpdir(), Os.homedir()]});
+			connector = createDefaultConnector();
 		});
 
 		it('rejects the promise if one of the paths is not in the sandbox', function() {
@@ -416,8 +420,7 @@ describe('FsConnector', function() {
 		});
 
 		it('rejects the promise if one of the paths does not exist', function() {
-			return expect(connector.rename({}, Path.join(Os.homedir(), 'test'), 'home/test2')).to.be.rejectedWith('ENOENT')
-			.then(() => expect(connector.rename({}, Os.tmpdir(), 'home/test2')).to.be.rejectedWith('ENOENT'));
+			return expect(connector.rename({}, Path.join(Os.homedir(), 'test'), 'home/test2')).to.be.rejectedWith('ENOENT');
 		});
 
 		before('Create the file', function() {
@@ -440,7 +443,7 @@ describe('FsConnector', function() {
 	describe('unlink()', function() {
 		let connector;
 		beforeEach('Instanciation', function() {
-			connector = new FsConnector({sandbox: [Os.tmpdir(), Os.homedir()]});
+			connector = createDefaultConnector();
 		});
 
 		it('rejects the promise if the path is not in the sandbox', function() {
@@ -466,7 +469,7 @@ describe('FsConnector', function() {
 	describe('rmdir()', function() {
 		let connector;
 		beforeEach('Instanciation', function() {
-			connector = new FsConnector({sandbox: [Os.tmpdir(), Os.homedir()]});
+			connector = createDefaultConnector();
 		});
 
 		it('rejects the promise if the path is not in the sandbox', function() {
@@ -502,7 +505,7 @@ describe('FsConnector', function() {
 			{name: 'rmdir', path: Path.join(Os.tmpdir(), dirname)}
 		];
 		beforeEach('Instanciation', function() {
-			connector = new FsConnector({sandbox: [Os.tmpdir(), Os.homedir()]});
+			connector = createDefaultConnector();
 		});
 
 		it('executes action in order', function() {
