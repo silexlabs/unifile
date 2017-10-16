@@ -1,6 +1,7 @@
 'use strict';
 
 const Path = require('path');
+const Os = require('os');
 const Fs = require('fs');
 const {Readable, Writable} = require('stream');
 const chai = require('chai');
@@ -17,6 +18,10 @@ const fsDefaultInfos = {
 	icon: '',
 	description: 'Edit files on your local drive.'
 };
+
+function createDefaultConnector() {
+	return new FsConnector({sandbox: [Os.homedir(), Os.tmpdir()]});
+}
 
 describe('FsConnector', function() {
 	describe('constructor', function() {
@@ -77,19 +82,19 @@ describe('FsConnector', function() {
 			expect(connector.sandbox).to.be.an.instanceof(Array);
 			expect(connector.sandbox).to.deep.equal([]);
 
-			connector = new FsConnector({sandbox: ['/home']});
+			connector = new FsConnector({sandbox: [Os.homedir()]});
 			expect(connector.sandbox).to.be.an.instanceof(Array);
-			expect(connector.sandbox).to.deep.equal(['/home']);
-			expect(connector.rootPath).to.equal('/home');
+			expect(connector.sandbox).to.deep.equal([Os.homedir()]);
+			expect(connector.rootPath).to.equal(Os.homedir());
 
-			connector = new FsConnector({sandbox: ['/home', 'a']});
+			connector = new FsConnector({sandbox: [Os.homedir(), 'a']});
 			expect(connector.sandbox).to.be.an.instanceof(Array);
-			expect(connector.sandbox).to.deep.equal(['/home', 'a']);
-			expect(connector.rootPath).to.equal('/home');
+			expect(connector.sandbox).to.deep.equal([Os.homedir(), 'a']);
+			expect(connector.rootPath).to.equal(Os.homedir());
 		});
 
 		it('sets a rootPath even if a sandbox is set', function() {
-			const connector = new FsConnector({sandbox: ['/home', '/usr'], rootPath: '/etc'});
+			const connector = new FsConnector({sandbox: [Os.homedir(), '/usr'], rootPath: '/etc'});
 			expect(connector.rootPath).to.equal('/etc');
 		});
 
@@ -179,15 +184,11 @@ describe('FsConnector', function() {
 	describe('readdir()', function() {
 		let connector;
 		beforeEach('Instanciation', function() {
-			connector = new FsConnector({sandbox: ['/home']});
-		});
-
-		it('rejects the promise if the path is not in the sandbox', function() {
-			return expect(connector.readdir({}, '/test')).to.be.rejectedWith('Path is out of the sandbox');
+			connector = new FsConnector({sandbox: [Os.homedir()]});
 		});
 
 		it('rejects the promise if the path does not exist', function() {
-			return expect(connector.readdir({}, '/home/test')).to.be.rejectedWith('ENOENT');
+			return expect(connector.readdir({}, Path.join(Os.homedir(), 'test'))).to.be.rejectedWith('ENOENT');
 		});
 
 		it('lists files in the directory with proper entry infomations', function() {
@@ -198,11 +199,11 @@ describe('FsConnector', function() {
 					return ['isDir', 'mime', 'modified', 'name', 'size'].every((key) => keys.includes(key));
 				}).should.be.true;
 			};
-			return connector.readdir({}, __dirname)
+			return connector.readdir({}, Os.homedir())
 			.then(checkFiles)
 			// Try with relative path and rootPath
 			.then(() => {
-				connector.rootPath = __dirname;
+				connector.rootPath = Os.homedir();
 				return connector.readdir({}, '.');
 			})
 			.then(checkFiles);
@@ -210,7 +211,7 @@ describe('FsConnector', function() {
 
 		it('lists files in any directory if sandbox is empty', function() {
 			const connector = new FsConnector({sandbox: []});
-			return connector.readdir({}, '/tmp')
+			return connector.readdir({}, Os.tmpdir())
 			.then((list) => {
 				expect(list).to.be.an.instanceof(Array);
 				list.every((file) => {
@@ -221,9 +222,9 @@ describe('FsConnector', function() {
 				}).should.be.true;
 			})
 			.then(() => {
-				Fs.writeFileSync('/tmp/.test');
+				Fs.writeFileSync(Path.join(Os.tmpdir(), '/.test'));
 				connector.showHiddenFile = true;
-				return connector.readdir({}, '/tmp');
+				return connector.readdir({}, Os.tmpdir());
 			})
 			.then((list) => {
 				expect(list).to.be.an.instanceof(Array);
@@ -235,7 +236,7 @@ describe('FsConnector', function() {
 	describe('stat()', function() {
 		let connector;
 		beforeEach('Instanciation', function() {
-			connector = new FsConnector({sandbox: ['/home'], rootPath: Path.dirname(__dirname)});
+			connector = new FsConnector({sandbox: [Os.homedir(), __dirname], rootPath: Path.dirname(__dirname)});
 		});
 
 		it('rejects the promise if the path is not in the sandbox', function() {
@@ -243,7 +244,7 @@ describe('FsConnector', function() {
 		});
 
 		it('rejects the promise if the path does not exist', function() {
-			return expect(connector.stat({}, '/home/test')).to.be.rejectedWith('ENOENT');
+			return expect(connector.stat({}, Path.join(Os.homedir(), 'test'))).to.be.rejectedWith('ENOENT');
 		});
 
 		it('gives stats on an entry with proper infomations', function() {
@@ -257,7 +258,7 @@ describe('FsConnector', function() {
 		});
 
 		it('gives stat of any file if sandbox is empty', function() {
-			const connector = new FsConnector({sandbox: ['/']});
+			const connector = new FsConnector({});
 			return connector.stat({}, '/')
 			.then((stat) => {
 				expect(stat).to.be.an.instanceof(Object);
@@ -270,8 +271,9 @@ describe('FsConnector', function() {
 
 	describe('mkdir()', function() {
 		let connector;
+		const dirname = 'test' + Date.now();
 		beforeEach('Instanciation', function() {
-			connector = new FsConnector({sandbox: ['/home', '/tmp']});
+			connector = createDefaultConnector();
 		});
 
 		it('rejects the promise if the path is not in the sandbox', function() {
@@ -279,18 +281,18 @@ describe('FsConnector', function() {
 		});
 
 		it('throws an error if the path already exist', function() {
-			return expect(connector.mkdir({}, '/home')).to.be.rejectedWith('EEXIST');
+			return expect(connector.mkdir({}, Os.homedir())).to.be.rejectedWith('EEXIST');
 		});
 
 		it('creates a new directory', function() {
-			return connector.mkdir({}, '/tmp/test')
+			return connector.mkdir({}, Path.join(Os.tmpdir(), dirname))
 			.then(() => {
-				Fs.statSync('/tmp/test').should.exist;
+				Fs.statSync(Path.join(Os.tmpdir(), dirname)).should.exist;
 			});
 		});
 
 		after('Cleaning', function() {
-			Fs.rmdirSync('/tmp/test');
+			Fs.rmdirSync(Path.join(Os.tmpdir(), dirname));
 		});
 	});
 
@@ -298,7 +300,7 @@ describe('FsConnector', function() {
 		let connector;
 		const data = 'lorem ipsum';
 		beforeEach('Instanciation', function() {
-			connector = new FsConnector({sandbox: '/tmp'});
+			connector = new FsConnector({sandbox: Os.tmpdir()});
 		});
 
 		it('rejects the promise if the path is not in the sandbox', function() {
@@ -306,14 +308,14 @@ describe('FsConnector', function() {
 		});
 
 		it('writes into a file', function() {
-			return connector.writeFile({}, '/tmp/test', data)
+			return connector.writeFile({}, Path.join(Os.tmpdir(), 'test'), data)
 			.then(() => {
-				Fs.statSync('/tmp/test').should.exist;
+				Fs.statSync(Path.join(Os.tmpdir(), 'test')).should.exist;
 			});
 		});
 
 		after('Cleaning', function() {
-			Fs.unlinkSync('/tmp/test');
+			Fs.unlinkSync(Path.join(Os.tmpdir(), 'test'));
 		});
 	});
 
@@ -321,7 +323,7 @@ describe('FsConnector', function() {
 		let connector;
 		const data = 'lorem ipsum';
 		beforeEach('Instanciation', function() {
-			connector = new FsConnector({sandbox: '/tmp'});
+			connector = new FsConnector({sandbox: Os.tmpdir()});
 		});
 
 		it('throws an error if the path is not in the sandbox', function() {
@@ -329,10 +331,10 @@ describe('FsConnector', function() {
 		});
 
 		it('creates a writable stream', function(done) {
-			const stream = connector.createWriteStream({}, '/tmp/test');
+			const stream = connector.createWriteStream({}, Path.join(Os.tmpdir(), 'test'));
 			expect(stream).to.be.an.instanceof(Writable);
 			stream.on('finish', () => {
-				Fs.readFileSync('/tmp/test', 'utf8').should.equal(data);
+				Fs.readFileSync(Path.join(Os.tmpdir(), 'test'), 'utf8').should.equal(data);
 				done();
 			});
 			stream.on('error', done);
@@ -341,7 +343,7 @@ describe('FsConnector', function() {
 		});
 
 		after('Cleaning', function() {
-			Fs.unlinkSync('/tmp/test');
+			Fs.unlinkSync(Path.join(Os.tmpdir(), 'test'));
 		});
 	});
 
@@ -349,7 +351,7 @@ describe('FsConnector', function() {
 		let connector;
 		const data = 'lorem ipsum';
 		beforeEach('Instanciation', function() {
-			connector = new FsConnector({sandbox: ['/tmp', '/home']});
+			connector = createDefaultConnector();
 		});
 
 		it('rejects the promise if the path is not in the sandbox', function() {
@@ -357,15 +359,15 @@ describe('FsConnector', function() {
 		});
 
 		it('rejects the promise if the path does not exist', function() {
-			return expect(connector.readFile({}, '/home/test')).to.be.rejectedWith('ENOENT');
+			return expect(connector.readFile({}, Path.join(Os.homedir(), 'test'))).to.be.rejectedWith('ENOENT');
 		});
 
 		before('Create the file', function() {
-			Fs.writeFileSync('/tmp/test', data);
+			Fs.writeFileSync(Path.join(Os.tmpdir(), 'test'), data);
 		});
 
 		it('returns the content of a file', function() {
-			return connector.readFile({}, '/tmp/test')
+			return connector.readFile({}, Path.join(Os.tmpdir(), 'test'))
 			.then((content) => {
 				expect(content.toString()).to.equal(data);
 				expect(content).to.be.an.instanceof(Buffer);
@@ -373,7 +375,7 @@ describe('FsConnector', function() {
 		});
 
 		after('Cleaning', function() {
-			Fs.unlinkSync('/tmp/test');
+			Fs.unlinkSync(Path.join(Os.tmpdir(), 'test'));
 		});
 	});
 
@@ -381,7 +383,7 @@ describe('FsConnector', function() {
 		let connector;
 		const data = 'lorem ipsum';
 		beforeEach('Instanciation', function() {
-			connector = new FsConnector({sandbox: '/tmp'});
+			connector = new FsConnector({sandbox: Os.tmpdir()});
 		});
 
 		it('throws an error if the path is not in the sandbox', function() {
@@ -389,11 +391,11 @@ describe('FsConnector', function() {
 		});
 
 		before('Create the file', function() {
-			Fs.writeFileSync('/tmp/test', data);
+			Fs.writeFileSync(Path.join(Os.tmpdir(), 'test'), data);
 		});
 
 		it('creates a readable stream', function(done) {
-			const stream = connector.createReadStream({}, '/tmp/test');
+			const stream = connector.createReadStream({}, Path.join(Os.tmpdir(), 'test'));
 			expect(stream).to.be.an.instanceof(Readable);
 			stream.on('end', done);
 			stream.on('error', done);
@@ -401,48 +403,47 @@ describe('FsConnector', function() {
 		});
 
 		after('Cleaning', function() {
-			Fs.unlinkSync('/tmp/test');
+			Fs.unlinkSync(Path.join(Os.tmpdir(), 'test'));
 		});
 	});
 
 	describe('rename()', function() {
 		let connector;
 		beforeEach('Instanciation', function() {
-			connector = new FsConnector({sandbox: ['/tmp', '/home']});
+			connector = createDefaultConnector();
 		});
 
 		it('rejects the promise if one of the paths is not in the sandbox', function() {
-			return expect(connector.rename({}, '/test', '/home')).to.be.rejectedWith('Path is out of the sandbox')
-			.then(() => expect(connector.rename({}, '/home', '/test')).to.be.rejectedWith('Path is out of the sandbox'))
+			return expect(connector.rename({}, '/test', Os.homedir())).to.be.rejectedWith('Path is out of the sandbox')
+			.then(() => expect(connector.rename({}, Os.homedir(), '/test')).to.be.rejectedWith('Path is out of the sandbox'))
 			.then(() => expect(connector.rename({}, '/test', '/usr')).to.be.rejectedWith('Path is out of the sandbox'));
 		});
 
 		it('rejects the promise if one of the paths does not exist', function() {
-			return expect(connector.rename({}, '/home/test', 'home/test2')).to.be.rejectedWith('ENOENT')
-			.then(() => expect(connector.rename({}, '/tmp', 'home/test2')).to.be.rejectedWith('ENOENT'));
+			return expect(connector.rename({}, Path.join(Os.homedir(), 'test'), 'home/test2')).to.be.rejectedWith('ENOENT');
 		});
 
 		before('Create the file', function() {
-			Fs.writeFileSync('/tmp/test', '');
+			Fs.writeFileSync(Path.join(Os.tmpdir(), 'test'), '');
 		});
 
 		it('renames a file', function() {
-			return connector.rename({}, '/tmp/test', '/tmp/test2')
+			return connector.rename({}, Path.join(Os.tmpdir(), 'test'), Path.join(Os.tmpdir(), '/test2'))
 			.then((content) => {
-				expect(() => Fs.statSync('/tmp/test')).to.throw('ENOENT');
-				expect(Fs.statSync('/tmp/test2')).to.exist;
+				expect(() => Fs.statSync(Path.join(Os.tmpdir(), 'test'))).to.throw('ENOENT');
+				expect(Fs.statSync(Path.join(Os.tmpdir(), '/test2'))).to.exist;
 			});
 		});
 
 		after('Cleaning', function() {
-			Fs.unlinkSync('/tmp/test2');
+			Fs.unlinkSync(Path.join(Os.tmpdir(), '/test2'));
 		});
 	});
 
 	describe('unlink()', function() {
 		let connector;
 		beforeEach('Instanciation', function() {
-			connector = new FsConnector({sandbox: ['/tmp', '/home']});
+			connector = createDefaultConnector();
 		});
 
 		it('rejects the promise if the path is not in the sandbox', function() {
@@ -450,17 +451,17 @@ describe('FsConnector', function() {
 		});
 
 		it('rejects the promise if the path does not exist', function() {
-			return expect(connector.unlink({}, '/tmp/testtest')).to.be.rejectedWith('ENOENT');
+			return expect(connector.unlink({}, Path.join(Os.tmpdir(), '/testtest'))).to.be.rejectedWith('ENOENT');
 		});
 
 		before('Create the file', function() {
-			Fs.writeFileSync('/tmp/test', '');
+			Fs.writeFileSync(Path.join(Os.tmpdir(), 'test'), '');
 		});
 
 		it('deletes a file', function() {
-			return connector.unlink({}, '/tmp/test')
+			return connector.unlink({}, Path.join(Os.tmpdir(), 'test'))
 			.then((content) => {
-				expect(() => Fs.statSync('/tmp/test')).to.throw('ENOENT');
+				expect(() => Fs.statSync(Path.join(Os.tmpdir(), 'test'))).to.throw('ENOENT');
 			});
 		});
 	});
@@ -468,7 +469,7 @@ describe('FsConnector', function() {
 	describe('rmdir()', function() {
 		let connector;
 		beforeEach('Instanciation', function() {
-			connector = new FsConnector({sandbox: ['/tmp', '/home']});
+			connector = createDefaultConnector();
 		});
 
 		it('rejects the promise if the path is not in the sandbox', function() {
@@ -476,62 +477,63 @@ describe('FsConnector', function() {
 		});
 
 		it('rejects the promise if the path does not exist', function() {
-			return expect(connector.rmdir({}, '/tmp/testtest')).to.be.rejectedWith('ENOENT');
+			return expect(connector.rmdir({}, Path.join(Os.tmpdir(), '/testtest'))).to.be.rejectedWith('ENOENT');
 		});
 
 		before('Create the directory', function() {
-			Fs.mkdirSync('/tmp/test');
+			Fs.mkdirSync(Path.join(Os.tmpdir(), 'test'));
 		});
 
 		it('deletes a directory', function() {
-			return connector.rmdir({}, '/tmp/test')
+			return connector.rmdir({}, Path.join(Os.tmpdir(), 'test'))
 			.then((content) => {
-				expect(() => Fs.statSync('/tmp/test')).to.throw('ENOENT');
+				expect(() => Fs.statSync(Path.join(Os.tmpdir(), 'test'))).to.throw('ENOENT');
 			});
 		});
 	});
 
 	describe('batch()', function() {
 		let connector;
+		const dirname = 'test' + Date.now();
 		const creation = [
-			{name: 'mkdir', path: '/tmp/test'},
-			{name: 'writeFile', path: '/tmp/test/a', content: 'aaa'},
-			{name: 'rename', path: '/tmp/test/a', destination: '/tmp/test/b'}
+			{name: 'mkdir', path: Path.join(Os.tmpdir(), dirname)},
+			{name: 'writeFile', path: Path.join(Os.tmpdir(), dirname, '/a'), content: 'aaa'},
+			{name: 'rename', path: Path.join(Os.tmpdir(), dirname, '/a'), destination: Path.join(Os.tmpdir(), dirname, '/b')}
 		];
 		const destruction = [
-			{name: 'unlink', path: '/tmp/test/b'},
-			{name: 'rmdir', path: '/tmp/test'}
+			{name: 'unlink', path: Path.join(Os.tmpdir(), dirname, '/b')},
+			{name: 'rmdir', path: Path.join(Os.tmpdir(), dirname)}
 		];
 		beforeEach('Instanciation', function() {
-			connector = new FsConnector({sandbox: ['/tmp', '/home']});
+			connector = createDefaultConnector();
 		});
 
 		it('executes action in order', function() {
 			return connector.batch({}, creation)
 			.then(() => {
-				expect(Fs.statSync('/tmp/test')).to.exist;
-				expect(() => Fs.statSync('/tmp/test/a')).to.throw('ENOENT');
-				expect(Fs.statSync('/tmp/test/b')).to.exist;
+				expect(Fs.statSync(Path.join(Os.tmpdir(), dirname))).to.exist;
+				expect(() => Fs.statSync(Path.join(Os.tmpdir(), dirname, '/a'))).to.throw('ENOENT');
+				expect(Fs.statSync(Path.join(Os.tmpdir(), dirname, '/b'))).to.exist;
 
 				return connector.batch({}, destruction);
 			})
 			.then(() => {
-				expect(() => Fs.statSync('/tmp/test')).to.throw('ENOENT');
+				expect(() => Fs.statSync(Path.join(Os.tmpdir(), dirname))).to.throw('ENOENT');
 			});
 		});
 
 		it('executes action in order and ignores unsupported ones', function() {
-			creation.unshift({name: 'createReadStream', path: '/tmp/test'});
+			creation.unshift({name: 'createReadStream', path: Path.join(Os.tmpdir(), dirname)});
 			return connector.batch({}, creation)
 			.then(() => {
-				expect(Fs.statSync('/tmp/test')).to.exist;
-				expect(() => Fs.statSync('/tmp/test/a')).to.throw('ENOENT');
-				expect(Fs.statSync('/tmp/test/b')).to.exist;
+				expect(Fs.statSync(Path.join(Os.tmpdir(), dirname))).to.exist;
+				expect(() => Fs.statSync(Path.join(Os.tmpdir(), dirname, '/a'))).to.throw('ENOENT');
+				expect(Fs.statSync(Path.join(Os.tmpdir(), dirname, '/b'))).to.exist;
 
 				return connector.batch({}, destruction);
 			})
 			.then(() => {
-				expect(() => Fs.statSync('/tmp/test')).to.throw('ENOENT');
+				expect(() => Fs.statSync(Path.join(Os.tmpdir(), dirname))).to.throw('ENOENT');
 			});
 		});
 	});

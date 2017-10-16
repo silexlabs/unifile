@@ -198,14 +198,14 @@ describe('FtpConnector', function() {
 		});
 
 		it('returns a rejected promise with the wrong credentials', function() {
-			return expect(connector.login({}, 'ftp://toto:roro@0.0.0.0:9876')).to.be.rejectedWith('Wrong credentials');
+			return expect(connector.login({}, 'ftp://toto:roro@127.0.0.1:9876')).to.be.rejectedWith('Wrong credentials');
 		});
 
 		it('accepts a string as login infos', function() {
 			const session = {};
-			return connector.login(session, 'ftp://admin:admin@0.0.0.0:9876')
+			return connector.login(session, 'ftp://admin:admin@127.0.0.1:9876')
 			.then(() => {
-				expect(session.host).to.equal('0.0.0.0');
+				expect(session.host).to.equal('127.0.0.1');
 				expect(session.port).to.equal('9876');
 				expect(session.user).to.equal('admin');
 				expect(session.password).to.equal('admin');
@@ -215,13 +215,13 @@ describe('FtpConnector', function() {
 		it('accepts an object as login infos', function() {
 			const session = {};
 			return connector.login(session, {
-				host: '0.0.0.0',
+				host: '127.0.0.1',
 				port: '9876',
 				user: 'admin',
 				password: 'admin'
 			})
 			.then(() => {
-				expect(session.host).to.equal('0.0.0.0');
+				expect(session.host).to.equal('127.0.0.1');
 				expect(session.port).to.equal('9876');
 				expect(session.user).to.equal('admin');
 				expect(session.password).to.equal('admin');
@@ -413,7 +413,7 @@ describe('FtpConnector', function() {
 
 		it('throws an error if wrong credentials', function(done) {
 			const stream = connector.createReadStream({
-				host: '0.0.0.0',
+				host: '127.0.0.1',
 				port: '9876',
 				user: 'a',
 				password: 'a'

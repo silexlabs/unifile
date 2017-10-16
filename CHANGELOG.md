@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ### Added
 - Tools, index and FS are 100% covered
+- Coverage for all connectors
 
 ### Fixed
 - In SFTP, directory type is now set to 'application/directory'
@@ -42,6 +43,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Changed
   - Total rework of the philosphy
 
-  [Unreleased]: https://github.com/silexlabs/unifile/compare/v1.2.0...HEAD
-  [1.2.0]: https://github.com/silexlabs/unifile/compare/v1.1.0...v1.2.0
-  [1.1.0]: https://github.com/silexlabs/unifile/compare/v1.0.0...v1.1.0
+      [Unreleased]: https://github.com/silexlabs/unifile/compare/v1.2.0...HEAD
+      [1.2.0]: https://github.com/silexlabs/unifile/compare/v1.1.0...v1.2.0
+      [1.1.0]: https://github.com/silexlabs/unifile/compare/v1.0.0...v1.1.0
