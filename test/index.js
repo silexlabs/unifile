@@ -21,8 +21,6 @@ describe('Unifile class', function() {
 		it('create a new instance with empty config', function() {
 			const unifile = new Unifile();
 			expect(unifile).not.to.be.null;
-			expect(unifile.connectors).to.be.an.instanceof(Map);
-			expect(unifile.connectors.size).to.equal(0);
 			expect(unifile.use).to.exist;
 		});
 	});
@@ -70,8 +68,8 @@ describe('Unifile class', function() {
 		it('register a new connector', function() {
 			const connector = {name: 'test'};
 			unifile.use(connector);
-			expect(unifile.connectors.size).to.equal(1);
-			expect(unifile.connectors.get(connector.name)).to.deep.equal(connector);
+			expect(unifile.listConnectors().length).to.equal(1);
+			expect(unifile.listConnectors()[0]).to.equal(connector.name);
 		});
 	});
 

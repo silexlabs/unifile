@@ -299,6 +299,7 @@ describe('FsConnector', function() {
 	describe('writeFile()', function() {
 		let connector;
 		const data = 'lorem ipsum';
+		const filename = 'test' + Date.now();
 		beforeEach('Instanciation', function() {
 			connector = new FsConnector({sandbox: Os.tmpdir()});
 		});
@@ -308,20 +309,21 @@ describe('FsConnector', function() {
 		});
 
 		it('writes into a file', function() {
-			return connector.writeFile({}, Path.join(Os.tmpdir(), 'test'), data)
+			return connector.writeFile({}, Path.join(Os.tmpdir(), filename), data)
 			.then(() => {
-				Fs.statSync(Path.join(Os.tmpdir(), 'test')).should.exist;
+				Fs.statSync(Path.join(Os.tmpdir(), filename)).should.exist;
 			});
 		});
 
 		after('Cleaning', function() {
-			Fs.unlinkSync(Path.join(Os.tmpdir(), 'test'));
+			Fs.unlinkSync(Path.join(Os.tmpdir(), filename));
 		});
 	});
 
 	describe('createWriteStream()', function() {
 		let connector;
 		const data = 'lorem ipsum';
+		const filename = 'test' + Date.now();
 		beforeEach('Instanciation', function() {
 			connector = new FsConnector({sandbox: Os.tmpdir()});
 		});
@@ -331,10 +333,10 @@ describe('FsConnector', function() {
 		});
 
 		it('creates a writable stream', function(done) {
-			const stream = connector.createWriteStream({}, Path.join(Os.tmpdir(), 'test'));
+			const stream = connector.createWriteStream({}, Path.join(Os.tmpdir(), filename));
 			expect(stream).to.be.an.instanceof(Writable);
 			stream.on('finish', () => {
-				Fs.readFileSync(Path.join(Os.tmpdir(), 'test'), 'utf8').should.equal(data);
+				Fs.readFileSync(Path.join(Os.tmpdir(), filename), 'utf8').should.equal(data);
 				done();
 			});
 			stream.on('error', done);
@@ -343,13 +345,14 @@ describe('FsConnector', function() {
 		});
 
 		after('Cleaning', function() {
-			Fs.unlinkSync(Path.join(Os.tmpdir(), 'test'));
+			Fs.unlinkSync(Path.join(Os.tmpdir(), filename));
 		});
 	});
 
 	describe('readFile()', function() {
 		let connector;
 		const data = 'lorem ipsum';
+		const filename = 'test' + Date.now();
 		beforeEach('Instanciation', function() {
 			connector = createDefaultConnector();
 		});
@@ -363,11 +366,11 @@ describe('FsConnector', function() {
 		});
 
 		before('Create the file', function() {
-			Fs.writeFileSync(Path.join(Os.tmpdir(), 'test'), data);
+			Fs.writeFileSync(Path.join(Os.tmpdir(), filename), data);
 		});
 
 		it('returns the content of a file', function() {
-			return connector.readFile({}, Path.join(Os.tmpdir(), 'test'))
+			return connector.readFile({}, Path.join(Os.tmpdir(), filename))
 			.then((content) => {
 				expect(content.toString()).to.equal(data);
 				expect(content).to.be.an.instanceof(Buffer);
@@ -375,13 +378,14 @@ describe('FsConnector', function() {
 		});
 
 		after('Cleaning', function() {
-			Fs.unlinkSync(Path.join(Os.tmpdir(), 'test'));
+			Fs.unlinkSync(Path.join(Os.tmpdir(), filename));
 		});
 	});
 
 	describe('createReadStream()', function() {
 		let connector;
 		const data = 'lorem ipsum';
+		const filename = 'test' + Date.now();
 		beforeEach('Instanciation', function() {
 			connector = new FsConnector({sandbox: Os.tmpdir()});
 		});
@@ -391,11 +395,11 @@ describe('FsConnector', function() {
 		});
 
 		before('Create the file', function() {
-			Fs.writeFileSync(Path.join(Os.tmpdir(), 'test'), data);
+			Fs.writeFileSync(Path.join(Os.tmpdir(), filename), data);
 		});
 
 		it('creates a readable stream', function(done) {
-			const stream = connector.createReadStream({}, Path.join(Os.tmpdir(), 'test'));
+			const stream = connector.createReadStream({}, Path.join(Os.tmpdir(), filename));
 			expect(stream).to.be.an.instanceof(Readable);
 			stream.on('end', done);
 			stream.on('error', done);
@@ -403,12 +407,13 @@ describe('FsConnector', function() {
 		});
 
 		after('Cleaning', function() {
-			Fs.unlinkSync(Path.join(Os.tmpdir(), 'test'));
+			Fs.unlinkSync(Path.join(Os.tmpdir(), filename));
 		});
 	});
 
 	describe('rename()', function() {
 		let connector;
+		const filename = 'test' + Date.now();
 		beforeEach('Instanciation', function() {
 			connector = createDefaultConnector();
 		});
@@ -424,13 +429,13 @@ describe('FsConnector', function() {
 		});
 
 		before('Create the file', function() {
-			Fs.writeFileSync(Path.join(Os.tmpdir(), 'test'), '');
+			Fs.writeFileSync(Path.join(Os.tmpdir(), filename), '');
 		});
 
 		it('renames a file', function() {
-			return connector.rename({}, Path.join(Os.tmpdir(), 'test'), Path.join(Os.tmpdir(), '/test2'))
+			return connector.rename({}, Path.join(Os.tmpdir(), filename), Path.join(Os.tmpdir(), '/test2'))
 			.then((content) => {
-				expect(() => Fs.statSync(Path.join(Os.tmpdir(), 'test'))).to.throw('ENOENT');
+				expect(() => Fs.statSync(Path.join(Os.tmpdir(), filename))).to.throw('ENOENT');
 				expect(Fs.statSync(Path.join(Os.tmpdir(), '/test2'))).to.exist;
 			});
 		});
@@ -442,6 +447,7 @@ describe('FsConnector', function() {
 
 	describe('unlink()', function() {
 		let connector;
+		const filename = 'test' + Date.now();
 		beforeEach('Instanciation', function() {
 			connector = createDefaultConnector();
 		});
@@ -455,19 +461,20 @@ describe('FsConnector', function() {
 		});
 
 		before('Create the file', function() {
-			Fs.writeFileSync(Path.join(Os.tmpdir(), 'test'), '');
+			Fs.writeFileSync(Path.join(Os.tmpdir(), filename), '');
 		});
 
 		it('deletes a file', function() {
-			return connector.unlink({}, Path.join(Os.tmpdir(), 'test'))
+			return connector.unlink({}, Path.join(Os.tmpdir(), filename))
 			.then((content) => {
-				expect(() => Fs.statSync(Path.join(Os.tmpdir(), 'test'))).to.throw('ENOENT');
+				expect(() => Fs.statSync(Path.join(Os.tmpdir(), filename))).to.throw('ENOENT');
 			});
 		});
 	});
 
 	describe('rmdir()', function() {
 		let connector;
+		const dirname = 'test' + Date.now();
 		beforeEach('Instanciation', function() {
 			connector = createDefaultConnector();
 		});
@@ -481,13 +488,13 @@ describe('FsConnector', function() {
 		});
 
 		before('Create the directory', function() {
-			Fs.mkdirSync(Path.join(Os.tmpdir(), 'test'));
+			Fs.mkdirSync(Path.join(Os.tmpdir(), dirname));
 		});
 
 		it('deletes a directory', function() {
-			return connector.rmdir({}, Path.join(Os.tmpdir(), 'test'))
+			return connector.rmdir({}, Path.join(Os.tmpdir(), dirname))
 			.then((content) => {
-				expect(() => Fs.statSync(Path.join(Os.tmpdir(), 'test'))).to.throw('ENOENT');
+				expect(() => Fs.statSync(Path.join(Os.tmpdir(), dirname))).to.throw('ENOENT');
 			});
 		});
 	});

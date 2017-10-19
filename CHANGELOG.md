@@ -17,6 +17,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Fixed
 - In SFTP, directory type is now set to 'application/directory'
 
+### Removed
+- WebDAV connector is now a separate plugin
+- `unifile.connectors` is now private
+
 ## [1.2.0] - 2017-06-01
 ### Added
 - SFTP support

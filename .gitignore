@@ -3,3 +3,4 @@ node_modules
 npm-debug.log
 coverage
 *.sw*
+.nyc_output

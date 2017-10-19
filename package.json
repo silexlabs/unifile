@@ -1,6 +1,6 @@
 {
   "name": "unifile",
-  "description": "Library to provide a unified API for cloud storage services. ",
+  "description": "Library to provide a unified API, mirroring Fs, for cloud storage services. ",
   "version": "1.2.0",
   "author": "Jean-Baptiste Richardet <jeanbaptiste.richardet@gmail.com> (https://github.com/JbIPS)",
   "contributors": [
@@ -12,8 +12,8 @@
     "mime": "^2.0.3",
     "request": "^2.72.0",
     "sftp-promises": "^1.4.1",
-    "webfinger.js": "^2.4.2",
-    "xml-stream": "^0.4.5"
+    "unifile-common-tools": "^1.0.0",
+    "webfinger.js": "^2.4.2"
   },
   "devDependencies": {
     "chai": "^4.0.2",
@@ -26,9 +26,7 @@
     "mocha": "^4.0.1",
     "nyc": "^11.2.1",
     "pem": "^1.9.7",
-    "proxyquire": "^1.7.10",
-    "ssh2": "^0.5.5",
-    "webdav-server": "^2.3.5"
+    "ssh2": "^0.5.5"
   },
   "repository": {
     "type": "git",
@@ -58,11 +56,10 @@
     "npm": "^3.9.5"
   },
   "scripts": {
-    "test": "mocha test/ -R nyan",
-    "lint": "eslint lib test samples --ignore-pattern node_modules",
-    "lint:fix": "eslint lib test samples --fix --ignore-pattern node_modules",
-    "watch:test": "mocha -wd test/",
-    "cover": "nyc npm test",
+    "test": "mocha test/*.js -R nyan",
+    "watch": "mocha test/*.js -R min --watch",
+    "lint": "eslint test/*.js lib/*.js",
+    "cover": "nyc --reporter=lcov npm test",
     "cover:check": "nyc check-coverage",
     "cover:export": "cat ./coverage/lcov.info | codacy-coverage",
     "gen:docs": "jsdoc -R README.md -c jsdoc.json",
