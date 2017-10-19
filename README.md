@@ -75,7 +75,11 @@ In all case, Unifile never uses any data of the user.
 
 ## Add a service
 
-Unifile is built on modularity, meaning you can create a connector to a service a plug it in Unifile withouth modifying Unifile. So feel free to add any services you need! Don't forget to let us know about it so we could tell everyone :wink:.
+Unifile works with plugins to connect with more and more services. To find all the plugins available, you can follow the [unifile tag](https://github.com/topics/unifile) on GitHub. Or you can browse this non-exhaustive list:
+* [Unifile WebDAV](https://github.com/silexlabs/unifile-webdav)
+
+
+Unifile is built on modularity, meaning you can create a connector to a service a plug it in Unifile withouth modifying Unifile. So feel free to add any services you need! Don't forget to let us know about it so we could tell everyone :wink:
 
 Here is a list of services which could be useful
 
