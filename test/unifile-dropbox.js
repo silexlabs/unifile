@@ -30,7 +30,7 @@ function checkSession(session) {
 	expect(session.account).to.have.all.keys('display_name', 'login', 'num_repos');
 }
 
-describe.only('DropboxConnector', function() {
+describe('DropboxConnector', function() {
 
 	const session = {};
 	const defaultConfig = {
@@ -42,7 +42,8 @@ describe.only('DropboxConnector', function() {
 
 	before('Init session with a valid account and tests repo', function() {
 		if(isEnvValid()) {
-			return new DropboxConnector(authConfig).setAccessToken(session, process.env.DROPBOX_TOKEN);
+			return new DropboxConnector(Object.assign({clientSecret: process.env.DROPBOX_SECRET}, authConfig))
+			.setAccessToken(session, process.env.DROPBOX_TOKEN);
 		}
 	});
 
@@ -891,7 +892,7 @@ describe.only('DropboxConnector', function() {
 			.should.be.rejectedWith('Cannot execute batch action without a path');
 		});
 
-		it('rejects the promise if one repo/branch action failed', function() {
+		it.only('rejects the promise if one repo/branch action failed', function() {
 			return connector.batch(session, [{name: 'mkdir', path: 'authouou/outeum'}])
 			.should.be.rejectedWith('Could not complete action');
 		});

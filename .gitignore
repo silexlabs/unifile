@@ -4,3 +4,4 @@ npm-debug.log
 coverage
 *.sw*
 .nyc_output
+.vscode
