@@ -8,10 +8,9 @@ insert_final_newline = true
 charset = utf-8
 trim_trailing_whitespace = true
 
-[{lib,src,test}/**.js]
-indent_style = space
-indent_size = 2
+[{package.json,lib,src,test}/**.js]
+indent_style = tab
 
-[{package.json,.travis.yml}]
+[{.travis.yml}]
 indent_style = space
 indent_size = 2
