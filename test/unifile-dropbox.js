@@ -21,18 +21,20 @@ const dropboxDefaultInfos = {
 };
 
 function isEnvValid() {
-	return process.env.DROPBOX_SECRET && process.env.DROPBOX_TOKEN;
+	return process.env.DROPBOX_SECRET && process.env.DROPBOX_TOKEN && process.env.DROPBOX_ACCOUNT;
 }
 
 function checkSession(session) {
 	expect(session.token).to.exist;
 	expect(session.account).to.exist;
-	expect(session.account).to.have.all.keys('display_name', 'login', 'num_repos');
+	expect(session.account).to.have.all.keys('account_id', 'email', 'name');
 }
 
-describe('DropboxConnector', function() {
+describe.only('DropboxConnector', function() {
 
-	const session = {};
+	const session = {
+		account: {id: process.env.DROPBOX_ACCOUNT}
+	};
 	const defaultConfig = {
 		clientId: 'b4e46028bf36d871f68d',
 		clientSecret: 'a',
@@ -133,7 +135,7 @@ describe('DropboxConnector', function() {
 				expect(infos.description).to.equal(dropboxDefaultInfos.description);
 				expect(infos.isLoggedIn).to.be.true;
 				expect(infos.isOAuth).to.be.true;
-				expect(infos.username).to.equal('Jean-Baptiste Richardet');
+				expect(infos.username).to.equal('Jean-Baptiste RICHARDET');
 			}
 		});
 	});
@@ -167,12 +169,6 @@ describe('DropboxConnector', function() {
 		let connector;
 		beforeEach('Instanciation', function() {
 			connector = new DropboxConnector(defaultConfig);
-		});
-
-		it('rejects the promise if the token is nor OAuth nor Basic', function() {
-			const token = 'baaaad';
-			const session = {};
-			return connector.setAccessToken(session, token).should.be.rejectedWith('Invalid token');
 		});
 
 		it('rejects the promise if the token credentials are wrong', function() {
@@ -892,29 +888,19 @@ describe('DropboxConnector', function() {
 			.should.be.rejectedWith('Cannot execute batch action without a path');
 		});
 
-		it.only('rejects the promise if one repo/branch action failed', function() {
+		it('rejects the promise if one repo/branch action failed', function() {
 			return connector.batch(session, [{name: 'mkdir', path: 'authouou/outeum'}])
 			.should.be.rejectedWith('Could not complete action');
 		});
 
-		it('rejects the promise if a rename action on repo/branch does not have a destination', function() {
+		it('rejects the promise if a rename action does not have a destination', function() {
 			return connector.batch(session, [{name: 'rename', path: 'tmp'}])
 			.should.be.rejectedWith('Rename actions should have a destination');
 		});
 
-		it('rejects the promise if a rename action does not have a destination', function() {
-			return connector.batch(session, [{name: 'rename', path: 'tmp/test/a'}])
-			.should.be.rejectedWith('Could not modify tree');
-		});
-
 		it('rejects the promise if a writefile action does not have content', function() {
 			return connector.batch(session, [{name: 'writefile', path: 'tmp/test/a'}])
-			.should.be.rejectedWith('Could not modify tree');
-		});
-
-		it('rejects the promise if a writefile is programmed on a repo/branch', function() {
-			return connector.batch(session, [{name: 'writefile', path: 'tmp/test', content: 'aaaa'}])
-			.should.be.rejectedWith('Cannot create file here');
+			.should.be.rejectedWith('Write actions should have a content');
 		});
 
 		it('executes action in order', function() {
