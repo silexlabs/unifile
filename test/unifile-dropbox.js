@@ -4,7 +4,8 @@ const Url = require('url');
 const chai = require('chai');
 chai.use(require('chai-as-promised'));
 
-const DropboxConnector = require('../lib/unifile-dropbox.js');
+const DropboxConnector = require('../lib/unifile-dropbox');
+const {UnifileError} = require('../lib/error');
 
 const expect = chai.expect;
 chai.should();
@@ -42,7 +43,7 @@ describe.only('DropboxConnector', function() {
 	};
 	const authConfig = Object.assign({}, defaultConfig, {clientSecret: process.env.DROPBOX_SECRET});
 
-	before('Init session with a valid account and tests repo', function() {
+	before('Init session with a valid account and tests folder', function() {
 		if(isEnvValid()) {
 			return new DropboxConnector(Object.assign({clientSecret: process.env.DROPBOX_SECRET}, authConfig))
 			.setAccessToken(session, process.env.DROPBOX_TOKEN);
@@ -219,66 +220,28 @@ describe.only('DropboxConnector', function() {
 		});
 
 		it('rejects the promise with malformed credentials', function() {
-			return expect(connector.login({}, 'anything')).to.be.rejectedWith('Invalid URL');
-		});
-
-		it('rejects the promise with the wrong credentials', function() {
-			return expect(connector.login({}, 'https://toto:roro@dropbox.com')).to.be.rejectedWith('credentials');
+			return expect(connector.login({}, 'anything')).to.be.rejectedWith('Invalid credentials');
 		});
 
 		it('rejects the promise if states do not match', function() {
 			return expect(connector.login({state: 'a'}, {state: 'b', code: '22'})).to.be.rejectedWith('cross-site request');
 		});
 
-		it('accepts a string as login infos', function() {
-			const user = process.env.DROPBOX_USER;
-			const pwd = process.env.DROPBOX_PWD;
-			if(!user || !pwd) this.skip();
-			const session = {};
-			return connector.login(session, `https://${user}:${pwd}@dropbox.com`)
-			.then(() => {
-				checkSession(session);
-			});
-		});
-
-		it('accepts a string as login infos without host', function() {
-			const user = process.env.DROPBOX_USER;
-			const pwd = process.env.DROPBOX_PWD;
-			if(!user || !pwd) this.skip();
-			const session = {};
-			return connector.login(session, `https://${user}:${pwd}@`)
-			.then(() => {
-				checkSession(session);
-			});
-		});
-
-		it('accepts an Object with basic auth infos', function() {
-			const user = process.env.DROPBOX_USER;
-			const pwd = process.env.DROPBOX_PWD;
-			if(!user || !pwd) this.skip();
-			const session = {};
-			return connector.login(session, {user: user, password: pwd})
-			.then(() => {
-				checkSession(session);
-			});
-		});
-
 		it('rejects the promise if the wrong login infos are provided', function() {
 			const session = {state: 'a'};
-			return connector.login(session, {state: 'a', code: '222'}).should.be.rejectedWith('Unable to get access token.');
+			return connector.login(session, {state: 'a', code: '222'}).should.be.rejectedWith('Bad credentials');
 		});
 	});
 
 	describe('readdir()', function() {
 		let connector;
-		before('Init tests repo', function() {
+		before('Init tests folder', function() {
 			if(isEnvValid()) {
 				connector = new DropboxConnector(authConfig);
 				return connector.setAccessToken(session, process.env.DROPBOX_TOKEN)
 				.then(() => connector.batch(session, [
 					{name: 'mkdir', path: 'unifile_readdir'},
-					{name: 'mkdir', path: 'unifile_readdir/test'},
-					{name: 'mkdir', path: 'unifile_readdir/test/o'}
+					{name: 'mkdir', path: 'unifile_readdir/test'}
 				]));
 			} else this.skip();
 		});
@@ -287,43 +250,8 @@ describe.only('DropboxConnector', function() {
 			return expect(connector.readdir(session, '/home')).to.be.rejectedWith('Not Found');
 		});
 
-		it('lists all the repos with proper entry infomations', function() {
-			return connector.readdir(session, '')
-			.then((list) => {
-				expect(list).to.be.an.instanceof(Array);
-				list.every((file) => {
-					const keys = Object.keys(file);
-					return ['isDir', 'mime', 'modified', 'name', 'size'].every((key) => keys.includes(key));
-				}).should.be.true;
-			});
-		});
-
-		it('lists files in the repo with proper entry infomations', function() {
-			return connector.readdir(session, 'unifile_readdir')
-			.then((list) => {
-				expect(list).to.be.an.instanceof(Array);
-				expect(list.length).to.above(0);
-				list.every((file) => {
-					const keys = Object.keys(file);
-					return ['isDir', 'mime', 'modified', 'name', 'size'].every((key) => keys.includes(key));
-				}).should.be.true;
-			});
-		});
-
-		it('lists files in the branch with proper entry infomations', function() {
-			return connector.readdir(session, 'unifile_readdir/test')
-			.then((list) => {
-				expect(list).to.be.an.instanceof(Array);
-				expect(list.length).to.above(1);
-				list.every((file) => {
-					const keys = Object.keys(file);
-					return ['isDir', 'mime', 'modified', 'name', 'size'].every((key) => keys.includes(key));
-				}).should.be.true;
-			});
-		});
-
 		it('lists files in the directory with proper entry infomations', function() {
-			return connector.readdir(session, 'unifile_readdir/test/o')
+			return connector.readdir(session, 'unifile_readdir')
 			.then((list) => {
 				expect(list).to.be.an.instanceof(Array);
 				expect(list.length).to.equal(1);
@@ -334,7 +262,7 @@ describe.only('DropboxConnector', function() {
 			});
 		});
 
-		after('Remove repo', function() {
+		after('Remove folder', function() {
 			if(isEnvValid()) connector.rmdir(session, 'unifile_readdir');
 			else this.skip();
 		});
@@ -342,15 +270,13 @@ describe.only('DropboxConnector', function() {
 
 	describe('stat()', function() {
 		let connector;
-		before('Init tests repo', function() {
+		before('Init tests folder', function() {
 			if(isEnvValid()) {
 				connector = new DropboxConnector(authConfig);
 				return connector.setAccessToken(session, process.env.DROPBOX_TOKEN)
 				.then(() => connector.batch(session, [
 					{name: 'mkdir', path: 'unifile_stat'},
-					{name: 'mkdir', path: 'unifile_stat/test'},
-					{name: 'mkdir', path: 'unifile_stat/test/o'},
-					{name: 'writeFile', path: 'unifile_stat/test/file1.txt', content: 'lorem ipsum'}
+					{name: 'writeFile', path: 'unifile_stat/file1.txt', content: 'lorem ipsum'}
 				]));
 			} else this.skip();
 		});
@@ -363,7 +289,7 @@ describe.only('DropboxConnector', function() {
 			return expect(connector.stat(session, '/home')).to.be.rejectedWith('Not Found');
 		});
 
-		it('gives stats on a repository', function() {
+		it('gives stats on a directory', function() {
 			return connector.stat(session, 'unifile_stat')
 			.then((stat) => {
 				expect(stat).to.be.an.instanceof(Object);
@@ -373,28 +299,8 @@ describe.only('DropboxConnector', function() {
 			});
 		});
 
-		it('gives stats on a branch', function() {
-			return connector.stat(session, 'unifile_stat/master')
-			.then((stat) => {
-				expect(stat).to.be.an.instanceof(Object);
-				const keys = Object.keys(stat);
-				['isDir', 'mime', 'modified', 'name', 'size'].every((key) => keys.includes(key))
-				.should.be.true;
-			});
-		});
-
-		it('gives stats on a directory', function() {
-			return connector.stat(session, 'unifile_stat/test/o')
-			.then((stat) => {
-				expect(stat).to.be.an.instanceof(Object);
-				const keys = Object.keys(stat);
-				['isDir', 'mime', 'modified', 'name', 'size'].every((key) => keys.includes(key))
-				.should.be.true;
-			});
-		});
-
 		it('gives stats on a file', function() {
-			return connector.stat(session, 'unifile_stat/test/file1.txt')
+			return connector.stat(session, 'unifile_stat/file1.txt')
 			.then((stat) => {
 				expect(stat).to.be.an.instanceof(Object);
 				const keys = Object.keys(stat);
@@ -403,7 +309,7 @@ describe.only('DropboxConnector', function() {
 			});
 		});
 
-		after('Remove repo', function() {
+		after('Remove folder', function() {
 			if(isEnvValid()) connector.rmdir(session, 'unifile_stat');
 			else this.skip();
 		});
@@ -412,7 +318,7 @@ describe.only('DropboxConnector', function() {
 	describe('mkdir()', function() {
 		let connector;
 
-		before('Init tests repo', function() {
+		before('Init tests folder', function() {
 			if(isEnvValid()) {
 				connector = new DropboxConnector(authConfig);
 				return connector.setAccessToken(session, process.env.DROPBOX_TOKEN)
@@ -428,23 +334,11 @@ describe.only('DropboxConnector', function() {
 			return expect(connector.mkdir(session, '')).to.be.rejectedWith('Cannot create dir with an empty name.');
 		});
 
-		it('rejects the promise if the repository path already exist', function() {
+		it('rejects the promise if the folder path already exist', function() {
 			return expect(connector.mkdir(session, 'unifile_mkdir')).to.be.rejectedWith('creation failed');
 		});
 
-		it('rejects the promise if the branch path already exist', function() {
-			return expect(connector.mkdir(session, 'unifile_mkdir/master')).to.be.rejectedWith('Reference already exists');
-		});
-
-		it('rejects the promise if the directory path already exist', function() {
-			return expect(connector.mkdir(session, 'unifile_mkdir/test/o')).to.be.rejectedWith('Reference already exists');
-		});
-
-		it('rejects the promise if the parent does not exist', function() {
-			return expect(connector.mkdir(session, 'test/tttt')).to.be.rejectedWith('Not Found');
-		});
-
-		it('creates a new repository', function() {
+		it('creates a new folder', function() {
 			return connector.mkdir(session, 'aa')
 			.then(() => {
 				return expect(connector.readdir(session, 'aa')).to.be.fulfilled;
@@ -454,21 +348,14 @@ describe.only('DropboxConnector', function() {
 			});
 		});
 
-		it('creates a new branch', function() {
-			return connector.mkdir(session, 'unifile_mkdir/test3')
+		it('creates a new nested folder', function() {
+			return connector.mkdir(session, 'unifile_mkdir/test')
 			.then(() => {
-				return expect(connector.readdir(session, 'unifile_mkdir/test3')).to.be.fulfilled;
+				return expect(connector.readdir(session, 'unifile_mkdir/test')).to.be.fulfilled;
 			});
 		});
 
-		it('creates a new directory', function() {
-			return connector.mkdir(session, 'unifile_mkdir/test/testDir')
-			.then(() => {
-				return expect(connector.readdir(session, 'unifile_mkdir/test/testDir')).to.be.fulfilled;
-			});
-		});
-
-		after('Remove repo', function() {
+		after('Remove folder', function() {
 			if(isEnvValid()) connector.rmdir(session, 'unifile_mkdir');
 			else this.skip();
 		});
@@ -477,88 +364,90 @@ describe.only('DropboxConnector', function() {
 	describe('writeFile()', function() {
 		let connector;
 		const data = 'lorem ipsum';
-		before('Init tests repo', function() {
+		before('Init tests folder', function() {
 			if(isEnvValid()) {
 				connector = new DropboxConnector(authConfig);
 				return connector.setAccessToken(session, process.env.DROPBOX_TOKEN)
 				.then(() => connector.batch(session, [
 					{name: 'mkdir', path: 'unifile_writeFile'},
-					{name: 'mkdir', path: 'unifile_writeFile/test'},
-					{name: 'mkdir', path: 'unifile_writeFile/test/o'},
-					{name: 'writeFile', path: 'unifile_writeFile/test/file1.txt', content: data}
+					{name: 'writeFile', path: 'unifile_writeFile/file1.txt', content: 'lorem'}
 				]));
 			} else this.skip();
 		});
 
-		it('rejects the promise if the path is a repository', function() {
-			return connector.writeFile(session, 'unifile_writeFile', data)
-			.should.be.rejectedWith('This folder can only contain folders');
-		});
-
-		it('rejects the promise if the path is a branch', function() {
-			return connector.writeFile(session, 'unifile_writeFile/test', data)
-			.should.be.rejectedWith('This folder can only contain folders');
+		it('rejects the promise if the path already exist and no overwrite', function() {
+			const noOverwriteConnector = new DropboxConnector(Object.assign({}, authConfig, {writeMode: 'add'}));
+			return noOverwriteConnector.writeFile(session, 'unifile_writeFile/file1.txt', data)
+			.should.be.rejectedWith('Creation failed due to conflict');
 		});
 
 		it('writes into a file', function() {
-			return connector.writeFile(session, 'unifile_writeFile/test/testFile', data)
+			return connector.writeFile(session, 'unifile_writeFile/testFile', data)
 			.then(() => {
-				return connector.readFile(session, 'unifile_writeFile/test/testFile').should.become(data);
+				return connector.readFile(session, 'unifile_writeFile/testFile');
+			})
+			.then((content) => {
+				return expect(content.toString()).to.equal(data);
 			})
 			.then(() => {
-				return connector.unlink(session, 'unifile_writeFile/test/testFile');
+				return connector.unlink(session, 'unifile_writeFile/testFile');
 			});
 		});
 
-		after('Remove repo', function() {
+		it('overwrites a file if present', function() {
+			return connector.writeFile(session, 'unifile_writeFile/file1.txt', data)
+			.then(() => {
+				return connector.readFile(session, 'unifile_writeFile/file1.txt');
+			})
+			.then((content) => {
+				return expect(content.toString()).to.equal(data);
+			})
+			.then(() => {
+				return connector.unlink(session, 'unifile_writeFile/file1.txt');
+			});
+		});
+
+		after('Remove folder', function() {
 			if(isEnvValid()) connector.rmdir(session, 'unifile_writeFile');
 			else this.skip();
 		});
 	});
 
-	describe('createWriteStream()', function() {
+	describe.only('createWriteStream()', function() {
+		this.timeout(9000);
 		let connector;
 		const data = 'lorem ipsum';
-		before('Init tests repo', function() {
+		before('Init tests folder', function() {
 			if(isEnvValid()) {
 				connector = new DropboxConnector(authConfig);
 				return connector.setAccessToken(session, process.env.DROPBOX_TOKEN)
 				.then(() => connector.batch(session, [
 					{name: 'mkdir', path: 'unifile_writeStream'},
-					{name: 'mkdir', path: 'unifile_writeStream/test'},
-					{name: 'mkdir', path: 'unifile_writeStream/test/o'},
-					{name: 'writeFile', path: 'unifile_writeStream/test/file1.txt', content: data}
+					{name: 'writeFile', path: 'unifile_writeStream/file1.txt', content: 'lorem'}
 				]));
 			} else this.skip();
 		});
 
-		it('emits an error if the path is a repository', function(done) {
-			const stream = connector.createWriteStream(session, 'unifile_writeStream', data);
+		it('emits an error if the path exists and no overwrite', function(done) {
+			const noOverwriteConnector = new DropboxConnector(Object.assign({}, authConfig, {writeMode: 'add'}));
+			const stream = noOverwriteConnector.createWriteStream(session, 'unifile_writeStream/file1.txt', data);
+			stream.pipe(process.stdout);
 			stream.on('error', (err) => {
-				expect(err).to.be.an.instanceof(Error);
+				expect(err).to.be.an.instanceof(UnifileError);
+				expect(err.message).to.equal('Creation failed');
 				done();
 			});
-
-			stream.end(data);
-		});
-
-		it('rejects the promise if the path is a branch', function(done) {
-			const stream = connector.createWriteStream(session, 'unifile_writeStream/test3', data);
-			stream.on('error', (err) => {
-				expect(err).to.be.an.instanceof(Error);
-				done();
-			});
-
+			stream.on('close', () => done(new Error('Did not error as planned')));
 			stream.end(data);
 		});
 
 		it('creates a writable stream', function(done) {
-			const stream = connector.createWriteStream(session, 'unifile_writeStream/test/testStream');
+			const stream = connector.createWriteStream(session, 'unifile_writeStream/testStream');
 			// Wait for 'end' (not 'finish') to be sure it has been consumed
 			stream.on('close', () => {
-				return connector.readFile(session, 'unifile_writeStream/test/testStream')
+				return connector.readFile(session, 'unifile_writeStream/testStream')
 				.then((result) => {
-					expect(result).to.equal(data);
+					expect(result.toString()).to.equal(data);
 					done();
 				})
 				// Needed because the promise would catch the expect thrown exception
@@ -568,7 +457,23 @@ describe.only('DropboxConnector', function() {
 			stream.end(data);
 		});
 
-		after('Remove repo', function() {
+		it('creates a writable stream', function(done) {
+			const stream = connector.createWriteStream(session, 'unifile_writeStream/file1.txt');
+			// Wait for 'end' (not 'finish') to be sure it has been consumed
+			stream.on('close', () => {
+				return connector.readFile(session, 'unifile_writeStream/file1.txt')
+				.then((result) => {
+					expect(result.toString()).to.equal(data);
+					done();
+				})
+				// Needed because the promise would catch the expect thrown exception
+				.catch(done);
+			});
+			stream.on('error', done);
+			stream.end(data);
+		});
+
+		after('Remove folder', function() {
 			if(isEnvValid()) connector.rmdir(session, 'unifile_writeStream');
 			else this.skip();
 		});
@@ -578,7 +483,7 @@ describe.only('DropboxConnector', function() {
 		let connector;
 		const data = 'lorem ipsum';
 
-		before('Init tests repo', function() {
+		before('Init tests folder', function() {
 			if(isEnvValid()) {
 				connector = new DropboxConnector(authConfig);
 				return connector.setAccessToken(session, process.env.DROPBOX_TOKEN)
@@ -595,7 +500,7 @@ describe.only('DropboxConnector', function() {
 			return expect(connector.readFile(session, 'a/test/auoeuiqu')).to.be.rejectedWith('Not Found');
 		});
 
-		it('rejects the promise if the path is a repo or branch', function() {
+		it('rejects the promise if the path is a folder or branch', function() {
 			return Promise.all(['unifile_readFile', 'unifile_readFile/master'].map((path) => {
 				return expect(connector.readFile(session, path)).to.be
 				.rejectedWith('This folder only contain folders. Files can be found in sub-folders.');
@@ -610,7 +515,7 @@ describe.only('DropboxConnector', function() {
 			return connector.readFile(session, 'unifile_readFile/test/file1.txt').should.become(data);
 		});
 
-		after('Remove repo', function() {
+		after('Remove folder', function() {
 			if(isEnvValid()) connector.rmdir(session, 'unifile_readFile');
 			else this.skip();
 		});
@@ -620,7 +525,7 @@ describe.only('DropboxConnector', function() {
 		let connector;
 		const data = 'lorem ipsum';
 
-		before('Init tests repo', function() {
+		before('Init tests folder', function() {
 			if(isEnvValid()) {
 				connector = new DropboxConnector(authConfig);
 				return connector.setAccessToken(session, process.env.DROPBOX_TOKEN)
@@ -668,7 +573,7 @@ describe.only('DropboxConnector', function() {
 			stream.on('data', (content) => chunks.push(content));
 		});
 
-		after('Remove repo', function() {
+		after('Remove folder', function() {
 			if(isEnvValid()) connector.rmdir(session, 'unifile_readstream');
 			else this.skip();
 		});
@@ -677,7 +582,7 @@ describe.only('DropboxConnector', function() {
 	describe('rename()', function() {
 		let connector;
 		const data = 'lorem ipsum';
-		before('Init tests repo', function() {
+		before('Init tests folder', function() {
 			if(isEnvValid()) {
 				connector = new DropboxConnector(authConfig);
 				return connector.setAccessToken(session, process.env.DROPBOX_TOKEN)
@@ -706,7 +611,7 @@ describe.only('DropboxConnector', function() {
 			return expect(connector.rename(session, '/home/test', 'home/test2')).to.be.rejectedWith('Not Found');
 		});
 
-		it('renames a repository', function() {
+		it('renames a folder', function() {
 			return connector.rename(session, 'unifile_rename2', 'unifile_rename3')
 			.then(() => {
 				connector.readdir(session, 'unifile_rename3').should.be.fulfilled;
@@ -745,12 +650,12 @@ describe.only('DropboxConnector', function() {
 			});
 		});
 
-		after('Remove repo', function() {
+		after('Remove folder', function() {
 			if(isEnvValid()) connector.rmdir(session, 'unifile_readstream');
 			else this.skip();
 		});
 
-		after('Remove repo', function() {
+		after('Remove folder', function() {
 			if(isEnvValid()) connector.rmdir(session, 'unifile_rename');
 			else this.skip();
 		});
@@ -758,7 +663,7 @@ describe.only('DropboxConnector', function() {
 
 	describe('unlink()', function() {
 		let connector;
-		before('Init tests repo', function() {
+		before('Init tests folder', function() {
 			if(isEnvValid()) {
 				connector = new DropboxConnector(authConfig);
 				return connector.setAccessToken(session, process.env.DROPBOX_TOKEN)
@@ -779,7 +684,7 @@ describe.only('DropboxConnector', function() {
 			return expect(connector.unlink(session, 'unifile_unlink/test/tmp.testtest')).to.be.rejectedWith('Not Found');
 		});
 
-		it('rejects the promise if the path is a branch/repo', function() {
+		it('rejects the promise if the path is a branch/folder', function() {
 			return Promise.all([
 				expect(connector.unlink(session, 'unifile_unlink')).to.be.rejectedWith('Path is a folder'),
 				expect(connector.unlink(session, 'unifile_unlink/test')).to.be.rejectedWith('Path is a folder')
@@ -793,7 +698,7 @@ describe.only('DropboxConnector', function() {
 			});
 		});
 
-		after('Remove repo', function() {
+		after('Remove folder', function() {
 			if(isEnvValid()) connector.rmdir(session, 'unifile_unlink');
 			else this.skip();
 		});
@@ -801,7 +706,7 @@ describe.only('DropboxConnector', function() {
 
 	describe('rmdir()', function() {
 		let connector;
-		before('Init tests repo', function() {
+		before('Init tests folder', function() {
 			if(isEnvValid()) {
 				connector = new DropboxConnector(authConfig);
 				return connector.setAccessToken(session, process.env.DROPBOX_TOKEN)
@@ -829,7 +734,7 @@ describe.only('DropboxConnector', function() {
 			.to.be.rejectedWith('You cannot leave this folder empty');
 		});
 
-		it('deletes a repo', function() {
+		it('deletes a folder', function() {
 			return connector.rmdir(session, 'unifile_rmdir2')
 			.then((content) => {
 				return expect(connector.readdir(session, 'unifile_rmdir2')).to.be.rejectedWith('Not Found');
@@ -850,7 +755,7 @@ describe.only('DropboxConnector', function() {
 			});
 		});
 
-		after('Remove repo', function() {
+		after('Remove folder', function() {
 			if(isEnvValid()) connector.rmdir(session, 'unifile_rmdir')
 			.then(() => connector.rmdir(session, 'unifile_rmdir3'));
 			else this.skip();
@@ -888,7 +793,7 @@ describe.only('DropboxConnector', function() {
 			.should.be.rejectedWith('Cannot execute batch action without a path');
 		});
 
-		it('rejects the promise if one repo/branch action failed', function() {
+		it('rejects the promise if one folder/branch action failed', function() {
 			return connector.batch(session, [{name: 'mkdir', path: 'authouou/outeum'}])
 			.should.be.rejectedWith('Could not complete action');
 		});
