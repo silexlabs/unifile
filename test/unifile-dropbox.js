@@ -31,8 +31,8 @@ function checkSession(session) {
 	expect(session.account).to.have.all.keys('account_id', 'email', 'name');
 }
 
-describe.only('DropboxConnector', function() {
-
+describe('DropboxConnector', function() {
+	this.timeout(9000);
 	const session = {
 		account: {id: process.env.DROPBOX_ACCOUNT}
 	};
@@ -43,9 +43,9 @@ describe.only('DropboxConnector', function() {
 	};
 	const authConfig = Object.assign({}, defaultConfig, {clientSecret: process.env.DROPBOX_SECRET});
 
-	before('Init session with a valid account and tests folder', function() {
+	before('Init session with a valid account', function() {
 		if(isEnvValid()) {
-			return new DropboxConnector(Object.assign({clientSecret: process.env.DROPBOX_SECRET}, authConfig))
+			return new DropboxConnector(authConfig)
 			.setAccessToken(session, process.env.DROPBOX_TOKEN);
 		}
 	});
@@ -250,6 +250,18 @@ describe.only('DropboxConnector', function() {
 			return expect(connector.readdir(session, '/home')).to.be.rejectedWith('Not Found');
 		});
 
+		it('lists files in root', function() {
+			return connector.readdir(session, '')
+			.then((list) => {
+				expect(list).to.be.an.instanceof(Array);
+				expect(list.length).is.above(0);
+				list.every((file) => {
+					const keys = Object.keys(file);
+					return ['isDir', 'mime', 'modified', 'name', 'size'].every((key) => keys.includes(key));
+				}).should.be.true;
+			});
+		});
+
 		it('lists files in the directory with proper entry infomations', function() {
 			return connector.readdir(session, 'unifile_readdir')
 			.then((list) => {
@@ -323,9 +335,7 @@ describe.only('DropboxConnector', function() {
 				connector = new DropboxConnector(authConfig);
 				return connector.setAccessToken(session, process.env.DROPBOX_TOKEN)
 				.then(() => connector.batch(session, [
-					{name: 'mkdir', path: 'unifile_mkdir'},
-					{name: 'mkdir', path: 'unifile_mkdir/test'},
-					{name: 'mkdir', path: 'unifile_mkdir/test/o'}
+					{name: 'mkdir', path: 'unifile_mkdir'}
 				]));
 			} else this.skip();
 		});
@@ -335,7 +345,7 @@ describe.only('DropboxConnector', function() {
 		});
 
 		it('rejects the promise if the folder path already exist', function() {
-			return expect(connector.mkdir(session, 'unifile_mkdir')).to.be.rejectedWith('creation failed');
+			return expect(connector.mkdir(session, 'unifile_mkdir')).to.be.rejectedWith('Creation failed due to conflict');
 		});
 
 		it('creates a new folder', function() {
@@ -413,8 +423,7 @@ describe.only('DropboxConnector', function() {
 		});
 	});
 
-	describe.only('createWriteStream()', function() {
-		this.timeout(9000);
+	describe('createWriteStream()', function() {
 		let connector;
 		const data = 'lorem ipsum';
 		before('Init tests folder', function() {
@@ -489,9 +498,7 @@ describe.only('DropboxConnector', function() {
 				return connector.setAccessToken(session, process.env.DROPBOX_TOKEN)
 				.then(() => connector.batch(session, [
 					{name: 'mkdir', path: 'unifile_readFile'},
-					{name: 'mkdir', path: 'unifile_readFile/test'},
-					{name: 'mkdir', path: 'unifile_readFile/test/o'},
-					{name: 'writeFile', path: 'unifile_readFile/test/file1.txt', content: data}
+					{name: 'writeFile', path: 'unifile_readFile/file1.txt', content: data}
 				]));
 			} else this.skip();
 		});
@@ -500,19 +507,15 @@ describe.only('DropboxConnector', function() {
 			return expect(connector.readFile(session, 'a/test/auoeuiqu')).to.be.rejectedWith('Not Found');
 		});
 
-		it('rejects the promise if the path is a folder or branch', function() {
-			return Promise.all(['unifile_readFile', 'unifile_readFile/master'].map((path) => {
-				return expect(connector.readFile(session, path)).to.be
-				.rejectedWith('This folder only contain folders. Files can be found in sub-folders.');
-			}));
-		});
-
 		it('rejects the promise if the path is a directory', function() {
-			return expect(connector.readFile(session, 'unifile_readFile/test/o')).to.be.rejectedWith('Path is a directory');
+			return expect(connector.readFile(session, 'unifile_readFile')).to.be.rejectedWith('Path is a directory');
 		});
 
 		it('returns the content of a file', function() {
-			return connector.readFile(session, 'unifile_readFile/test/file1.txt').should.become(data);
+			return connector.readFile(session, 'unifile_readFile/file1.txt')
+			.then((content) => {
+				return expect(content.toString()).to.equal(data);
+			});
 		});
 
 		after('Remove folder', function() {
@@ -531,19 +534,30 @@ describe.only('DropboxConnector', function() {
 				return connector.setAccessToken(session, process.env.DROPBOX_TOKEN)
 				.then(() => connector.batch(session, [
 					{name: 'mkdir', path: 'unifile_readstream'},
-					{name: 'mkdir', path: 'unifile_readstream/test'},
-					{name: 'mkdir', path: 'unifile_readstream/test/o'},
-					{name: 'writeFile', path: 'unifile_readstream/test/file1.txt', content: data}
+					{name: 'writeFile', path: 'unifile_readstream/file1.txt', content: data}
 				]));
 			} else this.skip();
+		});
+
+		it('throws an error if invalid credentials', function(done) {
+			const stream = connector.createReadStream(Object.assign({}, session, {
+				token: 'aoa'
+			}), 'aouoeuoeu');
+			stream.on('error', (err) => {
+				expect(err.message).to.equal('Invalid request');
+				done();
+			});
+			stream.on('data', () => {
+				done(new Error('Should not emit this event'));
+			});
 		});
 
 		it('throws an error if wrong credentials', function(done) {
 			const stream = connector.createReadStream(Object.assign({}, session, {
 				token: 'aoa'
-			}), 'aouoeuoeu');
+			}), 'm-rHPgzYK6kAAAAAAAAJkc60_XzaSJikZrTaOHyzMgCuEtVmlTtpsQjLvjc8tr8L');
 			stream.on('error', (err) => {
-				expect(err.message).to.equal('Bad credentials');
+				expect(err.message).to.equal('Invalid request');
 				done();
 			});
 			stream.on('data', () => {
@@ -557,14 +571,25 @@ describe.only('DropboxConnector', function() {
 				expect(err.message).to.equal('Not Found');
 				done();
 			});
-			stream.on('data', () => {
+			stream.on('data', (data) => {
+				done(new Error('Should not emit this event'));
+			});
+		});
+
+		it('throws an error if the path is a directory', function(done) {
+			const stream = connector.createReadStream(session, 'unifile_readstream');
+			stream.on('error', (err) => {
+				expect(err.message).to.equal('Path is a directory');
+				done();
+			});
+			stream.on('data', (data) => {
 				done(new Error('Should not emit this event'));
 			});
 		});
 
 		it('creates a readable stream', function(done) {
 			const chunks = [];
-			const stream = connector.createReadStream(session, 'unifile_readstream/test/file1.txt');
+			const stream = connector.createReadStream(session, 'unifile_readstream/file1.txt');
 			stream.on('end', () => {
 				expect(Buffer.concat(chunks).toString()).to.equal(data);
 				done();
@@ -589,10 +614,7 @@ describe.only('DropboxConnector', function() {
 				.then(() => connector.batch(session, [
 					{name: 'mkdir', path: 'unifile_rename'},
 					{name: 'mkdir', path: 'unifile_rename2'},
-					{name: 'mkdir', path: 'unifile_rename/test'},
-					{name: 'mkdir', path: 'unifile_rename/testRename'},
-					{name: 'mkdir', path: 'unifile_rename/test/o'},
-					{name: 'writeFile', path: 'unifile_rename/test/file1.txt', content: data}
+					{name: 'writeFile', path: 'unifile_rename/file1.txt', content: data}
 				]));
 			} else this.skip();
 		});
@@ -619,40 +641,17 @@ describe.only('DropboxConnector', function() {
 			.then(() => connector.rmdir(session, 'unifile_rename3'));
 		});
 
-		it('renames a branch', function() {
-			return connector.rename(session, 'unifile_rename/testRename', 'unifile_rename/testRenamed')
-			.then(() => {
-				return Promise.all([
-					connector.readdir(session, 'unifile_rename/testRename').should.be.rejected,
-					connector.readdir(session, 'unifile_rename/testRenamed').should.be.fulfilled
-				]);
-			})
-			.finally(() => connector.rmdir(session, 'unifile_rename/testRenamed'), (err) => {});
-		});
-
-		it('renames a folder', function() {
-			return connector.rename(session, 'unifile_rename/test/o', 'unifile_rename/test/p')
-			.then(() => {
-				return connector.readdir(session, 'unifile_rename/test/o').should.be.rejectedWith('Not Found');
-			})
-			.then(() => {
-				return connector.readdir(session, 'unifile_rename/test/p').should.be.fulfilled;
-			});
-		});
-
 		it('renames a file', function() {
-			return connector.rename(session, 'unifile_rename/test/file1.txt', 'unifile_rename/test/fileB.txt')
+			return connector.rename(session, 'unifile_rename/file1.txt', 'unifile_rename/fileB.txt')
 			.then(() => {
-				return connector.readFile(session, 'unifile_rename/test/file1.txt').should.be.rejectedWith('Not Found');
+				return connector.readFile(session, 'unifile_rename/file1.txt').should.be.rejectedWith('Not Found');
 			})
 			.then(() => {
-				return connector.readFile(session, 'unifile_rename/test/fileB.txt').should.become(data);
+				return connector.readFile(session, 'unifile_rename/fileB.txt');
+			})
+			.then((content) => {
+				return expect(content.toString()).to.equal(data);
 			});
-		});
-
-		after('Remove folder', function() {
-			if(isEnvValid()) connector.rmdir(session, 'unifile_readstream');
-			else this.skip();
 		});
 
 		after('Remove folder', function() {
@@ -669,9 +668,7 @@ describe.only('DropboxConnector', function() {
 				return connector.setAccessToken(session, process.env.DROPBOX_TOKEN)
 				.then(() => connector.batch(session, [
 					{name: 'mkdir', path: 'unifile_unlink'},
-					{name: 'mkdir', path: 'unifile_unlink/test'},
-					{name: 'mkdir', path: 'unifile_unlink/test/o'},
-					{name: 'writeFile', path: 'unifile_unlink/test/file1.txt', content: 'lorem ipsum'}
+					{name: 'writeFile', path: 'unifile_unlink/file1.txt', content: 'lorem ipsum'}
 				]));
 			} else this.skip();
 		});
@@ -681,20 +678,13 @@ describe.only('DropboxConnector', function() {
 		});
 
 		it('rejects the promise if the path does not exist', function() {
-			return expect(connector.unlink(session, 'unifile_unlink/test/tmp.testtest')).to.be.rejectedWith('Not Found');
-		});
-
-		it('rejects the promise if the path is a branch/folder', function() {
-			return Promise.all([
-				expect(connector.unlink(session, 'unifile_unlink')).to.be.rejectedWith('Path is a folder'),
-				expect(connector.unlink(session, 'unifile_unlink/test')).to.be.rejectedWith('Path is a folder')
-			]);
+			return expect(connector.unlink(session, 'unifile_unlink/tmp.testtest')).to.be.rejectedWith('Not Found');
 		});
 
 		it('deletes a file', function() {
-			return connector.unlink(session, 'unifile_unlink/test/file1.txt')
+			return connector.unlink(session, 'unifile_unlink/file1.txt')
 			.then((content) => {
-				return expect(connector.readFile(session, 'unifile_unlink/test/file1.txt')).to.be.rejectedWith('Not Found');
+				return expect(connector.readFile(session, 'unifile_unlink/file1.txt')).to.be.rejectedWith('Not Found');
 			});
 		});
 
@@ -711,12 +701,7 @@ describe.only('DropboxConnector', function() {
 				connector = new DropboxConnector(authConfig);
 				return connector.setAccessToken(session, process.env.DROPBOX_TOKEN)
 				.then(() => connector.batch(session, [
-					{name: 'mkdir', path: 'unifile_rmdir2'},
-					{name: 'mkdir', path: 'unifile_rmdir3'},
-					{name: 'mkdir', path: 'unifile_rmdir'},
-					{name: 'mkdir', path: 'unifile_rmdir/toremove'},
-					{name: 'mkdir', path: 'unifile_rmdir/test'},
-					{name: 'mkdir', path: 'unifile_rmdir/test/o'}
+					{name: 'mkdir', path: 'unifile_rmdir'}
 				]));
 			} else this.skip();
 		});
@@ -729,29 +714,10 @@ describe.only('DropboxConnector', function() {
 			return expect(connector.rmdir(session, 'tmp.testtest')).to.be.rejectedWith('Not Found');
 		});
 
-		it('rejects the promise if the branch is alone', function() {
-			return expect(connector.rmdir(session, 'unifile_rmdir3/master'))
-			.to.be.rejectedWith('You cannot leave this folder empty');
-		});
-
 		it('deletes a folder', function() {
-			return connector.rmdir(session, 'unifile_rmdir2')
+			return connector.rmdir(session, 'unifile_rmdir')
 			.then((content) => {
 				return expect(connector.readdir(session, 'unifile_rmdir2')).to.be.rejectedWith('Not Found');
-			});
-		});
-
-		it('deletes a branch', function() {
-			return connector.rmdir(session, 'unifile_rmdir/toremove')
-			.then((content) => {
-				return expect(connector.readdir(session, 'unifile_rmdir/toremove')).to.be.rejectedWith('Not Found');
-			});
-		});
-
-		it('deletes a directory', function() {
-			return connector.rmdir(session, 'unifile_rmdir/test/o')
-			.then((content) => {
-				return expect(connector.readdir(session, 'unifile_rmdir/test/o')).to.be.rejectedWith('Not Found');
 			});
 		});
 
@@ -793,11 +759,6 @@ describe.only('DropboxConnector', function() {
 			.should.be.rejectedWith('Cannot execute batch action without a path');
 		});
 
-		it('rejects the promise if one folder/branch action failed', function() {
-			return connector.batch(session, [{name: 'mkdir', path: 'authouou/outeum'}])
-			.should.be.rejectedWith('Could not complete action');
-		});
-
 		it('rejects the promise if a rename action does not have a destination', function() {
 			return connector.batch(session, [{name: 'rename', path: 'tmp'}])
 			.should.be.rejectedWith('Rename actions should have a destination');
@@ -808,13 +769,24 @@ describe.only('DropboxConnector', function() {
 			.should.be.rejectedWith('Write actions should have a content');
 		});
 
+		it('rejects the promise if an conflict happen', function() {
+			return connector.batch(session, [
+				{name: 'mkdir', path: 'tmp'},
+				{name: 'mkdir', path: 'tmp'}
+			]).should.be.rejectedWith('conflict')
+			.then(() => connector.rmdir(session, 'tmp'));
+		});
+
 		it('executes action in order', function() {
 			return connector.batch(session, creation)
 			.then(() => {
 				return Promise.all([
-					expect(connector.readFile(session, 'tmp/test/b')).to.become('aaa'),
+					connector.readFile(session, 'tmp/test/b'),
 					expect(connector.readdir(session, 'tmp3')).to.be.fulfilled
 				]);
+			})
+			.then((content) => {
+				return expect(content[0].toString()).to.equal('aaa');
 			})
 			.then(() => connector.batch(session, destruction))
 			.then(() => {
