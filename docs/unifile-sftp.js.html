@@ -22,7 +22,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Unifile.html">Unifile</a><ul class='methods'><li data-type='method'><a href="Unifile.html#use">use</a></li><li data-type='method'><a href="Unifile.html#getInfos">getInfos</a></li><li data-type='method'><a href="Unifile.html#listConnectors">listConnectors</a></li><li data-type='method'><a href="Unifile.html#login">login</a></li><li data-type='method'><a href="Unifile.html#setAccessToken">setAccessToken</a></li><li data-type='method'><a href="Unifile.html#clearAccessToken">clearAccessToken</a></li><li data-type='method'><a href="Unifile.html#getAuthorizeURL">getAuthorizeURL</a></li><li data-type='method'><a href="Unifile.html#readdir">readdir</a></li><li data-type='method'><a href="Unifile.html#stat">stat</a></li><li data-type='method'><a href="Unifile.html#mkdir">mkdir</a></li><li data-type='method'><a href="Unifile.html#writeFile">writeFile</a></li><li data-type='method'><a href="Unifile.html#createWriteStream">createWriteStream</a></li><li data-type='method'><a href="Unifile.html#readFile">readFile</a></li><li data-type='method'><a href="Unifile.html#createReadStream">createReadStream</a></li><li data-type='method'><a href="Unifile.html#rename">rename</a></li><li data-type='method'><a href="Unifile.html#unlink">unlink</a></li><li data-type='method'><a href="Unifile.html#rmdir">rmdir</a></li><li data-type='method'><a href="Unifile.html#batch">batch</a></li></ul></li><li><a href="DropboxConnector.html">DropboxConnector</a></li><li><a href="FsConnector.html">FsConnector</a></li><li><a href="FtpConnector.html">FtpConnector</a></li><li><a href="GitHubConnector.html">GitHubConnector</a></li><li><a href="RemoteStorageConnector.html">RemoteStorageConnector</a></li><li><a href="SftpConnector.html">SftpConnector</a></li><li><a href="WebDavConnector.html">WebDavConnector</a></li></ul><h3>Externals</h3><ul><li><a href="external-WritableStream.html">WritableStream</a></li><li><a href="external-ReadableStream.html">ReadableStream</a></li><li><a href="external-Promise.html">Promise</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="UnifileError.html">UnifileError</a></li><li><a href="BatchError.html">BatchError</a></li><li><a href="Unifile.html">Unifile</a><ul class='methods'><li data-type='method'><a href="Unifile.html#use">use</a></li><li data-type='method'><a href="Unifile.html#getInfos">getInfos</a></li><li data-type='method'><a href="Unifile.html#listConnectors">listConnectors</a></li><li data-type='method'><a href="Unifile.html#login">login</a></li><li data-type='method'><a href="Unifile.html#setAccessToken">setAccessToken</a></li><li data-type='method'><a href="Unifile.html#clearAccessToken">clearAccessToken</a></li><li data-type='method'><a href="Unifile.html#getAuthorizeURL">getAuthorizeURL</a></li><li data-type='method'><a href="Unifile.html#readdir">readdir</a></li><li data-type='method'><a href="Unifile.html#stat">stat</a></li><li data-type='method'><a href="Unifile.html#mkdir">mkdir</a></li><li data-type='method'><a href="Unifile.html#writeFile">writeFile</a></li><li data-type='method'><a href="Unifile.html#createWriteStream">createWriteStream</a></li><li data-type='method'><a href="Unifile.html#readFile">readFile</a></li><li data-type='method'><a href="Unifile.html#createReadStream">createReadStream</a></li><li data-type='method'><a href="Unifile.html#rename">rename</a></li><li data-type='method'><a href="Unifile.html#unlink">unlink</a></li><li data-type='method'><a href="Unifile.html#rmdir">rmdir</a></li><li data-type='method'><a href="Unifile.html#batch">batch</a></li></ul></li><li><a href="DropboxConnector.html">DropboxConnector</a></li><li><a href="FsConnector.html">FsConnector</a></li><li><a href="FtpConnector.html">FtpConnector</a></li><li><a href="GitHubConnector.html">GitHubConnector</a></li><li><a href="RemoteStorageConnector.html">RemoteStorageConnector</a></li><li><a href="SftpConnector.html">SftpConnector</a></li></ul><h3>Externals</h3><ul><li><a href="external-WritableStream.html">WritableStream</a></li><li><a href="external-ReadableStream.html">ReadableStream</a></li><li><a href="external-Promise.html">Promise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#getClient">getClient</a></li></ul>
 </nav>
 
 <div id="main">
@@ -41,239 +41,277 @@
 
 const Mime = require('mime');
 const Promise = require('bluebird');
-const PassThrough = require('stream').PassThrough;
+const {PassThrough} = require('stream');
 const SFTPClient = require('sftp-promises');
+const {Client} = require('ssh2');
 
-const Tools = require('./tools');
+const Tools = require('unifile-common-tools');
 
 const NAME = 'sftp';
 
-function assertSuccess(success, errorMessage) {
-  return success ? Promise.resolve() : Promise.reject(new Error(errorMessage));
-}
-
 function parseError(err) {
-  let msg = null;
-  switch (err.code) {
-    case 2:
-      msg = 'This path does not exist';
-      break;
-    case 4:
-      msg = 'An error occured: ' + err;
-      break;
-  }
-  const error = new Error(msg);
-  error.code = err.code;
-  throw error;
+	let msg = null;
+	switch (err.code) {
+		case 2:
+			msg = 'This path does not exist';
+			break;
+		case 4:
+			msg = 'An error occured: ' + err;
+			break;
+		default:
+			throw err;
+	}
+	const error = new Error(msg);
+	error.code = err.code;
+	throw error;
 }
 
 /**
  * Service connector for {@link https://en.wikipedia.org/wiki/SSH_File_Transfer_Protocol|SFTP}
  */
 class SftpConnector {
-  /**
+	/**
    * @constructor
    * @param {Object} config - Configuration object.
    * @param {string} config.redirectUri - URI redirecting to an authantification form.
    * @param {boolean} [config.showHiddenFiles=false] - Flag to show hidden files.
    * @param {ConnectorStaticInfos} [config.infos] - Connector infos to override
    */
-  constructor(config) {
-    if(!config || !config.redirectUri)
-      throw new Error('You should at least set a redirectUri for this connector');
+	constructor(config) {
+		if(!config || !config.redirectUri)
+			throw new Error('You should at least set a redirectUri for this connector');
 
-    this.redirectUri = config.redirectUri;
-    this.showHiddenFile = config.showHiddenFile || false;
-    this.infos = Tools.mergeInfos(config.infos || {}, {
-      name: NAME,
-      displayName: 'SFTP',
-      icon: '',
-      description: 'Edit files on a SSH server.'
-    });
-    this.name = this.infos.name;
-  }
+		this.redirectUri = config.redirectUri;
+		this.showHiddenFile = config.showHiddenFile || false;
+		this.infos = Tools.mergeInfos(config.infos || {}, {
+			name: NAME,
+			displayName: 'SFTP',
+			icon: '',
+			description: 'Edit files on a SSH server.'
+		});
+		this.name = this.infos.name;
+	}
 
-  getInfos(session) {
-    return Object.assign({
-      isLoggedIn: 'token' in session,
-      isOAuth: false,
-      username: session.username
-    }, this.infos);
-  }
+	getInfos(session) {
+		return Object.assign({
+			isLoggedIn: 'token' in session,
+			isOAuth: false,
+			username: session.username
+		}, this.infos);
+	}
 
-  // Auth methods are useless here
+	// Auth methods are useless here
 
-  getAuthorizeURL(session) {
-    return Promise.resolve(this.redirectUri);
-  }
+	getAuthorizeURL(session) {
+		return Promise.resolve(this.redirectUri);
+	}
 
-  setAccessToken(session, token) {
-    // TODO Authorize to set credentials here?
-    return Promise.resolve(token);
-  }
+	setAccessToken(session, token) {
+		session.token = token;
+		return Promise.resolve(token);
+	}
 
-  clearAccessToken(session) {
-    session = {};
-    return Promise.resolve();
-  }
+	clearAccessToken(session) {
+		Tools.clearSession(session);
+		return Promise.resolve();
+	}
 
-  login(session, loginInfos) {
-    session.host = loginInfos.host;
-    session.username = loginInfos.user;
-    session.password = loginInfos.password;
-    // Will signal Unifile the user is logged in
-    session.token = loginInfos.user;
-    return Promise.resolve();
-  }
+	login(session, loginInfos) {
+		try {
+			const auth = Tools.parseBasicAuth(loginInfos);
+			session.host = auth.host;
+			session.port = auth.port;
+			session.user = auth.user;
+			// Duplicate because SFTP wait for `username` but we want to keep compatibility
+			session.username = auth.user;
+			session.password = auth.password;
+		} catch (e) {
+			return Promise.reject(e);
+		}
+		// Check credentials by stating root
+		return this.stat(session, '/')
+		.catch((err) => {
+			throw new Error('Cannot access server. Please check your credentials. ' + err);
+		})
+		.then(() => Promise.resolve(this.setAccessToken(session, session.username)));
+	}
 
-  //Filesystem commands
-  // An additional sftpSession is added to signature to support batch actions
+	//Filesystem commands
+	// An additional sftpSession is added to signature to support batch actions
 
-  readdir(session, path, sftpSession) {
-    const sftp = sftpSession ? new SFTPClient() : new SFTPClient(session);
-    return sftp.ls(path, sftpSession)
-    .catch(parseError)
-    .then((directory) => {
-      if(!directory) return Promise.reject('Unable to list remote dir');
-      return directory.entries.reduce((memo, entry) => {
-        if(this.showHiddenFile || !entry.filename.startsWith('.')) {
-          memo.push({
-            size: entry.attrs.size,
-            modified: entry.attrs.mtime,
-            name: entry.filename,
-            isDir: entry.longname.startsWith('d'),
-            mime: Mime.lookup(entry.filename)
-          });
-        }
-        return memo;
-      }, []);
-    });
-  }
+	readdir(session, path, sftpSession) {
+		const sftp = sftpSession ? new SFTPClient() : new SFTPClient(session);
+		return sftp.ls(path, sftpSession)
+		.catch(parseError)
+		.then((directory) => {
+			if(!directory.entries) return Promise.reject('Target is not a directory');
+			return directory.entries.reduce((memo, entry) => {
+				if(this.showHiddenFile || !entry.filename.startsWith('.')) {
+					const isDir = entry.longname.startsWith('d');
+					memo.push({
+						size: entry.attrs.size,
+						modified: entry.attrs.mtime,
+						name: entry.filename,
+						isDir: isDir,
+						mime: isDir ? 'application/directory' : Mime.getType(entry.filename)
+					});
+				}
+				return memo;
+			}, []);
+		});
+	}
 
-  stat(session, path, sftpSession) {
-    const sftp = sftpSession ? new SFTPClient() : new SFTPClient(session);
-    return sftp.stat(path, sftpSession)
-    .catch(parseError)
-    .then((entry) => {
-      console.log('Entry', entry);
-      const filename = entry.path.split('/').pop();
-      const isDir = entry.type === 'directory';
-      return {
-        size: entry.size,
-        modified: entry.mtime,
-        name: filename,
-        isDir: isDir,
-        mime: isDir ? 'application/directory' : Mime.lookup(filename)
-      };
-    });
-  }
+	stat(session, path, sftpSession) {
+		const sftp = sftpSession ? new SFTPClient() : new SFTPClient(session);
+		return sftp.stat(path, sftpSession)
+		.catch(parseError)
+		.then((entry) => {
+			const filename = entry.path.split('/').pop();
+			const isDir = entry.type === 'directory';
+			return {
+				size: entry.size,
+				modified: entry.mtime,
+				name: filename,
+				isDir: isDir,
+				mime: isDir ? 'application/directory' : Mime.getType(filename)
+			};
+		});
+	}
 
-  mkdir(session, path, sftpSession) {
-    const sftp = sftpSession ? new SFTPClient() : new SFTPClient(session);
-    return sftp.mkdir(path, sftpSession)
-    .catch(parseError)
-    .catch((err) => {
-      if(err.code === 4) throw new Error('Unable to create remote dir. Does it already exist?');
-      else throw err;
-    })
-    .then((success) => {
-      assertSuccess(success, 'Unable to create remote dir. Does it already exist?');
-    });
-  }
+	mkdir(session, path, sftpSession) {
+		const sftp = sftpSession ? new SFTPClient() : new SFTPClient(session);
+		return sftp.mkdir(path, sftpSession)
+		.catch(parseError)
+		.catch((err) => {
+			if(err.code === 4) throw new Error('Unable to create remote dir. Does it already exist?');
+			else throw err;
+		});
+	}
 
-  writeFile(session, path, data, sftpSession) {
-    const sftp = sftpSession ? new SFTPClient() : new SFTPClient(session);
-    return sftp.putBuffer(new Buffer(data), path, sftpSession)
-    .catch(parseError)
-    .catch((err) => {
-      if(err.code === 4) throw new Error('Unable to create remote file. Does it already exist?');
-      else throw err;
-    })
-    .then((success) => assertSuccess(success, 'Unable to create remote file'));
-  }
+	writeFile(session, path, data, sftpSession) {
+		const sftp = sftpSession ? new SFTPClient() : new SFTPClient(session);
+		return sftp.putBuffer(new Buffer(data), path, sftpSession)
+		.catch(parseError)
+		.catch((err) => {
+			if(err.code === 4) throw new Error('Unable to create remote file. Does its parent exist?');
+			else throw err;
+		});
+	}
 
-  createWriteStream(session, path, sftpSession) {
-    const sftp = sftpSession ? new SFTPClient() : new SFTPClient(session);
-    const stream = new PassThrough();
-    sftp.putStream(path, stream, sftpSession)
-    .catch(parseError)
-    .then((success) => {
-      if(!success) stream.emit('error', new Error('Unable to create write stream'));
-    });
-    return stream;
-  }
+	createWriteStream(session, path, sftpSession) {
+		const stream = new PassThrough();
+		// Get stream for ssh2 directly
+		if(sftpSession) {
+			sftpSession.sftp((err, sftp) => {
+				const sStream = sftp.createWriteStream(path)
+				.on('close', () => {
+					stream.emit('close');
+				});
 
-  readFile(session, path, sftpSession) {
-    const sftp = sftpSession ? new SFTPClient() : new SFTPClient(session);
-    return sftp.getBuffer(path)
-    .catch(parseError)
-    .then((buffer) => {
-      if(!buffer) return Promise.reject('Unable to read remote file');
-      return buffer.toString();
-    });
-  }
+				stream.pipe(sStream);
+			});
+		} else {
+			const connection = new Client();
+			connection.on('ready', function() {
+				connection.sftp((err, sftp) => {
+					const sStream = sftp.createWriteStream(path)
+					.on('close', () => {
+						stream.emit('close');
+						connection.end();
+						connection.destroy();
+					});
 
-  createReadStream(session, path, sftpSession) {
-    const sftp = sftpSession ? new SFTPClient() : new SFTPClient(session);
-    const stream = new PassThrough();
-    sftp.getStream(path, stream, sftpSession)
-    .catch(parseError)
-    .then((success) => {
-      if(!success) stream.emit('error', new Error('Unable to create read stream'));
-    });
-    return stream;
-  }
+					stream.pipe(sStream);
+				});
+			});
+			connection.on('error', function(err) {
+				stream.emit('error', err);
+			});
 
-  rename(session, src, dest, sftpSession) {
-    const sftp = sftpSession ? new SFTPClient() : new SFTPClient(session);
-    return sftp.mv(src, dest, sftpSession)
-    .catch(parseError)
-    .then((success) => assertSuccess(success, 'Unable to rename this path'));
-  }
+			connection.connect(session);
+		}
 
-  unlink(session, path, sftpSession) {
-    const sftp = sftpSession ? new SFTPClient() : new SFTPClient(session);
-    return sftp.rm(path, sftpSession)
-    .catch(parseError)
-    .then((success) => assertSuccess(success, 'Unable to remove file'));
-  }
+		return stream;
+	}
 
-  rmdir(session, path, sftpSession) {
-    const sftp = sftpSession ? new SFTPClient() : new SFTPClient(session);
-    return sftp.rmdir(path, sftpSession)
-    .catch(parseError)
-    .catch((err) => {
-      if(err.code === 4) throw new Error('Unable to remove directory. Is is empty?');
-      else throw err;
-    })
-    .then((success) => assertSuccess(success, 'Unable to remove directory. Is is empty?'));
-  }
+	readFile(session, path, sftpSession) {
+		const sftp = sftpSession ? new SFTPClient() : new SFTPClient(session);
+		return sftp.getBuffer(path, sftpSession)
+		.catch(parseError);
+	}
 
-  batch(session, actions, message) {
-    const sftp = new SFTPClient();
-    return sftp.session(session)
-    .catch(parseError)
-    .then((sftpSession) => {
-      return Promise.each(actions, (action) => {
-        const act = action.name.toLowerCase();
-        switch (act) {
-          case 'unlink':
-          case 'rmdir':
-          case 'mkdir':
-            this[act](session, action.path, sftpSession);
-            break;
-          case 'rename':
-            this[act](session, action.path, action.destination, sftpSession);
-            break;
-          case 'writefile':
-            this.writeFile(session, action.path, action.content, sftpSession);
-            break;
-          default:
-            console.warn(`Unsupported batch action: ${action.name}`);
-        }
-      });
-    });
-  }
+	createReadStream(session, path, sftpSession) {
+		const stream = new PassThrough();
+		// Get stream for ssh2 directly
+		if(sftpSession) {
+			sftpSession.sftp((err, sftp) => sftp.createReadStream(path).pipe(stream));
+		} else {
+			const connection = new Client();
+			connection.on('ready', function() {
+				connection.sftp((err, sftp) => {
+					const sStream = sftp.createReadStream(path)
+					.on('close', () => {
+						stream.emit('close');
+						connection.end();
+						connection.destroy();
+					})
+					.on('error', (err) => stream.emit('error', err));
+
+					sStream.pipe(stream);
+				});
+			});
+			connection.on('error', function(err) {
+				stream.emit('error', err);
+			});
+
+			connection.connect(session);
+		}
+
+		return stream;
+	}
+
+	rename(session, src, dest, sftpSession) {
+		const sftp = sftpSession ? new SFTPClient() : new SFTPClient(session);
+		return sftp.mv(src, dest, sftpSession)
+		.catch(parseError);
+	}
+
+	unlink(session, path, sftpSession) {
+		const sftp = sftpSession ? new SFTPClient() : new SFTPClient(session);
+		return sftp.rm(path, sftpSession)
+		.catch(parseError);
+	}
+
+	rmdir(session, path, sftpSession) {
+		const sftp = sftpSession ? new SFTPClient() : new SFTPClient(session);
+		return sftp.rmdir(path, sftpSession)
+		.catch(parseError);
+	}
+
+	batch(session, actions, message) {
+		const sftp = new SFTPClient();
+		return sftp.session(session)
+		.catch(parseError)
+		.then((sftpSession) => {
+			return Promise.each(actions, (action) => {
+				const act = action.name.toLowerCase();
+				switch (act) {
+					case 'unlink':
+					case 'rmdir':
+					case 'mkdir':
+						return this[act](session, action.path, sftpSession);
+					case 'rename':
+						return this[act](session, action.path, action.destination, sftpSession);
+					case 'writefile':
+						return this.writeFile(session, action.path, action.content, sftpSession);
+					default:
+						console.warn(`Unsupported batch action: ${action.name}`);
+				}
+			})
+			// Close socket
+			.then(() => sftpSession.end());
+		});
+	}
 }
 
 module.exports = SftpConnector;
@@ -289,7 +327,7 @@ module.exports = SftpConnector;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Thu Jun 01 2017 17:12:38 GMT+0200 (CEST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Nov 25 2017 00:43:59 GMT+0100 (Romance Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

@@ -22,7 +22,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Unifile.html">Unifile</a><ul class='methods'><li data-type='method'><a href="Unifile.html#use">use</a></li><li data-type='method'><a href="Unifile.html#getInfos">getInfos</a></li><li data-type='method'><a href="Unifile.html#listConnectors">listConnectors</a></li><li data-type='method'><a href="Unifile.html#login">login</a></li><li data-type='method'><a href="Unifile.html#setAccessToken">setAccessToken</a></li><li data-type='method'><a href="Unifile.html#clearAccessToken">clearAccessToken</a></li><li data-type='method'><a href="Unifile.html#getAuthorizeURL">getAuthorizeURL</a></li><li data-type='method'><a href="Unifile.html#readdir">readdir</a></li><li data-type='method'><a href="Unifile.html#stat">stat</a></li><li data-type='method'><a href="Unifile.html#mkdir">mkdir</a></li><li data-type='method'><a href="Unifile.html#writeFile">writeFile</a></li><li data-type='method'><a href="Unifile.html#createWriteStream">createWriteStream</a></li><li data-type='method'><a href="Unifile.html#readFile">readFile</a></li><li data-type='method'><a href="Unifile.html#createReadStream">createReadStream</a></li><li data-type='method'><a href="Unifile.html#rename">rename</a></li><li data-type='method'><a href="Unifile.html#unlink">unlink</a></li><li data-type='method'><a href="Unifile.html#rmdir">rmdir</a></li><li data-type='method'><a href="Unifile.html#batch">batch</a></li></ul></li><li><a href="DropboxConnector.html">DropboxConnector</a></li><li><a href="FsConnector.html">FsConnector</a></li><li><a href="FtpConnector.html">FtpConnector</a></li><li><a href="GitHubConnector.html">GitHubConnector</a></li><li><a href="RemoteStorageConnector.html">RemoteStorageConnector</a></li><li><a href="SftpConnector.html">SftpConnector</a></li><li><a href="WebDavConnector.html">WebDavConnector</a></li></ul><h3>Externals</h3><ul><li><a href="external-WritableStream.html">WritableStream</a></li><li><a href="external-ReadableStream.html">ReadableStream</a></li><li><a href="external-Promise.html">Promise</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="UnifileError.html">UnifileError</a></li><li><a href="BatchError.html">BatchError</a></li><li><a href="Unifile.html">Unifile</a><ul class='methods'><li data-type='method'><a href="Unifile.html#use">use</a></li><li data-type='method'><a href="Unifile.html#getInfos">getInfos</a></li><li data-type='method'><a href="Unifile.html#listConnectors">listConnectors</a></li><li data-type='method'><a href="Unifile.html#login">login</a></li><li data-type='method'><a href="Unifile.html#setAccessToken">setAccessToken</a></li><li data-type='method'><a href="Unifile.html#clearAccessToken">clearAccessToken</a></li><li data-type='method'><a href="Unifile.html#getAuthorizeURL">getAuthorizeURL</a></li><li data-type='method'><a href="Unifile.html#readdir">readdir</a></li><li data-type='method'><a href="Unifile.html#stat">stat</a></li><li data-type='method'><a href="Unifile.html#mkdir">mkdir</a></li><li data-type='method'><a href="Unifile.html#writeFile">writeFile</a></li><li data-type='method'><a href="Unifile.html#createWriteStream">createWriteStream</a></li><li data-type='method'><a href="Unifile.html#readFile">readFile</a></li><li data-type='method'><a href="Unifile.html#createReadStream">createReadStream</a></li><li data-type='method'><a href="Unifile.html#rename">rename</a></li><li data-type='method'><a href="Unifile.html#unlink">unlink</a></li><li data-type='method'><a href="Unifile.html#rmdir">rmdir</a></li><li data-type='method'><a href="Unifile.html#batch">batch</a></li></ul></li><li><a href="DropboxConnector.html">DropboxConnector</a></li><li><a href="FsConnector.html">FsConnector</a></li><li><a href="FtpConnector.html">FtpConnector</a></li><li><a href="GitHubConnector.html">GitHubConnector</a></li><li><a href="RemoteStorageConnector.html">RemoteStorageConnector</a></li><li><a href="SftpConnector.html">SftpConnector</a></li></ul><h3>Externals</h3><ul><li><a href="external-WritableStream.html">WritableStream</a></li><li><a href="external-ReadableStream.html">ReadableStream</a></li><li><a href="external-Promise.html">Promise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#getClient">getClient</a></li></ul>
 </nav>
 
 <div id="main">
@@ -40,32 +40,32 @@
             <pre class="prettyprint source linenums"><code>'use strict';
 
 const Promise = require('bluebird');
-const mime = require('mime');
+const Mime = require('mime');
 const Fs = Promise.promisifyAll(require('fs'), {suffix: 'Promised'});
 const Path = require('path');
 
-const Tools = require('./tools');
+const Tools = require('unifile-common-tools');
 
 const NAME = 'fs';
 
 const validatePath = Symbol('validatePath');
 
 function statToFileInfos(filename, stat) {
-  const isDir = stat.isDirectory();
-  return {
-    size: stat.size,
-    modified: stat.mtime,
-    name: filename,
-    isDir: isDir,
-    mime: isDir ? 'application/directory' : mime.lookup(filename)
-  };
+	const isDir = stat.isDirectory();
+	return {
+		size: stat.size,
+		modified: stat.mtime,
+		name: filename,
+		isDir: isDir,
+		mime: isDir ? 'application/directory' : Mime.getType(filename)
+	};
 }
 
 /**
  * Service connector for the local filesystem.
  */
 class FsConnector {
-  /**
+	/**
    * @constructor
    * @param {Object} config - Configuration object
    * @param {string|Array&lt;string>} [config.sandbox] - Restrict connector access to this path (if string)
@@ -76,174 +76,157 @@ class FsConnector {
    * @param {ConnectorStaticInfos} [config.infos] - Connector infos to override
    * @throws {Error} Invalid sandbox path.
    */
-  constructor(config) {
-    const conf = config || {};
-    this.showHiddenFile = conf.showHiddenFile;
-    this.infos = Tools.mergeInfos(conf.infos, {
-      name: NAME,
-      displayName: 'Local',
-      icon: '',
-      description: 'Edit files on your local drive.'
-    });
-    this.name = this.infos.name;
+	constructor(config) {
+		const conf = config || {};
+		this.showHiddenFile = conf.showHiddenFile;
+		this.infos = Tools.mergeInfos(conf.infos, {
+			name: NAME,
+			displayName: 'Local',
+			icon: '',
+			description: 'Edit files on your local drive.'
+		});
+		this.name = this.infos.name;
 
-    if(!conf.sandbox) this.sandbox = [];
-    else if(conf.sandbox.constructor === String) this.sandbox = [conf.sandbox];
-    else if(Array.isArray(conf.sandbox)) this.sandbox = conf.sandbox;
-    else throw new Error('Invalid sandbox path. Must be a string or an array');
+		if(!conf.sandbox) this.sandbox = [];
+		else if(conf.sandbox.constructor === String) this.sandbox = [conf.sandbox];
+		else if(Array.isArray(conf.sandbox)) this.sandbox = conf.sandbox;
+		else throw new Error('Invalid sandbox path. Must be a string or an array');
 
-    if(conf.rootPath) this.rootPath = conf.rootPath;
-    else if(this.sandbox.length > 0) this.rootPath = this.sandbox[0];
-    else this.rootPath = '/';
-  }
+		if(conf.rootPath) this.rootPath = conf.rootPath;
+		else if(this.sandbox.length > 0) this.rootPath = this.sandbox[0];
+		else this.rootPath = '/';
+	}
 
-  getInfos(session) {
-    return Object.assign({
-      isLoggedIn: true,
-      isOAuth: false,
-      username: process.env.USER
-    }, this.infos);
-  }
+	getInfos(session) {
+		return Object.assign({
+			isLoggedIn: true,
+			isOAuth: false,
+			username: process.env.USER
+		}, this.infos);
+	}
 
-  // Auth methods are useless here
+	// Auth methods are useless here
 
-  getAuthorizeURL(session) {
-    return Promise.resolve('');
-  }
+	getAuthorizeURL(session) {
+		return Promise.resolve('');
+	}
 
-  setAccessToken(session, token) {
-    return Promise.resolve(token);
-  }
+	setAccessToken(session, token) {
+		return Promise.resolve(token);
+	}
 
-  clearAccessToken(session) {
-    return Promise.resolve();
-  }
+	clearAccessToken(session) {
+		return Promise.resolve();
+	}
 
-  login(session, loginInfos) {
-    return new Promise.resolve();
-  }
+	login(session, loginInfos) {
+		return new Promise.resolve();
+	}
 
-  //Filesystem commands
+	//Filesystem commands
 
-  readdir(session, path) {
-    try {
-      const securePath = this[validatePath](path);
-      return Fs.readdirPromised(securePath)
-      .reduce((memo, entry) => {
-        if(this.showHiddenFile || entry.charAt(0) != '.') {
-          return Fs.statPromised(Path.resolve(securePath, entry))
-            .then((stat) => {
-              memo.push(statToFileInfos(entry, stat));
-              return memo;
-            });
-        } else {
-          return memo;
-        }
-      }, []);
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  }
+	readdir(session, path) {
+		try {
+			const securePath = this[validatePath](path);
+			return Fs.readdirPromised(securePath)
+			.reduce((memo, entry) => {
+				if(this.showHiddenFile || entry.charAt(0) != '.') {
+					return Fs.statPromised(Path.resolve(securePath, entry))
+					.then((stat) => {
+						memo.push(statToFileInfos(entry, stat));
+						return memo;
+					});
+				} else {
+					return memo;
+				}
+			}, []);
+		} catch (e) {
+			return Promise.reject(e);
+		}
+	}
 
-  stat(session, path) {
-    try {
-      const securePath = this[validatePath](path);
-      return Fs.statPromised(securePath)
-      .then((stat) => {
-        return statToFileInfos(Path.basename(securePath), stat);
-      });
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  }
+	stat(session, path) {
+		try {
+			const securePath = this[validatePath](path);
+			return Fs.statPromised(securePath)
+			.then((stat) => {
+				return statToFileInfos(Path.basename(securePath), stat);
+			});
+		} catch (e) {
+			return Promise.reject(e);
+		}
+	}
 
-  mkdir(session, path) {
-    try {
-      return Fs.mkdirPromised(this[validatePath](path));
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  }
+	mkdir(session, path) {
+		try {
+			return Fs.mkdirPromised(this[validatePath](path));
+		} catch (e) {
+			return Promise.reject(e);
+		}
+	}
 
-  writeFile(session, path, data) {
-    try {
-      return Fs.writeFilePromised(this[validatePath](path), data);
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  }
+	writeFile(session, path, data) {
+		try {
+			return Fs.writeFilePromised(this[validatePath](path), data);
+		} catch (e) {
+			return Promise.reject(e);
+		}
+	}
 
-  createWriteStream(session, path) {
-    return Fs.createWriteStream(this[validatePath](path));
-  }
+	createWriteStream(session, path) {
+		return Fs.createWriteStream(this[validatePath](path));
+	}
 
-  readFile(session, path) {
-    try {
-      return Fs.readFilePromised(this[validatePath](path), 'utf8');
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  }
+	readFile(session, path) {
+		try {
+			return Fs.readFilePromised(this[validatePath](path));
+		} catch (e) {
+			return Promise.reject(e);
+		}
+	}
 
-  createReadStream(session, path) {
-    return Fs.createReadStream(this[validatePath](path), {encoding: 'utf8'});
-  }
+	createReadStream(session, path) {
+		return Fs.createReadStream(this[validatePath](path), {encoding: 'utf8'});
+	}
 
-  rename(session, src, dest) {
-    try {
-      return Fs.renamePromised(this[validatePath](src), this[validatePath](dest));
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  }
+	rename(session, src, dest) {
+		try {
+			return Fs.renamePromised(this[validatePath](src), this[validatePath](dest));
+		} catch (e) {
+			return Promise.reject(e);
+		}
+	}
 
-  unlink(session, path) {
-    try {
-      return Fs.unlinkPromised(this[validatePath](path));
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  }
+	unlink(session, path) {
+		try {
+			return Fs.unlinkPromised(this[validatePath](path));
+		} catch (e) {
+			return Promise.reject(e);
+		}
+	}
 
-  rmdir(session, path) {
-    try {
-      return Fs.rmdirPromised(this[validatePath](path));
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  }
+	rmdir(session, path) {
+		try {
+			return Fs.rmdirPromised(this[validatePath](path));
+		} catch (e) {
+			return Promise.reject(e);
+		}
+	}
 
-  batch(session, actions, message) {
-    return Promise.each(actions, (action) => {
-      const act = action.name.toLowerCase();
-      switch (act) {
-        case 'unlink':
-        case 'rmdir':
-        case 'mkdir':
-          this[act](session, action.path);
-          break;
-        case 'rename':
-          this[act](session, action.path, action.destination);
-          break;
-        case 'writefile':
-          this.writeFile(session, action.path, action.content);
-          break;
-        default:
-          console.warn(`Unsupported batch action: ${action.name}`);
-      }
-    });
-  }
+	batch(session, actions, message) {
+		return Tools.simpleBatch(this, session, actions);
+	}
 
-  /**
+	/**
    * Ensure the given path is in the user-defined sandbox
    * @private
    */
-  [validatePath](path) {
-    const absolutePath = Path.resolve(this.rootPath, path);
-    if(this.sandbox.length !== 0 &amp;&amp; !this.sandbox.some((sandboxPath) => absolutePath.startsWith(sandboxPath)))
-      throw new Error(`Path is out of the sandbox: ${absolutePath}`);
-    return absolutePath;
-  }
+	[validatePath](path) {
+		const absolutePath = Path.resolve(this.rootPath, path);
+		if(this.sandbox.length !== 0 &amp;&amp; !this.sandbox.some((sandboxPath) => absolutePath.startsWith(sandboxPath)))
+			throw new Error(`Path is out of the sandbox: ${absolutePath}`);
+		return absolutePath;
+	}
 }
 
 module.exports = FsConnector;
@@ -259,7 +242,7 @@ module.exports = FsConnector;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Thu Jun 01 2017 17:12:38 GMT+0200 (CEST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Nov 25 2017 00:43:59 GMT+0100 (Romance Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
