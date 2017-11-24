@@ -9,13 +9,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 - Code factorization
 - Remove parameters mutations
 - `.readFile()` now always return a `Buffer`
+- [Dropbox] Retrieve account when providing only the token
+- [Dropbox] Normalize errors (as for #103)
 
 ### Added
 - Tools, index and FS are 100% covered
 - Coverage for all connectors
+- [Dropbox] Add some security check
 
 ### Fixed
 - In SFTP, directory type is now set to 'application/directory'
+- [Dropbox] Fixes batch upload (Closes ##114)
 
 ### Removed
 - WebDAV connector is now a separate plugin
