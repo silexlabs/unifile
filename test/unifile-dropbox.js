@@ -777,6 +777,20 @@ describe('DropboxConnector', function() {
 			.then(() => connector.rmdir(session, 'tmp'));
 		});
 
+		it('rejects the promise if an conflict happen and overwrite is not set', function() {
+			const path = 'tmp/indexFile';
+			const fileContent = 'html';
+			const noOverwriteConnector = new DropboxConnector(Object.assign({}, authConfig, {writeMode: 'add'}));
+			return noOverwriteConnector.writeFile(session, path, 'lorem')
+			.then(() => {
+				return noOverwriteConnector.batch(session, [{
+					name: 'writefile',
+					path: path,
+					content: fileContent
+				}]);
+			}).should.be.rejectedWith('Could not complete action 0: path/conflict');
+		});
+
 		it('executes action in order', function() {
 			return connector.batch(session, creation)
 			.then(() => {
@@ -794,6 +808,25 @@ describe('DropboxConnector', function() {
 					expect(connector.readdir(session, 'tmp')).to.be.rejectedWith('Not Found'),
 					expect(connector.readdir(session, 'tmp3')).to.be.rejectedWith('Not Found')
 				]);
+			});
+		});
+
+		it('can overwrite existing files', function() {
+			const path = 'tmp/indexFile';
+			const fileContent = 'html';
+			return connector.writeFile(session, path, 'lorem')
+			.then(() => {
+				return connector.batch(session, [{
+					name: 'writefile',
+					path: path,
+					content: fileContent
+				}]);
+			})
+			.then(() => {
+				return connector.readFile(session, path);
+			})
+			.then((content) => {
+				return expect(content.toString()).to.equal(fileContent);
 			});
 		});
 
