@@ -731,10 +731,11 @@ describe('DropboxConnector', function() {
 	describe('batch()', function() {
 		this.timeout(30000);
 		let connector;
+		const content = 'lorem ipsum';
 		const creation = [
 			{name: 'mkdir', path: 'tmp'},
 			{name: 'mkdir', path: 'tmp/test'},
-			{name: 'writeFile', path: 'tmp/test/a', content: 'aaa'},
+			{name: 'writeFile', path: 'tmp/test/a', content},
 			{name: 'mkdir', path: 'tmp/test/dir'},
 			{name: 'rename', path: 'tmp/test/a', destination: 'tmp/test/b'},
 			{name: 'mkdir', path: 'tmp2'},
@@ -769,11 +770,26 @@ describe('DropboxConnector', function() {
 			.should.be.rejectedWith('Write actions should have a content');
 		});
 
-		it('rejects the promise if an conflict happen', function() {
+		it('rejects the promise if a conflict happen', function() {
 			return connector.batch(session, [
 				{name: 'mkdir', path: 'tmp'},
 				{name: 'mkdir', path: 'tmp'}
 			]).should.be.rejectedWith('conflict')
+			.then(() => connector.rmdir(session, 'tmp'));
+		});
+
+		it('rejects the promise if a conflict happen and overwrite is not set', function() {
+			const path = 'tmp/indexFile';
+			const fileContent = 'html';
+			const noOverwriteConnector = new DropboxConnector(Object.assign({}, authConfig, {writeMode: 'add'}));
+			return noOverwriteConnector.writeFile(session, path, 'lorem')
+			.then(() => {
+				return noOverwriteConnector.batch(session, [{
+					name: 'writefile',
+					path: path,
+					content: fileContent
+				}]);
+			}).should.be.rejectedWith('Could not complete action 0: path/conflict')
 			.then(() => connector.rmdir(session, 'tmp'));
 		});
 
@@ -785,8 +801,8 @@ describe('DropboxConnector', function() {
 					expect(connector.readdir(session, 'tmp3')).to.be.fulfilled
 				]);
 			})
-			.then((content) => {
-				return expect(content[0].toString()).to.equal('aaa');
+			.then((results) => {
+				return expect(results[0].toString()).to.equal(content);
 			})
 			.then(() => connector.batch(session, destruction))
 			.then(() => {
@@ -797,12 +813,49 @@ describe('DropboxConnector', function() {
 			});
 		});
 
+		it('can write files with special chars', function() {
+			const path = 'tmp/specialFile';
+			const fileContent = 'Àà çéèîï';
+			return connector.batch(session, [{
+				name: 'writefile',
+				path: path,
+				content: fileContent
+			}])
+			.then(() => {
+				return connector.readFile(session, path);
+			})
+			.then((content) => {
+				return expect(content.toString()).to.equal(fileContent);
+			})
+			.then(() => connector.rmdir(session, 'tmp'));
+		});
+
+		it('can overwrite existing files', function() {
+			const path = 'tmp/indexFile';
+			const fileContent = 'html';
+			return connector.writeFile(session, path, 'lorem')
+			.then(() => {
+				return connector.batch(session, [{
+					name: 'writefile',
+					path: path,
+					content: fileContent
+				}]);
+			})
+			.then(() => {
+				return connector.readFile(session, path);
+			})
+			.then((content) => {
+				return expect(content.toString()).to.equal(fileContent);
+			})
+			.then(() => connector.rmdir(session, 'tmp'));
+		});
+
 		it('executes action in order and ignores unsupported ones', function() {
 			creation.unshift({name: 'createReadStream', path: 'unknown_file'});
 			creation.unshift({name: 'createReadStream', path: 'a/test/unknown_file'});
 			return connector.batch(session, creation)
 			.then(() => {
-				expect(connector.readFile(session, 'tmp/test/b')).to.become('aaa');
+				expect(connector.readFile(session, 'tmp/test/b')).to.become(content);
 				return connector.batch(session, destruction);
 			})
 			.then(() => {

@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Fixed
+- [Dropbox] Batch correctly overwrite existing files (https://github.com/silexlabs/unifile/issues/131)
+- [Dropbox] Batch now correctly rejects the promise if one action failed (https://github.com/silexlabs/unifile/issues/131)
+- [Dropbox] Batch upload uses `Buffer` for file content and supports UTF-8 (https://github.com/silexlabs/unifile/issues/130)
+
 ## [2.0.0] - 2017-11-25
 ### Changed
 - GitHub batch fixes and optimization
@@ -10,7 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 - Remove parameters mutations
 - `.readFile()` now always return a `Buffer`
 - [Dropbox] Retrieve account when providing only the token
-- [Dropbox] Normalize errors (as for #103)
+- [Dropbox] Normalize errors (https://github.com/silexlabs/unifile/issues/103)
 
 ### Added
 - Tools, index and FS are 100% covered
@@ -19,7 +25,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ### Fixed
 - In SFTP, directory type is now set to 'application/directory'
-- [Dropbox] Fixes batch upload (Closes ##114)
+- [Dropbox] Fixes batch upload (https://github.com/silexlabs/unifile/issues/114)
 
 ### Removed
 - WebDAV connector is now a separate plugin
@@ -51,6 +57,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Changed
   - Total rework of the philosphy
 
-[2.0.0]: https://github.com/silexlabs/unifile/compare/v1.2.0...v
+[Unreleased]: https://github.com/silexlabs/unifile/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/silexlabs/unifile/compare/v1.2.0...v2.0.0
 [1.2.0]: https://github.com/silexlabs/unifile/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/silexlabs/unifile/compare/v1.0.0...v1.1.0
