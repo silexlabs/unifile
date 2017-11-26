@@ -61,7 +61,7 @@
     "lint": "eslint test/*.js lib/*.js",
     "cover": "nyc --reporter=lcov npm test",
     "cover:check": "nyc check-coverage",
-    "cover:export": "cat ./coverage/lcov.info | coveralls",
+    "cover:export": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "gen:docs": "jsdoc -R README.md -c jsdoc.json",
     "preversion": "npm test && npm run lint && npm run gen:docs",
     "version": "LIB_VERSION=$(env | grep npm_package_version | grep -v script | cut -d= -f2); sed -e \"s/Unreleased/$LIB_VERSION/\" -e \"s/HEAD/v$LIB_VERSION/\" -e \"/^## \\[$LIB_VERSION/ s/$/ - $(date +%Y-%m-%d)/\" CHANGELOG.md -i && git add docs CHANGELOG.md package.json",
