@@ -191,6 +191,10 @@ describe('FsConnector', function() {
 			return expect(connector.readdir({}, Path.join(Os.homedir(), 'test'))).to.be.rejectedWith('ENOENT');
 		});
 
+		it('rejects the promise if the path is not in the sandbox', function() {
+			return expect(connector.readdir({}, '/test')).to.be.rejectedWith('Path is out of the sandbox');
+		});
+
 		it('lists files in the directory with proper entry infomations', function() {
 			const checkFiles = (list) => {
 				expect(list).to.be.an.instanceof(Array);
