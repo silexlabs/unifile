@@ -813,6 +813,23 @@ describe('DropboxConnector', function() {
 			});
 		});
 
+		it('can write files with special chars', function() {
+			const path = 'tmp/specialFile';
+			const fileContent = 'Àà çéèîï';
+			return connector.batch(session, [{
+				name: 'writefile',
+				path: path,
+				content: fileContent
+			}])
+			.then(() => {
+				return connector.readFile(session, path);
+			})
+			.then((content) => {
+				return expect(content.toString()).to.equal(fileContent);
+			})
+			.then(() => connector.rmdir(session, 'tmp'));
+		});
+
 		it('can overwrite existing files', function() {
 			const path = 'tmp/indexFile';
 			const fileContent = 'html';

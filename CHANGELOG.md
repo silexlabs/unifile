@@ -5,8 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## [Unreleased]
 ### Fixed
-- [Dropbox] Batch correctly overwrite existing files
-- [Dropbox] Batch now correctly rejects the promise if one action failed
+- [Dropbox] Batch correctly overwrite existing files (https://github.com/silexlabs/unifile/issues/131)
+- [Dropbox] Batch now correctly rejects the promise if one action failed (https://github.com/silexlabs/unifile/issues/131)
+- [Dropbox] Batch upload uses `Buffer` for file content and supports UTF-8 (https://github.com/silexlabs/unifile/issues/130)
 
 ## [2.0.0] - 2017-11-25
 ### Changed
@@ -15,7 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 - Remove parameters mutations
 - `.readFile()` now always return a `Buffer`
 - [Dropbox] Retrieve account when providing only the token
-- [Dropbox] Normalize errors (as for #103)
+- [Dropbox] Normalize errors (https://github.com/silexlabs/unifile/issues/103)
 
 ### Added
 - Tools, index and FS are 100% covered
@@ -24,7 +25,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ### Fixed
 - In SFTP, directory type is now set to 'application/directory'
-- [Dropbox] Fixes batch upload (Closes ##114)
+- [Dropbox] Fixes batch upload (https://github.com/silexlabs/unifile/issues/114)
 
 ### Removed
 - WebDAV connector is now a separate plugin
