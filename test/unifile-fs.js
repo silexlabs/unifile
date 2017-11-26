@@ -23,7 +23,7 @@ function createDefaultConnector() {
 	return new FsConnector({sandbox: [Os.homedir(), Os.tmpdir()]});
 }
 
-describe('FsConnector', function() {
+describe.only('FsConnector', function() {
 	describe('constructor', function() {
 		it('create a new instance with empty config', function() {
 			const connector = new FsConnector();
@@ -189,6 +189,10 @@ describe('FsConnector', function() {
 
 		it('rejects the promise if the path does not exist', function() {
 			return expect(connector.readdir({}, Path.join(Os.homedir(), 'test'))).to.be.rejectedWith('ENOENT');
+		});
+
+		it('rejects the promise if the path is not in the sandbox', function() {
+			return expect(connector.readdir({}, '/test')).to.be.rejectedWith('Path is out of the sandbox');
 		});
 
 		it('lists files in the directory with proper entry infomations', function() {
