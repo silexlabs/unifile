@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ## [Unreleased]
 ### Fixed
 - [Dropbox] Batch correctly overwrite existing files
-- [Dropbox] Batch now rejects the promise if one writing action failed
+- [Dropbox] Batch now correctly rejects the promise if one action failed
 
 ## [2.0.0] - 2017-11-25
 ### Changed
