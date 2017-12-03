@@ -24,15 +24,13 @@ const ftpDefaultInfos = {
 	description: 'Edit files on a web FTP server.'
 };
 
-describe('FtpConnector', function() {
-	this.slow(200);
-
+describe.only('FtpConnector', function() {
 	let srv = null;
 	const session = {
 		host: '127.0.0.1',
 		port: '9876',
 		user: 'admin',
-		password: 'admin'
+		pass: 'admin'
 	};
 
 	before('Instanciation', function() {
@@ -45,7 +43,7 @@ describe('FtpConnector', function() {
 
 		// Declare FS
 		const fs = new FileSystem(this);
-		fs.list = function(path = '.') {
+		/*fs.list = function(path = '.') {
 			return Fs.readdirPromised(path)
 			.map((entry) => {
 				return Fs.statPromised(Path.resolve(path, entry))
@@ -64,6 +62,9 @@ describe('FtpConnector', function() {
 				});
 			});
 		};
+		fs.get = function(path = '.') {
+			return Fs.statPromised(path);
+		};*/
 
 		srv.on('login', ({connection, username, password}, resolve, reject) => {
 			if(username === 'admin' && password === 'admin') resolve({fs: fs});
@@ -198,7 +199,7 @@ describe('FtpConnector', function() {
 		});
 
 		it('returns a rejected promise with the wrong credentials', function() {
-			return expect(connector.login({}, 'ftp://toto:roro@127.0.0.1:9876')).to.be.rejectedWith('Wrong credentials');
+			return expect(connector.login({}, 'ftp://toto:roro@127.0.0.1:9876')).to.be.rejectedWith('Invalid credentials');
 		});
 
 		it('accepts a string as login infos', function() {
@@ -240,7 +241,7 @@ describe('FtpConnector', function() {
 		});
 
 		it('lists files in the directory with proper entry infomations', function() {
-			return connector.readdir(session, 'test')
+			return connector.readdir(session, '/')
 			.then((list) => {
 				expect(list).to.be.an.instanceof(Array);
 				list.every((file) => {
@@ -251,7 +252,7 @@ describe('FtpConnector', function() {
 		});
 	});
 
-	describe('stat()', function() {
+	describe.only('stat()', function() {
 		let connector;
 		before('Instanciation', function() {
 			connector = new FtpConnector({redirectUri: '/redirect'});
@@ -268,16 +269,20 @@ describe('FtpConnector', function() {
 				const keys = Object.keys(stat);
 				['isDir', 'mime', 'modified', 'name', 'size'].every((key) => keys.includes(key))
 				.should.be.true;
+				expect(stat.name === 'test');
+				expect(stat.isDir).to.be.true;
 			});
 		});
 
-		it('gives stats on a file', function() {
+		it.only('gives stats on a file', function() {
 			return connector.stat(session, 'test/unifile-ftp.js')
 			.then((stat) => {
 				expect(stat).to.be.an.instanceof(Object);
 				const keys = Object.keys(stat);
 				['isDir', 'mime', 'modified', 'name', 'size'].every((key) => keys.includes(key))
 				.should.be.true;
+				expect(stat.name === 'unifile-ftp.js');
+				expect(stat.isDir).to.be.false;
 			});
 		});
 	});
