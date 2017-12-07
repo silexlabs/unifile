@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 - [Dropbox] Batch correctly overwrite existing files (https://github.com/silexlabs/unifile/issues/131)
 - [Dropbox] Batch now correctly rejects the promise if one action failed (https://github.com/silexlabs/unifile/issues/131)
 - [Dropbox] Batch upload uses `Buffer` for file content and supports UTF-8 (https://github.com/silexlabs/unifile/issues/130)
+- [Dropbox] All the methods support non-ASCII char in filename and content (https://github.com/silexlabs/unifile/issues/134)
 
 ## [2.0.0] - 2017-11-25
 ### Changed

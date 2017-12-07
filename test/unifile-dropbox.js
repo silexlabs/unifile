@@ -288,7 +288,8 @@ describe('DropboxConnector', function() {
 				return connector.setAccessToken(session, process.env.DROPBOX_TOKEN)
 				.then(() => connector.batch(session, [
 					{name: 'mkdir', path: 'unifile_stat'},
-					{name: 'writeFile', path: 'unifile_stat/file1.txt', content: 'lorem ipsum'}
+					{name: 'writeFile', path: 'unifile_stat/file1.txt', content: 'lorem ipsum'},
+					{name: 'writeFile', path: 'unifile_stat/fileéà.txt', content: 'lorem ipsum'}
 				]));
 			} else this.skip();
 		});
@@ -313,6 +314,16 @@ describe('DropboxConnector', function() {
 
 		it('gives stats on a file', function() {
 			return connector.stat(session, 'unifile_stat/file1.txt')
+			.then((stat) => {
+				expect(stat).to.be.an.instanceof(Object);
+				const keys = Object.keys(stat);
+				['isDir', 'mime', 'modified', 'name', 'size'].every((key) => keys.includes(key))
+				.should.be.true;
+			});
+		});
+
+		it('gives stats on a file with special chars', function() {
+			return connector.stat(session, 'unifile_stat/fileéà.txt')
 			.then((stat) => {
 				expect(stat).to.be.an.instanceof(Object);
 				const keys = Object.keys(stat);
@@ -365,6 +376,13 @@ describe('DropboxConnector', function() {
 			});
 		});
 
+		it('creates a new folder with specials char', function() {
+			return connector.mkdir(session, 'unifile_mkdir/testéü')
+			.then(() => {
+				return expect(connector.readdir(session, 'unifile_mkdir/testéü')).to.be.fulfilled;
+			});
+		});
+
 		after('Remove folder', function() {
 			if(isEnvValid()) connector.rmdir(session, 'unifile_mkdir');
 			else this.skip();
@@ -398,9 +416,6 @@ describe('DropboxConnector', function() {
 			})
 			.then((content) => {
 				return expect(content.toString()).to.equal(data);
-			})
-			.then(() => {
-				return connector.unlink(session, 'unifile_writeFile/testFile');
 			});
 		});
 
@@ -411,9 +426,17 @@ describe('DropboxConnector', function() {
 			})
 			.then((content) => {
 				return expect(content.toString()).to.equal(data);
-			})
+			});
+		});
+
+		it('writes into a file with special chars', function() {
+			const specialData = 'éçàïô';
+			return connector.writeFile(session, 'unifile_writeFile/fileéù.txt', specialData)
 			.then(() => {
-				return connector.unlink(session, 'unifile_writeFile/file1.txt');
+				return connector.readFile(session, 'unifile_writeFile/fileéù.txt');
+			})
+			.then((content) => {
+				return expect(content.toString()).to.equal(specialData);
 			});
 		});
 
@@ -466,11 +489,12 @@ describe('DropboxConnector', function() {
 			stream.end(data);
 		});
 
-		it('creates a writable stream', function(done) {
-			const stream = connector.createWriteStream(session, 'unifile_writeStream/file1.txt');
+		it('creates a writable stream with special chars', function(done) {
+			const data = 'éàôï';
+			const stream = connector.createWriteStream(session, 'unifile_writeStream/fileéà.txt');
 			// Wait for 'end' (not 'finish') to be sure it has been consumed
 			stream.on('close', () => {
-				return connector.readFile(session, 'unifile_writeStream/file1.txt')
+				return connector.readFile(session, 'unifile_writeStream/fileéà.txt')
 				.then((result) => {
 					expect(result.toString()).to.equal(data);
 					done();
@@ -491,6 +515,7 @@ describe('DropboxConnector', function() {
 	describe('readFile()', function() {
 		let connector;
 		const data = 'lorem ipsum';
+		const specialData = 'éçàùï';
 
 		before('Init tests folder', function() {
 			if(isEnvValid()) {
@@ -498,7 +523,8 @@ describe('DropboxConnector', function() {
 				return connector.setAccessToken(session, process.env.DROPBOX_TOKEN)
 				.then(() => connector.batch(session, [
 					{name: 'mkdir', path: 'unifile_readFile'},
-					{name: 'writeFile', path: 'unifile_readFile/file1.txt', content: data}
+					{name: 'writeFile', path: 'unifile_readFile/file1.txt', content: data},
+					{name: 'writeFile', path: 'unifile_readFile/fileéù.txt', content: specialData}
 				]));
 			} else this.skip();
 		});
@@ -518,6 +544,13 @@ describe('DropboxConnector', function() {
 			});
 		});
 
+		it('returns the content of a file with special chars', function() {
+			return connector.readFile(session, 'unifile_readFile/fileéù.txt')
+			.then((content) => {
+				return expect(content.toString()).to.equal(specialData);
+			});
+		});
+
 		after('Remove folder', function() {
 			if(isEnvValid()) connector.rmdir(session, 'unifile_readFile');
 			else this.skip();
@@ -527,6 +560,7 @@ describe('DropboxConnector', function() {
 	describe('createReadStream()', function() {
 		let connector;
 		const data = 'lorem ipsum';
+		const specialData = 'éçàôï';
 
 		before('Init tests folder', function() {
 			if(isEnvValid()) {
@@ -534,7 +568,8 @@ describe('DropboxConnector', function() {
 				return connector.setAccessToken(session, process.env.DROPBOX_TOKEN)
 				.then(() => connector.batch(session, [
 					{name: 'mkdir', path: 'unifile_readstream'},
-					{name: 'writeFile', path: 'unifile_readstream/file1.txt', content: data}
+					{name: 'writeFile', path: 'unifile_readstream/file1.txt', content: data},
+					{name: 'writeFile', path: 'unifile_readstream/fileéà.txt', content: specialData}
 				]));
 			} else this.skip();
 		});
@@ -598,6 +633,17 @@ describe('DropboxConnector', function() {
 			stream.on('data', (content) => chunks.push(content));
 		});
 
+		it('creates a readable stream with special chars', function(done) {
+			const chunks = [];
+			const stream = connector.createReadStream(session, 'unifile_readstream/fileéà.txt');
+			stream.on('end', () => {
+				expect(Buffer.concat(chunks).toString()).to.equal(specialData);
+				done();
+			});
+			stream.on('error', done);
+			stream.on('data', (content) => chunks.push(content));
+		});
+
 		after('Remove folder', function() {
 			if(isEnvValid()) connector.rmdir(session, 'unifile_readstream');
 			else this.skip();
@@ -638,7 +684,15 @@ describe('DropboxConnector', function() {
 			.then(() => {
 				connector.readdir(session, 'unifile_rename3').should.be.fulfilled;
 			})
-			.then(() => connector.rmdir(session, 'unifile_rename3'));
+			.then(() => connector.rename(session, 'unifile_rename3', 'unifile_rename2'));
+		});
+
+		it('renames a folder with special char', function() {
+			return connector.rename(session, 'unifile_rename2', 'unifile_renameéà')
+			.then(() => {
+				connector.readdir(session, 'unifile_renameéà').should.be.fulfilled;
+			})
+			.then(() => connector.rename(session, 'unifile_renameéà', 'unifile_rename2'));
 		});
 
 		it('renames a file', function() {
@@ -651,12 +705,35 @@ describe('DropboxConnector', function() {
 			})
 			.then((content) => {
 				return expect(content.toString()).to.equal(data);
+			})
+			.then((content) => {
+				return connector.rename(session, 'unifile_rename/fileB.txt', 'unifile_rename/file1.txt');
+			});
+		});
+
+		it('renames a file with special chars', function() {
+			return connector.rename(session, 'unifile_rename/file1.txt', 'unifile_rename/fileéà.txt')
+			.then(() => {
+				return connector.readFile(session, 'unifile_rename/file1.txt').should.be.rejectedWith('Not Found');
+			})
+			.then(() => {
+				return connector.readFile(session, 'unifile_rename/fileéà.txt');
+			})
+			.then((content) => {
+				return expect(content.toString()).to.equal(data);
+			})
+			.then((content) => {
+				return connector.rename(session, 'unifile_rename/fileéà.txt', 'unifile_rename/file1.txt');
 			});
 		});
 
 		after('Remove folder', function() {
-			if(isEnvValid()) connector.rmdir(session, 'unifile_rename');
-			else this.skip();
+			if(isEnvValid()) {
+				return Promise.all([
+					connector.rmdir(session, 'unifile_rename'),
+					connector.rmdir(session, 'unifile_rename2')
+				]);
+			} else this.skip();
 		});
 	});
 
@@ -668,7 +745,8 @@ describe('DropboxConnector', function() {
 				return connector.setAccessToken(session, process.env.DROPBOX_TOKEN)
 				.then(() => connector.batch(session, [
 					{name: 'mkdir', path: 'unifile_unlink'},
-					{name: 'writeFile', path: 'unifile_unlink/file1.txt', content: 'lorem ipsum'}
+					{name: 'writeFile', path: 'unifile_unlink/file1.txt', content: 'lorem ipsum'},
+					{name: 'writeFile', path: 'unifile_unlink/fileéà.txt', content: 'lorem ipsum'}
 				]));
 			} else this.skip();
 		});
@@ -688,6 +766,13 @@ describe('DropboxConnector', function() {
 			});
 		});
 
+		it('deletes a file with special chars', function() {
+			return connector.unlink(session, 'unifile_unlink/fileéà.txt')
+			.then((content) => {
+				return expect(connector.readFile(session, 'unifile_unlink/fileéà.txt')).to.be.rejectedWith('Not Found');
+			});
+		});
+
 		after('Remove folder', function() {
 			if(isEnvValid()) connector.rmdir(session, 'unifile_unlink');
 			else this.skip();
@@ -701,7 +786,8 @@ describe('DropboxConnector', function() {
 				connector = new DropboxConnector(authConfig);
 				return connector.setAccessToken(session, process.env.DROPBOX_TOKEN)
 				.then(() => connector.batch(session, [
-					{name: 'mkdir', path: 'unifile_rmdir'}
+					{name: 'mkdir', path: 'unifile_rmdir'},
+					{name: 'mkdir', path: 'unifile_rmdiréà'}
 				]));
 			} else this.skip();
 		});
@@ -717,13 +803,23 @@ describe('DropboxConnector', function() {
 		it('deletes a folder', function() {
 			return connector.rmdir(session, 'unifile_rmdir')
 			.then((content) => {
-				return expect(connector.readdir(session, 'unifile_rmdir2')).to.be.rejectedWith('Not Found');
+				return expect(connector.readdir(session, 'unifile_rmdir')).to.be.rejectedWith('Not Found');
+			});
+		});
+
+		it('deletes a folder with special chars', function() {
+			return connector.rmdir(session, 'unifile_rmdiréà')
+			.then((content) => {
+				return expect(connector.readdir(session, 'unifile_rmdiréà')).to.be.rejectedWith('Not Found');
 			});
 		});
 
 		after('Remove folder', function() {
-			if(isEnvValid()) connector.rmdir(session, 'unifile_rmdir')
-			.then(() => connector.rmdir(session, 'unifile_rmdir3'));
+			if(isEnvValid())
+				return Promise.all([
+					connector.rmdir(session, 'unifile_rmdir'),
+					connector.rmdir(session, 'unifile_rmdiréà')
+				]).catch(() => {});
 			else this.skip();
 		});
 	});
@@ -734,17 +830,17 @@ describe('DropboxConnector', function() {
 		const content = 'lorem ipsum';
 		const creation = [
 			{name: 'mkdir', path: 'tmp'},
-			{name: 'mkdir', path: 'tmp/test'},
-			{name: 'writeFile', path: 'tmp/test/a', content},
+			{name: 'mkdir', path: 'tmp/testé'},
+			{name: 'writeFile', path: 'tmp/test/aé', content},
 			{name: 'mkdir', path: 'tmp/test/dir'},
-			{name: 'rename', path: 'tmp/test/a', destination: 'tmp/test/b'},
+			{name: 'rename', path: 'tmp/test/aé', destination: 'tmp/test/bé'},
 			{name: 'mkdir', path: 'tmp2'},
 			{name: 'rename', path: 'tmp2', destination: 'tmp3'}
 		];
 		const destruction = [
 			{name: 'rmdir', path: 'tmp3'},
-			{name: 'unlink', path: 'tmp/test/b'},
-			{name: 'rmdir', path: 'tmp/test'},
+			{name: 'unlink', path: 'tmp/test/bé'},
+			{name: 'rmdir', path: 'tmp/testé'},
 			{name: 'rmdir', path: 'tmp'}
 		];
 
@@ -797,7 +893,7 @@ describe('DropboxConnector', function() {
 			return connector.batch(session, creation)
 			.then(() => {
 				return Promise.all([
-					connector.readFile(session, 'tmp/test/b'),
+					connector.readFile(session, 'tmp/test/bé'),
 					expect(connector.readdir(session, 'tmp3')).to.be.fulfilled
 				]);
 			})
