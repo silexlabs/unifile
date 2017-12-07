@@ -8,6 +8,7 @@
   ],
   "dependencies": {
     "bluebird": "^3.0.5",
+    "jsftp": "^2.1.2",
     "mime": "^2.0.3",
     "request": "^2.72.0",
     "sftp-promises": "^1.4.1",
