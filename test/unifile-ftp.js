@@ -43,28 +43,6 @@ describe.only('FtpConnector', function() {
 
 		// Declare FS
 		const fs = new FileSystem(this);
-		/*fs.list = function(path = '.') {
-			return Fs.readdirPromised(path)
-			.map((entry) => {
-				return Fs.statPromised(Path.resolve(path, entry))
-				.then((stat) => {
-					stat.name = entry;
-					return stat;
-				});
-			})
-			.then((entries) => {
-				// Adds . folder
-				return Fs.statPromised(path)
-				.then((stat) => {
-					stat.name = '.';
-					entries.push(stat);
-					return entries;
-				});
-			});
-		};
-		fs.get = function(path = '.') {
-			return Fs.statPromised(path);
-		};*/
 
 		srv.on('login', ({connection, username, password}, resolve, reject) => {
 			if(username === 'admin' && password === 'admin') resolve({fs: fs});
@@ -252,7 +230,7 @@ describe.only('FtpConnector', function() {
 		});
 	});
 
-	describe.only('stat()', function() {
+	describe('stat()', function() {
 		let connector;
 		before('Instanciation', function() {
 			connector = new FtpConnector({redirectUri: '/redirect'});
@@ -274,7 +252,7 @@ describe.only('FtpConnector', function() {
 			});
 		});
 
-		it.only('gives stats on a file', function() {
+		it('gives stats on a file', function() {
 			return connector.stat(session, 'test/unifile-ftp.js')
 			.then((stat) => {
 				expect(stat).to.be.an.instanceof(Object);
@@ -425,7 +403,7 @@ describe.only('FtpConnector', function() {
 			}, 'aouoeuoeu');
 			['data', 'end'].forEach((ev) => stream.on(ev, () => done(new Error('Should not emit this event'))));
 			stream.on('error', (err) => {
-				expect(err.message).to.equal('Wrong credentials');
+				expect(err.message).to.equal('Invalid credentials');
 				done();
 			});
 		});
