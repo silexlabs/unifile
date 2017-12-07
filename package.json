@@ -26,6 +26,7 @@
     "mocha": "^4.0.1",
     "nyc": "^11.2.1",
     "pem": "^1.9.7",
+    "precommit": "^1.2.2",
     "ssh2": "^0.5.5"
   },
   "repository": {
@@ -70,5 +71,9 @@
   "bugs": {
     "url": "https://github.com/silexlabs/unifile/issues"
   },
-  "homepage": "http://projects.silexlabs.org/unifile/"
+  "homepage": "http://projects.silexlabs.org/unifile/",
+  "precommit": [
+    "npm test",
+    "npm run lint"
+  ]
 }
