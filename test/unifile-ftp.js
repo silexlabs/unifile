@@ -1,6 +1,5 @@
 'use strict';
 
-const Path = require('path');
 const Promise = require('bluebird');
 const Fs = Promise.promisifyAll(require('fs'), {suffix: 'Promised'});
 const {Readable, Writable} = require('stream');
