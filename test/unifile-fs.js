@@ -23,7 +23,7 @@ function createDefaultConnector() {
 	return new FsConnector({sandbox: [Os.homedir(), Os.tmpdir()]});
 }
 
-describe.only('FsConnector', function() {
+describe('FsConnector', function() {
 	describe('constructor', function() {
 		it('create a new instance with empty config', function() {
 			const connector = new FsConnector();
