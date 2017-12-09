@@ -217,14 +217,38 @@ describe.only('FtpConnector', function() {
 			return expect(connector.readdir(session, '/home/test')).to.be.rejectedWith('ENOENT');
 		});
 
-		it('lists files in the directory with proper entry infomations', function() {
-			return connector.readdir(session, '/')
+		it('reads root with empty path', function() {
+			return connector.readdir(session, '')
 			.then((list) => {
 				expect(list).to.be.an.instanceof(Array);
+				expect(list.length).to.be.above(0);
 				list.every((file) => {
 					const keys = Object.keys(file);
 					return ['isDir', 'mime', 'modified', 'name', 'size'].every((key) => keys.includes(key));
 				}).should.be.true;
+			});
+		});
+
+		it('lists files in the directory with proper entry infomations', function() {
+			return connector.readdir(session, '/')
+			.then((list) => {
+				expect(list).to.be.an.instanceof(Array);
+				expect(list.length).to.be.above(0);
+				list.every((file) => {
+					const keys = Object.keys(file);
+					return ['isDir', 'mime', 'modified', 'name', 'size'].every((key) => keys.includes(key));
+				}).should.be.true;
+				const libFolder = list.find((f) => f.name === 'lib');
+				expect(libFolder.isDir).to.be.true;
+				expect(libFolder.mime).to.equal('application/directory');
+				expect(libFolder.modified.constructor).to.equal(String);
+				expect(new Date(libFolder.modified).getFullYear()).to.be.above(2016);
+				const packageFile = list.find((f) => f.name === 'package.json');
+				expect(packageFile.isDir).to.be.false;
+				expect(packageFile.mime).to.equal('application/json');
+				expect(packageFile.modified.constructor).to.equal(String);
+				expect(new Date(packageFile.modified).getFullYear()).to.be.above(2016);
+				expect(packageFile.size).to.above(0);
 			});
 		});
 	});
