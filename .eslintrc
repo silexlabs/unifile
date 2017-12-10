@@ -69,7 +69,7 @@ rules:
   key-spacing: [2, {"mode": minimum}]
   keyword-spacing: [2, {"overrides": {"if":{"after": false}, "for":{"after": false}, "while":{"after": false}}}]
   linebreak-style: [2, unix]
-  max-len: [2, 120, 2]
+  max-len: [2, 120, 2, {"ignoreComments": true, "ignoreUrls": true}]
   new-parens: 2
   no-mixed-spaces-and-tabs: 2
   no-multiple-empty-lines: [2, {max: 2}]
