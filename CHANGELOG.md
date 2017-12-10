@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [2.0.1] - 2017-12-11
 ### Fixed
 - [Dropbox] Batch correctly overwrite existing files (https://github.com/silexlabs/unifile/issues/131)
 - [Dropbox] Batch now correctly rejects the promise if one action failed (https://github.com/silexlabs/unifile/issues/131)
@@ -58,7 +60,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Changed
   - Total rework of the philosphy
 
-[Unreleased]: https://github.com/silexlabs/unifile/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/silexlabs/unifile/compare/v2.0.1...HEAD
+[2.0.1]: https://github.com/silexlabs/unifile/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/silexlabs/unifile/compare/v1.2.0...v2.0.0
 [1.2.0]: https://github.com/silexlabs/unifile/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/silexlabs/unifile/compare/v1.0.0...v1.1.0

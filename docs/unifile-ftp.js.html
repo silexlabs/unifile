@@ -22,7 +22,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="UnifileError.html">UnifileError</a></li><li><a href="BatchError.html">BatchError</a></li><li><a href="Unifile.html">Unifile</a><ul class='methods'><li data-type='method'><a href="Unifile.html#use">use</a></li><li data-type='method'><a href="Unifile.html#getInfos">getInfos</a></li><li data-type='method'><a href="Unifile.html#listConnectors">listConnectors</a></li><li data-type='method'><a href="Unifile.html#login">login</a></li><li data-type='method'><a href="Unifile.html#setAccessToken">setAccessToken</a></li><li data-type='method'><a href="Unifile.html#clearAccessToken">clearAccessToken</a></li><li data-type='method'><a href="Unifile.html#getAuthorizeURL">getAuthorizeURL</a></li><li data-type='method'><a href="Unifile.html#readdir">readdir</a></li><li data-type='method'><a href="Unifile.html#stat">stat</a></li><li data-type='method'><a href="Unifile.html#mkdir">mkdir</a></li><li data-type='method'><a href="Unifile.html#writeFile">writeFile</a></li><li data-type='method'><a href="Unifile.html#createWriteStream">createWriteStream</a></li><li data-type='method'><a href="Unifile.html#readFile">readFile</a></li><li data-type='method'><a href="Unifile.html#createReadStream">createReadStream</a></li><li data-type='method'><a href="Unifile.html#rename">rename</a></li><li data-type='method'><a href="Unifile.html#unlink">unlink</a></li><li data-type='method'><a href="Unifile.html#rmdir">rmdir</a></li><li data-type='method'><a href="Unifile.html#batch">batch</a></li></ul></li><li><a href="DropboxConnector.html">DropboxConnector</a></li><li><a href="FsConnector.html">FsConnector</a></li><li><a href="FtpConnector.html">FtpConnector</a></li><li><a href="GitHubConnector.html">GitHubConnector</a></li><li><a href="RemoteStorageConnector.html">RemoteStorageConnector</a></li><li><a href="SftpConnector.html">SftpConnector</a></li></ul><h3>Externals</h3><ul><li><a href="external-WritableStream.html">WritableStream</a></li><li><a href="external-ReadableStream.html">ReadableStream</a></li><li><a href="external-Promise.html">Promise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#getClient">getClient</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="UnifileError.html">UnifileError</a></li><li><a href="BatchError.html">BatchError</a></li><li><a href="Unifile.html">Unifile</a><ul class='methods'><li data-type='method'><a href="Unifile.html#use">use</a></li><li data-type='method'><a href="Unifile.html#getInfos">getInfos</a></li><li data-type='method'><a href="Unifile.html#listConnectors">listConnectors</a></li><li data-type='method'><a href="Unifile.html#login">login</a></li><li data-type='method'><a href="Unifile.html#setAccessToken">setAccessToken</a></li><li data-type='method'><a href="Unifile.html#clearAccessToken">clearAccessToken</a></li><li data-type='method'><a href="Unifile.html#getAuthorizeURL">getAuthorizeURL</a></li><li data-type='method'><a href="Unifile.html#readdir">readdir</a></li><li data-type='method'><a href="Unifile.html#stat">stat</a></li><li data-type='method'><a href="Unifile.html#mkdir">mkdir</a></li><li data-type='method'><a href="Unifile.html#writeFile">writeFile</a></li><li data-type='method'><a href="Unifile.html#createWriteStream">createWriteStream</a></li><li data-type='method'><a href="Unifile.html#readFile">readFile</a></li><li data-type='method'><a href="Unifile.html#createReadStream">createReadStream</a></li><li data-type='method'><a href="Unifile.html#rename">rename</a></li><li data-type='method'><a href="Unifile.html#unlink">unlink</a></li><li data-type='method'><a href="Unifile.html#rmdir">rmdir</a></li><li data-type='method'><a href="Unifile.html#batch">batch</a></li></ul></li><li><a href="DropboxConnector.html">DropboxConnector</a></li><li><a href="FsConnector.html">FsConnector</a></li><li><a href="FtpConnector.html">FtpConnector</a></li><li><a href="GitHubConnector.html">GitHubConnector</a></li><li><a href="RemoteStorageConnector.html">RemoteStorageConnector</a></li><li><a href="SftpConnector.html">SftpConnector</a></li></ul><h3>Externals</h3><ul><li><a href="external-WritableStream.html">WritableStream</a></li><li><a href="external-ReadableStream.html">ReadableStream</a></li><li><a href="external-Promise.html">Promise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#safeStringify">safeStringify</a></li><li><a href="global.html#getClient">getClient</a></li></ul>
 </nav>
 
 <div id="main">
@@ -38,15 +38,15 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>'use strict';
-const Path = require('path');
 
 const PassThrough = require('stream').PassThrough;
 
 const Promise = require('bluebird');
-const Ftp = require('ftp');
+const Ftp = require('jsftp');
 const Mime = require('mime');
 
 const Tools = require('unifile-common-tools');
+const {UnifileError} = require('./error');
 
 const NAME = 'ftp';
 
@@ -57,56 +57,82 @@ const NAME = 'ftp';
  */
 function getClient(credentials) {
 	return new Promise((resolve, reject) => {
-		const ftp = new Ftp();
-		ftp.on('ready', () => {
+		const ftp = new Ftp(credentials);
+		ftp.once('connect', () => {
 			resolve(ftp);
 		});
-		ftp.on('error', (err) => {
-			reject(err);
-			ftp.end();
-		});
-
-		ftp.connect(credentials);
 	});
 }
 
 function callAPI(session, action, client, ...params) {
-	function execute(resolve, reject, ftpClient) {
-		ftpClient[action](...params, (err, res) => {
-			if(err) reject(err);
-			else resolve(res);
+	function execute(ftpClient) {
+		return new Promise((resolve, reject) => {
+			const handler = (err, res) => {
+				if(err) reject(err);
+				else resolve(res);
+			};
+			// Makes paths in params absolute
+			const absParams = params.map((p) => {
+				if(p.constructor === String) return '/' + p;
+				return p;
+			});
+			switch (action) {
+				case 'delete':
+					ftpClient.raw('DELE', ...absParams, handler);
+					break;
+				case 'rmdir':
+					ftpClient.raw('RMD', ...absParams, handler);
+					break;
+				case 'mkdir':
+					ftpClient.raw('MKD', ...absParams, handler);
+					break;
+				default:
+					ftpClient[action](...absParams, handler);
+			}
 		});
 	}
 
 	let ftp = client;
-	return new Promise((resolve, reject) => {
-		if(client) {
-			execute(resolve, reject, client);
-		} else {
-			getClient(session)
-			.then((client) => {
-				ftp = client;
-				execute(resolve, reject, ftp);
-			})
-			.catch((err) => {
-				reject(err);
-			});
+	let promise = null;
+	if(client) {
+		promise = execute(client);
+	} else {
+		promise = getClient(session)
+		.then((client) => {
+			ftp = client;
+			// Adds a error handler on the client
+			return Promise.race([
+				new Promise((resolve, reject) => {
+					ftp.on('error', (err) => {
+						ftp.destroy();
+						reject(err);
+					});
+				}),
+				execute(ftp)
+			]);
+		});
+	}
+
+	return promise.catch((err) => {
+		if(err.code === 530) {
+			throw new UnifileError(UnifileError.EACCES, 'Invalid credentials');
 		}
+		throw new UnifileError(UnifileError.EIO, err.message);
 	})
 	.then((result) => {
 		// Client was not provided, we can close it
 		if(!client &amp;&amp; result &amp;&amp; !result.readable) {
-			ftp.end();
+			ftp.destroy();
 		}
 		return result;
 	});
 }
 
 function toFileInfos(entry) {
-	const isDir = entry.type === 'd';
+	const isDir = entry.type === 1;
 	return {
-		size: entry.size,
-		modified: entry.date,
+		size: parseInt(entry.size, 10),
+		modified: new Date(entry.time).toISOString(),
 		name: entry.name,
 		isDir: isDir,
 		mime: isDir ? 'application/directory' : Mime.getType(entry.name)
@@ -165,18 +191,23 @@ class FtpConnector {
 		const ftpConf = {};
 		try {
 			Object.assign(ftpConf, Tools.parseBasicAuth(loginInfos));
+			ftpConf.pass = ftpConf.password;
 		} catch (e) {
 			return Promise.reject(e);
 		}
 
 		return new Promise((resolve, reject) => {
-			const client = new Ftp();
+			const client = new Ftp(ftpConf);
 			// Successful connection
-			client.on('ready', resolve);
-			// Error
-			client.on('error', reject);
-
-			client.connect(ftpConf);
+			client.once('connect', () => {
+				client.auth(ftpConf.user, ftpConf.password, (err) => {
+					if(err) reject(err);
+					else resolve();
+				});
+			});
+		})
+		.catch((err) => {
+			throw new UnifileError(UnifileError.EACCES, 'Invalid credentials');
 		})
 		.then(() => {
 			Object.assign(session, ftpConf);
@@ -187,7 +218,7 @@ class FtpConnector {
 	//Filesystem commands
 
 	readdir(session, path, ftpSession) {
-		return callAPI(session, 'list', ftpSession, path)
+		return callAPI(session, 'ls', ftpSession, path)
 		.then((list) => {
 			return list.reduce((memo, entry) => {
 				if(this.showHiddenFile || entry.name.charAt(0) != '.')
@@ -198,14 +229,21 @@ class FtpConnector {
 	}
 
 	stat(session, path, ftpSession) {
-		return callAPI(session, 'list', ftpSession, path)
+		return callAPI(session, 'ls', ftpSession, path)
 		.then((entries) => {
 			// It's a file
 			if(entries.length === 1) return toFileInfos(entries[0]);
 			// It's a folder
-			const folder = entries.find((stat) => stat.name === '.');
-			folder.name = Path.basename(path);
-			return toFileInfos(folder);
+			const lastTime = entries.reduce((memo, stat) => {
+				// eslint-disable-next-line no-param-reassign
+				if(stat.time > memo) memo = stat.time;
+				return memo;
+			}, 0);
+			return toFileInfos({
+				name: path.split('/').pop(),
+				type: 1,
+				time: lastTime
+			});
 		});
 	}
 
@@ -214,7 +252,7 @@ class FtpConnector {
 	}
 
 	writeFile(session, path, data, ftpSession) {
-		return callAPI(session, 'put', ftpSession, data, path);
+		return callAPI(session, 'put', ftpSession, new Buffer(data), path);
 	}
 
 	createWriteStream(session, path, ftpSession) {
@@ -232,11 +270,11 @@ class FtpConnector {
 					const chunks = [];
 					fileStream.on('data', (chunk) => chunks.push(chunk));
 					fileStream.on('end', () => resolve(Buffer.concat(chunks)));
-					fileStream.once('close', () => client.end());
 					fileStream.on('error', (err) => {
 						client.end();
 						reject(err);
 					});
+					fileStream.resume();
 				});
 			});
 		});
@@ -245,7 +283,10 @@ class FtpConnector {
 	createReadStream(session, path, ftpSession) {
 		var through = new PassThrough();
 		callAPI(session, 'get', ftpSession, path)
-		.then((fileStream) => fileStream.pipe(through))
+		.then((fileStream) => {
+			fileStream.pipe(through);
+			fileStream.resume();
+		})
 		.catch((err) => through.emit('error', err));
 
 		return through;
@@ -282,8 +323,7 @@ class FtpConnector {
 					default:
 						console.warn(`Unsupported batch action: ${action.name}`);
 				}
-			})
-			.finally(() => ftpClient.end());
+			});
 		});
 	}
 }
@@ -301,7 +341,7 @@ module.exports = FtpConnector;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Nov 25 2017 00:43:59 GMT+0100 (Romance Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Dec 11 2017 00:19:56 GMT+0100 (Romance Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
