@@ -23,7 +23,7 @@ const ftpDefaultInfos = {
 	description: 'Edit files on a web FTP server.'
 };
 
-describe.only('FtpConnector', function() {
+describe('FtpConnector', function() {
 	let srv = null;
 	const session = {
 		host: '127.0.0.1',
