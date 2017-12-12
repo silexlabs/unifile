@@ -12,7 +12,7 @@ addons:
 install:
   - npm install
 script:
-  - npm test
+  - npm run test:min
   - npm run lint
 after_success:
   - npm run cover:export

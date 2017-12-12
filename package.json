@@ -58,13 +58,14 @@
   },
   "scripts": {
     "test": "mocha test/*.js -R nyan",
-    "watch": "mocha test/*.js -R min --watch",
+    "test:min": "mocha test/*.js -R min",
+    "watch": "npm run test:min -- --watch",
     "lint": "eslint test/*.js lib/*.js",
-    "cover": "nyc --reporter=lcov npm test",
+    "cover": "nyc --reporter=lcov npm run test:min",
     "cover:check": "nyc check-coverage",
     "cover:export": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "gen:docs": "jsdoc -R README.md -c jsdoc.json",
-    "preversion": "npm test && npm run lint && npm run gen:docs",
+    "preversion": "npm run test:min && npm run lint && npm run gen:docs",
     "version": "LIB_VERSION=$(env | grep npm_package_version | grep -v script | cut -d= -f2); sed -e \"s/Unreleased/$LIB_VERSION/\" -e \"s/HEAD/v$LIB_VERSION/\" -e \"/^## \\[$LIB_VERSION/ s/$/ - $(date +%Y-%m-%d)/\" CHANGELOG.md -i && git add docs CHANGELOG.md package.json",
     "postversion": "git push --follow-tags"
   },
@@ -73,7 +74,7 @@
   },
   "homepage": "http://projects.silexlabs.org/unifile/",
   "precommit": [
-    "npm test",
+    "npm run test:min",
     "npm run lint"
   ]
 }
