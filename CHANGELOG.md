@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- [GitHub] OAuth scopes are provided in request headers (https://github.com/silexlabs/unifile/issues/123)
 
 ## [2.0.1] - 2017-12-11
 ### Fixed

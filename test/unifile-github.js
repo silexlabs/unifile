@@ -22,7 +22,7 @@ const githubDefaultInfos = {
 
 function isEnvValid() {
 	// For now, deactivate live tests because they're super slow and buggy
-	return false;//process.env.GITHUB_SECRET && process.env.GITHUB_TOKEN;
+	return process.env.GITHUB_SECRET && process.env.GITHUB_TOKEN;
 }
 
 function checkSession(session) {
@@ -33,7 +33,7 @@ function checkSession(session) {
 
 describe('GitHubConnector', function() {
 	this.slow(500);
-	this.timeout(20000);
+	this.timeout(30000);
 
 	const session = {};
 	const defaultConfig = {
@@ -540,7 +540,9 @@ describe('GitHubConnector', function() {
 		it('writes into a file', function() {
 			return connector.writeFile(session, 'unifile_writeFile/test/testFile', data)
 			.then(() => {
-				return connector.readFile(session, 'unifile_writeFile/test/testFile').should.become(data);
+				return connector.readFile(session, 'unifile_writeFile/test/testFile').then((content) => {
+					return expect(content.toString()).to.equal(data);
+				});
 			})
 			.then(() => {
 				return connector.unlink(session, 'unifile_writeFile/test/testFile');
@@ -595,7 +597,7 @@ describe('GitHubConnector', function() {
 			stream.on('close', () => {
 				return connector.readFile(session, 'unifile_writeStream/test/testStream')
 				.then((result) => {
-					expect(result).to.equal(data);
+					expect(result.toString()).to.equal(data);
 					done();
 				})
 				// Needed because the promise would catch the expect thrown exception
@@ -635,7 +637,7 @@ describe('GitHubConnector', function() {
 		it('rejects the promise if the path is a repo or branch', function() {
 			return Promise.all(['unifile_readFile', 'unifile_readFile/master'].map((path) => {
 				return expect(connector.readFile(session, path)).to.be
-				.rejectedWith('This folder only contain folders. Files can be found in sub-folders.');
+				.rejectedWith('This folder only contain folders.');
 			}));
 		});
 
@@ -647,7 +649,7 @@ describe('GitHubConnector', function() {
 			return connector.readFile(session, 'unifile_readFile/test/file1.txt')
 			.then((content) => {
 				expect(content.toString()).to.equal(data);
-				expect(content).to.be.an.instanceof(Buffer);
+				return expect(content).to.be.an.instanceof(Buffer);
 			});
 		});
 
@@ -782,7 +784,9 @@ describe('GitHubConnector', function() {
 				return connector.readFile(session, 'unifile_rename/test/file1.txt').should.be.rejectedWith('Not Found');
 			})
 			.then(() => {
-				return connector.readFile(session, 'unifile_rename/test/fileB.txt').should.become(data);
+				return connector.readFile(session, 'unifile_rename/test/fileB.txt').then((content) => {
+					return expect(content.toString()).to.equal(data);
+				});
 			});
 		});
 
@@ -899,7 +903,6 @@ describe('GitHubConnector', function() {
 	});
 
 	describe('batch()', function() {
-		this.timeout(30000);
 		let connector;
 		const creation = [
 			{name: 'mkdir', path: 'tmp'},
@@ -958,7 +961,10 @@ describe('GitHubConnector', function() {
 			return connector.batch(session, creation)
 			.then(() => {
 				return Promise.all([
-					expect(connector.readFile(session, 'tmp/test/b')).to.become('aaa'),
+					connector.readFile(session, 'tmp/test/b')
+					.then((content) => {
+						return expect(content.toString()).to.equal('aaa');
+					}),
 					expect(connector.readdir(session, 'tmp3')).to.be.fulfilled
 				]);
 			})
@@ -976,7 +982,10 @@ describe('GitHubConnector', function() {
 			creation.unshift({name: 'createReadStream', path: 'a/test/unknown_file'});
 			return connector.batch(session, creation)
 			.then(() => {
-				expect(connector.readFile(session, 'tmp/test/b')).to.become('aaa');
+				connector.readFile(session, 'tmp/test/b')
+				.then((content) => {
+					return expect(content.toString()).to.equal('aaa');
+				});
 				return connector.batch(session, destruction);
 			})
 			.then(() => {
