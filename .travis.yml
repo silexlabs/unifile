@@ -15,4 +15,5 @@ script:
   - npm run test:min
   - npm run lint
 after_success:
+  - npm run cover
   - npm run cover:export
