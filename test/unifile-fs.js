@@ -1,8 +1,9 @@
 'use strict';
 
+const Promise = require('bluebird');
+const Fs = Promise.promisifyAll(require('fs'), {suffix: 'Promised'});
 const Path = require('path');
 const Os = require('os');
-const Fs = require('fs');
 const {Readable, Writable} = require('stream');
 const chai = require('chai');
 chai.use(require('chai-as-promised'));
@@ -315,7 +316,14 @@ describe('FsConnector', function() {
 		it('writes into a file', function() {
 			return connector.writeFile({}, Path.join(Os.tmpdir(), filename), data)
 			.then(() => {
-				Fs.statSync(Path.join(Os.tmpdir(), filename)).should.exist;
+				return Fs.readFilePromised(Path.join(Os.tmpdir(), filename), 'utf8').should.become(data);
+			});
+		});
+
+		it('writes into a file with a Buffer', function() {
+			return connector.writeFile({}, Path.join(Os.tmpdir(), filename), Buffer.from(data))
+			.then(() => {
+				return Fs.readFilePromised(Path.join(Os.tmpdir(), filename), 'utf8').should.become(data);
 			});
 		});
 

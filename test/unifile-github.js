@@ -540,9 +540,23 @@ describe('GitHubConnector', function() {
 		it('writes into a file', function() {
 			return connector.writeFile(session, 'unifile_writeFile/test/testFile', data)
 			.then(() => {
-				return connector.readFile(session, 'unifile_writeFile/test/testFile').then((content) => {
-					return expect(content.toString()).to.equal(data);
-				});
+				return connector.readFile(session, 'unifile_writeFile/test/testFile');
+			})
+			.then((content) => {
+				return expect(content.toString()).to.equal(data);
+			})
+			.then(() => {
+				return connector.unlink(session, 'unifile_writeFile/test/testFile');
+			});
+		});
+
+		it('writes into a file with a Buffer', function() {
+			return connector.writeFile(session, 'unifile_writeFile/test/testFile', Buffer.from(data))
+			.then(() => {
+				return connector.readFile(session, 'unifile_writeFile/test/testFile');
+			})
+			.then((content) => {
+				return expect(content.toString()).to.equal(data);
 			})
 			.then(() => {
 				return connector.unlink(session, 'unifile_writeFile/test/testFile');
@@ -674,19 +688,6 @@ describe('GitHubConnector', function() {
 					{name: 'writeFile', path: 'unifile_readstream/test/file1.txt', content: data}
 				]));
 			} else this.skip();
-		});
-
-		it('throws an error if wrong credentials', function(done) {
-			const stream = connector.createReadStream(Object.assign({}, session, {
-				token: 'aoa'
-			}), 'aouoeuoeu');
-			stream.on('error', (err) => {
-				expect(err.message).to.equal('Bad credentials');
-				done();
-			});
-			stream.on('data', () => {
-				done(new Error('Should not emit this event'));
-			});
 		});
 
 		it('throws an error if the path does not exist', function(done) {

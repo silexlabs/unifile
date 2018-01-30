@@ -327,7 +327,14 @@ describe('FtpConnector', function() {
 		it('writes into a file', function() {
 			return connector.writeFile(session, 'tmp.test', data)
 			.then(() => {
-				Fs.readFilePromised('tmp.test', 'utf8').should.become(data);
+				return Fs.readFilePromised('tmp.test', 'utf8').should.become(data);
+			});
+		});
+
+		it('writes into a file with a Buffer', function() {
+			return connector.writeFile(session, 'tmp.test', Buffer.from(data))
+			.then(() => {
+				return Fs.readFilePromised('tmp.test', 'utf8').should.become(data);
 			});
 		});
 
