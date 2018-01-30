@@ -513,6 +513,12 @@ describe('SFTPConnector', function() {
 			.then(() => Fs.readFilePromised('tmp.test', 'utf8').should.become(data))
 			.then(() => Fs.unlinkPromised('tmp.test'));
 		});
+
+		it('writes into a file with a Buffer', function() {
+			return connector.writeFile(session, 'tmp.test', Buffer.from(data))
+			.then(() => Fs.readFilePromised('tmp.test', 'utf8').should.become(data))
+			.then(() => Fs.unlinkPromised('tmp.test'));
+		});
 	});
 
 	describe('createWriteStream()', function() {

@@ -440,6 +440,16 @@ describe('DropboxConnector', function() {
 			});
 		});
 
+		it('writes into a file with a Buffer', function() {
+			return connector.writeFile(session, 'unifile_writeFile/file1.txt', Buffer.from(data))
+			.then(() => {
+				return connector.readFile(session, 'unifile_writeFile/file1.txt');
+			})
+			.then((content) => {
+				return expect(content.toString()).to.equal(data);
+			});
+		});
+
 		after('Remove folder', function() {
 			if(isEnvValid()) connector.rmdir(session, 'unifile_writeFile');
 			else this.skip();
