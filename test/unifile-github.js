@@ -33,7 +33,7 @@ function checkSession(session) {
 
 describe('GitHubConnector', function() {
 	this.slow(500);
-	this.timeout(30000);
+	this.timeout(60000);
 
 	const session = {};
 	const defaultConfig = {
@@ -905,10 +905,14 @@ describe('GitHubConnector', function() {
 
 	describe('batch()', function() {
 		let connector;
+		const content = new Date().toISOString();
 		const creation = [
 			{name: 'mkdir', path: 'tmp'},
 			{name: 'mkdir', path: 'tmp/test'},
-			{name: 'writeFile', path: 'tmp/test/a', content: 'aaa'},
+			{name: 'writeFile', path: 'tmp/test/a', content: Buffer.from('aaa')},
+			{name: 'mkdir', path: 'tmp/test/af'},
+			{name: 'writeFile', path: 'tmp/test/af/aa', content},
+			{name: 'writeFile', path: 'tmp/test/af/ab', content: Buffer.from(content)},
 			{name: 'mkdir', path: 'tmp/test/dir'},
 			{name: 'rename', path: 'tmp/test/a', destination: 'tmp/test/b'},
 			{name: 'mkdir', path: 'tmp2'},
@@ -945,12 +949,12 @@ describe('GitHubConnector', function() {
 
 		it('rejects the promise if a rename action does not have a destination', function() {
 			return connector.batch(session, [{name: 'rename', path: 'tmp/test/a'}])
-			.should.be.rejectedWith('Could not modify tree');
+			.should.be.rejectedWith('Error while batch');
 		});
 
 		it('rejects the promise if a writefile action does not have content', function() {
 			return connector.batch(session, [{name: 'writefile', path: 'tmp/test/a'}])
-			.should.be.rejectedWith('Could not modify tree');
+			.should.be.rejectedWith('Error while batch');
 		});
 
 		it('rejects the promise if a writefile is programmed on a repo/branch', function() {
@@ -964,9 +968,17 @@ describe('GitHubConnector', function() {
 				return Promise.all([
 					connector.readFile(session, 'tmp/test/b')
 					.then((content) => {
-						return expect(content.toString()).to.equal('aaa');
+						return expect(content.toString(), 'read tmp/test/b').to.equal('aaa');
 					}),
-					expect(connector.readdir(session, 'tmp3')).to.be.fulfilled
+					expect(connector.readdir(session, 'tmp3')).to.be.fulfilled,
+					connector.readFile(session, 'tmp/test/af/aa')
+					.then((fileContent) => {
+						return expect(fileContent.toString(), 'read tmp/test/af/aa').to.equal(content);
+					}),
+					connector.readFile(session, 'tmp/test/af/ab')
+					.then((fileContent) => {
+						return expect(fileContent.toString(), 'read tmp/test/af/aa').to.equal(content);
+					})
 				]);
 			})
 			.then(() => connector.batch(session, destruction))
