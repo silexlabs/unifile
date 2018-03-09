@@ -33,7 +33,7 @@ function checkSession(session) {
 
 describe('GitHubConnector', function() {
 	this.slow(500);
-	this.timeout(60000);
+	this.timeout(90000);
 
 	const session = {};
 	const defaultConfig = {
