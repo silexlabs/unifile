@@ -3,18 +3,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [] - 2018-03-10
 ### Fixed
 - [GitHub] OAuth scopes are provided in request headers (https://github.com/silexlabs/unifile/issues/123)
 
-## [2.0.1] - 2017-12-11
+## [2.0.1] - 2017-12-11 - 2018-03-10
 ### Fixed
 - [Dropbox] Batch correctly overwrite existing files (https://github.com/silexlabs/unifile/issues/131)
 - [Dropbox] Batch now correctly rejects the promise if one action failed (https://github.com/silexlabs/unifile/issues/131)
 - [Dropbox] Batch upload uses `Buffer` for file content and supports UTF-8 (https://github.com/silexlabs/unifile/issues/130)
 - [Dropbox] All the methods support non-ASCII char in filename and content (https://github.com/silexlabs/unifile/issues/134)
 
-## [2.0.0] - 2017-11-25
+## [2.0.0] - 2017-11-25 - 2018-03-10
 ### Changed
 - GitHub batch fixes and optimization
 - Code factorization
@@ -36,7 +36,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 - WebDAV connector is now a separate plugin
 - `unifile.connectors` is now private
 
-## [1.2.0] - 2017-06-01 - 2017-11-25
+## [1.2.0] - 2017-06-01 - 2017-11-25 - 2018-03-10
 ### Added
 - SFTP support
 - `.stat()` method that return information abouth the given path
@@ -54,7 +54,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
   - Includes connector documentation to the global one
   - Includes README in documentation
 
-## [1.1.0] - 2017-04-26 - 2017-11-25
+## [1.1.0] - 2017-04-26 - 2017-11-25 - 2018-03-10
 ### Added
   - Local filesystem support
 
@@ -62,7 +62,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Changed
   - Total rework of the philosphy
 
-[Unreleased]: https://github.com/silexlabs/unifile/compare/v2.0.1...HEAD
+[]: https://github.com/silexlabs/unifile/compare/v2.0.1...v
 [2.0.1]: https://github.com/silexlabs/unifile/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/silexlabs/unifile/compare/v1.2.0...v2.0.0
 [1.2.0]: https://github.com/silexlabs/unifile/compare/v1.1.0...v1.2.0

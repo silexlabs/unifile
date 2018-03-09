@@ -39,7 +39,6 @@
         <article>
             <pre class="prettyprint source linenums"><code>'use strict';
 
-const Path = require('path');
 const Url = require('url');
 const {Writable, Transform, PassThrough} = require('stream');
 
@@ -118,14 +117,14 @@ function move(src, dest, treeRes) {
  * @param  {string} [branch=master] - Branch containing file/folder
  * @private
  */
-function removeFile(path, treeRes) {
+function removeFile(path, treeRes, done) {
 	const regex = new RegExp('^' + path + '$|^' + path + '(/)');
 	const filteredTree = treeRes.tree.filter(function(file) {
 		return !regex.test(file.path);
 	});
 	if(filteredTree.length === treeRes.tree.length)
-		throw new UnifileError(UnifileError.ENOENT, 'Not Found');
-	else return filteredTree;
+		done(new UnifileError(UnifileError.ENOENT, 'Not Found'));
+	else done(null, filteredTree);
 }
 
 const createBranch = Symbol('createBranch');
@@ -244,6 +243,10 @@ class GitHubConnector {
 		.then(() => {
 			session.token = sessionCopy.token;
 			return session.token;
+		})
+		.catch((e) => {
+			// Override default error message ('Requires authentication')
+			if(e.code === UnifileError.EACCES) throw new UnifileError(401, 'Bad credentials');
 		});
 	}
 
@@ -409,7 +412,7 @@ class GitHubConnector {
 				};
 				return this[callAPI](session, apiPath, reqData, 'POST')
 				// Renames default README to a more discreet .gitkeep
-				.then(() => this.rename(session, Path.join(path, 'master/README.md'), Path.join(path, 'master/.gitkeep')));
+				.then(() => this.rename(session, path + '/master/README.md', path + '/master/.gitkeep'));
 			case 2: // Create a branch
 				return this[createBranch](session, splitPath[0], splitPath[1]);
 			default: // Create a folder (with a .gitkeep file in it because git doesn't track empty folder)
@@ -506,7 +509,7 @@ class GitHubConnector {
 				if(res.type === 'file') {
 					return Buffer.from(res.content, res.encoding);
 				} else {
-					return Promise.reject(new UnifileError(UnifileError.EISDIR, 'This is a folder.'));
+					return Promise.reject(new UnifileError(UnifileError.EISDIR, 'Path is a directory.'));
 				}
 			});
 		}
@@ -568,7 +571,7 @@ class GitHubConnector {
 			default: // Rename a file/folder
 				const fileSrc = splitPath.slice(2).join('/');
 				const fileDest = splitPathDest.slice(2).join('/');
-				return this[transformTree](session, splitPath[0], move.bind(undefined, fileSrc, fileDest),
+				return this[transformTree](session, splitPath[0], (tree, done) => done(null, move(fileSrc, fileDest, tree)),
 					'Move ' + fileSrc + ' to ' + fileDest, splitPath[1]);
 		}
 	}
@@ -598,9 +601,7 @@ class GitHubConnector {
 					if(branches.length > 1)
 						return this[callAPI](session, repoPath + '/git/refs/heads/' + splitPath[1], null, 'DELETE');
 					else {
-						const err = new Error('You cannot leave this folder empty.');
-						err.statusCode = 400;
-						throw err;
+						throw new UnifileError(UnifileError.INVAL, 'You cannot leave this folder empty.');
 					}
 				});
 			default: // Remove file/folder
@@ -664,13 +665,15 @@ class GitHubConnector {
 						if(sameBranch) fileActions.push(actionQueue.shift());
 					}
 
-					actionsChain = actionsChain.then(() => this[transformTree](session, splitPath[0], function(treeRes) {
+					actionsChain = actionsChain.then(() => this[transformTree](session, splitPath[0], (treeRes, done) => {
+						const newTrees = {};
+						const blobsWaiting = [];
 						for(const currentAction of fileActions) {
 							const path = getPathTokens(currentAction.path).slice(2).join('/');
 							switch (currentAction.name.toLowerCase()) {
 								case 'unlink':
 								case 'rmdir':
-									treeRes.tree = removeFile(path, treeRes);
+									treeRes.tree = removeFile(path, treeRes, done);
 									break;
 								case 'rename':
 									if(!currentAction.destination)
@@ -682,33 +685,91 @@ class GitHubConnector {
 									treeRes.tree = move(src, dest, treeRes);
 									break;
 								case 'mkdir':
-									treeRes.tree.push({
-										path: path + '/.gitkeep',
-										mode: '100644',
-										type: 'blob',
-										content: ''
-									});
+									newTrees[path] = {
+										tree: [],
+										blobs: []
+									};
 									break;
 								case 'writefile':
 									if(!currentAction.content)
 										return new Promise.reject(new UnifileError(
 											UnifileError.EINVAL,
 											'WriteFile actions should have a content'));
-									treeRes.tree.push({
-										path: path,
-										content: currentAction.content,
-										mode: '100644',
-										type: 'blob'
-									});
+									// Get the longest path matching this file parent
+									const closestParent = Object.keys(newTrees).filter((p) => path.includes(p)).sort().pop();
+									if(closestParent) {
+										newTrees[closestParent].blobs.push(this[createBlob](session, splitPath[0], currentAction.content));
+										newTrees[closestParent].tree.push({
+											path: path.replace(closestParent + '/', ''),
+											mode: '100644',
+											type: 'blob'
+										});
+									} else {
+										treeRes.tree = treeRes.tree.filter((node) => node.path !== path);
+										const newNode = {
+											path: path.replace(closestParent + '/', ''),
+											mode: '100644',
+											type: 'blob'
+										};
+										if(Buffer.isBuffer(currentAction.content)) {
+											blobsWaiting.push({
+												path,
+												blob: this[createBlob](session, splitPath[0], currentAction.content)
+											});
+										} else newNode.content = currentAction.content;
+										treeRes.tree.push(newNode);
+									}
 									break;
 								default:
 									console.warn(`Unsupported batch action: ${currentAction.name}`);
 							}
 						}
-						return treeRes.tree;
+
+						const treesToPlant = [];
+						Object.keys(newTrees).forEach((path) => {
+							if(newTrees[path].tree.length > 0)
+								treesToPlant.push(path);
+							else treeRes.tree.push({
+								path: path + '/.gitkeep',
+								mode: '100644',
+								type: 'blob',
+								content: ''
+							});
+						});
+						return Promise.all(blobsWaiting.map((b) => b.blob))
+						.then((blobShas) => {
+							blobShas.forEach((sha, idx) => {
+								treeRes.tree
+								.find((n) => n.path === blobsWaiting[idx].path).sha = sha.sha;
+							});
+							return Promise.all(treesToPlant.map((treePath) => {
+								const tree = {tree: newTrees[treePath].tree};
+								const apiPath = '/repos/' + session.account.login + '/' + splitPath[0];
+								return Promise.all(newTrees[treePath].blobs)
+								.then((shas) => {
+									tree.tree.forEach((t, index) => t.sha = shas[index].sha);
+									return this[callAPI](session, apiPath + '/git/trees', tree, 'POST');
+								})
+								.then((t) => {
+									treeRes.tree = treeRes.tree.filter((node) => node.path !== treePath);
+									treeRes.tree.push({
+										path: treePath,
+										type: 'tree',
+										mode: '040000',
+										sha: t.sha
+									});
+								});
+							}))
+							.then(() => {
+								done(null, treeRes.tree);
+							})
+							.catch((e) => {
+								done(new Error(`Could not create a new tree ${e}`));
+							});
+						});
 					}, message || 'Batch update', splitPath[1]))
 					.catch((err) => err.name !== 'BatchError', (err) => {
-						throw new BatchError(UnifileError.EIO, `Could not modify tree: ${err.message}`);
+						throw new BatchError(UnifileError.EIO, `Error while batch: ${err.message}`);
 					});
 			}
 		}
@@ -804,7 +865,7 @@ class GitHubConnector {
 	 * Transform the git tree and commit the transformed tree
 	 * @param {GHSession} session - GH session
 	 * @param {string} repo - Name of the repository to commit
-	 * @param  {Function} transformer - Function to apply on tree. Get the tree as only param and return an array.
+	 * @param  {Function} transformer - Function to apply on tree. Get the tree as first param and wait for an array in the callback.
 	 * @param  {string} message - Commit message for the new tree
 	 * @param  {string} [branch=master] - Branch containing the tree
 	 * @return {Promise} a Promise of the server response
@@ -821,7 +882,12 @@ class GitHubConnector {
 			return this[callAPI](session, apiPath + '/git/trees/' + head.object.sha, {recursive: 1}, 'GET');
 		})
 		.then((res) => {
-			return transformer(res);
+			return new Promise((resolve, reject) => {
+				transformer(res, (err, result) => {
+					if(err &amp;&amp; err instanceof Error) reject(err);
+					else resolve(result);
+				});
+			});
 		})
 		.then((tree) => {
 			if(Array.isArray(tree) &amp;&amp; tree.length > 0) {
@@ -919,7 +985,8 @@ class GitHubConnector {
 			headers: {
 				'Accept': 'application/vnd.github.v3+json',
 				'Authorization': session.token,
-				'User-Agent': 'Unifile'
+				'User-Agent': 'Unifile',
+				'X-OAuth-Scopes': 'delete_repo, repo, user'
 			}
 		};
 
@@ -933,20 +1000,21 @@ class GitHubConnector {
 					if(err) {
 						return reject(err);
 					}
-					if(res.statusCode === 409 &amp;&amp; JSON.parse(body).message.toLowerCase() === 'git repository is empty.' &amp;&amp; retry) {
-						return this[callAPI](session, path, data, method, false, false)
-						.then(resolve)
-						.catch(reject);
-					} else if(res.statusCode >= 400) {
-						console.log('request failed', method, path, data, res.statusCode, body);
-						const code = (() => {
+					if(res.statusCode >= 400) {
+						const {code, message} = (() => {
+							const defaultMessage = JSON.parse(body).message;
 							switch (res.statusCode) {
-								case 403: return UnifileError.EACCES;
-								case 404: return UnifileError.ENOENT;
-								default: return UnifileError.EIO;
+								case 401:
+									return {code: UnifileError.EACCES, message: 'Bad credentials'};
+								case 403:
+									return {code: UnifileError.EACCES, message: defaultMessage};
+								case 404:
+									return {code: UnifileError.ENOENT, message: 'Not Found'};
+								default:
+									return {code: UnifileError.EIO, message: defaultMessage};
 							}
 						})();
-						return reject(new UnifileError(code, JSON.parse(body).message));
+						return reject(new UnifileError(code, message));
 					}
 					try {
 						const result = res.statusCode !== 204 ? JSON.parse(body) : null;
@@ -975,7 +1043,7 @@ module.exports = GitHubConnector;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Dec 11 2017 00:19:56 GMT+0100 (Romance Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Mar 10 2018 00:26:25 GMT+0100 (CET) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
