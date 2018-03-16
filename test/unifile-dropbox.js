@@ -476,7 +476,7 @@ describe('DropboxConnector', function() {
 			stream.pipe(process.stdout);
 			stream.on('error', (err) => {
 				expect(err).to.be.an.instanceof(UnifileError);
-				expect(err.message).to.equal('Creation failed');
+				expect(err.message).to.equal('Invalid stream');
 				done();
 			});
 			stream.on('close', () => done(new Error('Did not error as planned')));
