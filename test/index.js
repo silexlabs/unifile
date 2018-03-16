@@ -41,9 +41,9 @@ describe('Unifile class', function() {
 			file != 'index.js' && file != 'error.js' && file.endsWith('.js') && !file.startsWith('.'));
 		// Get all the methods of Unifile
 		const methods = Object.getOwnPropertyNames(Object.getPrototypeOf(unifile))
-			// Filter out the one that should be implemented
+		// Filter out the one that should be implemented
 		.filter((method) => !['callMethod', 'listConnectors', 'use'].includes(method))
-			// Sort them alphabetically
+		// Sort them alphabetically
 		.sort();
 		for(const connectorName of connectors) {
 			describe(connectorName, function() {
