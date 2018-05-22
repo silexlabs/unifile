@@ -82,6 +82,65 @@ describe('Unifile class', function() {
 		});
 	});
 
+	describe('ext()', function() {
+		let unifile;
+		let inMemoryFile = '';
+		beforeEach('Instanciation', function() {
+			unifile = new Unifile();
+			unifile.use({
+				name: 'memory',
+				getInfos: () => {return {isLoggedIn: true};},
+				readFile: (session, path) => Promise.resolve(inMemoryFile),
+				writeFile: (session, path, content) => {
+					inMemoryFile = content;
+					return Promise.resolve();
+				}
+			});
+		});
+
+		it('registers an extension', function() {
+			unifile.ext({
+				onWrite: console.log,
+				onRead: console.log
+			});
+			expect(unifile.plugins.onRead).to.have.lengthOf(1);
+			expect(unifile.plugins.onWrite).to.have.lengthOf(1);
+			expect(unifile.plugins.onRead[0]).to.equal(console.log);
+			expect(unifile.plugins.onWrite[0]).to.equal(console.log);
+		});
+
+		it('can modify the input on write action', function() {
+			unifile.ext({
+				onWrite: (input) => input.replace('a', 'b')
+			});
+			return unifile.writeFile({}, 'memory', '', 'ab')
+			.then(() => expect(inMemoryFile).to.equal('bb'));
+		});
+
+		it('can modify the input on read action', function() {
+			inMemoryFile = 'ab';
+			unifile.ext({
+				onRead: (input) => input.replace('b', 'a')
+			});
+			return unifile.readFile({}, 'memory', '')
+			.should.eventually.equal('aa');
+		});
+
+		it('follow a chain of action in order', function() {
+			unifile.ext({
+				onRead: (input) => input.replace('b', 'a'),
+				onWrite: (input) => input.replace('a', 'b')
+			});
+			unifile.ext({
+				onRead: (input) => input.replace('a', 'c'),
+				onWrite: (input) => input.replace('b', 'd')
+			});
+			return unifile.writeFile({}, 'memory', '', 'ab')
+			.then(() => expect(inMemoryFile).to.equal('db'))
+			.then(() => unifile.readFile({}, 'memory', '').should.eventually.equal('dc'));
+		});
+	});
+
 	describe('getInfos()', function() {
 		let unifile;
 		beforeEach('Instanciation', function() {
