@@ -6,8 +6,10 @@ const crypto = require('crypto');
 const Unifile = require('../lib/');
 const unifile = new Unifile();
 
-const cipher = crypto.createCipher('aes192', 'a password');
-const decipher = crypto.createDecipher('aes192', 'a password');
+const PWD = 'a password';
+
+const cipher = crypto.createCipher('aes192', PWD);
+const decipher = crypto.createDecipher('aes192', PWD);
 
 // Configure connectors
 const dbxconnector = new Unifile.DropboxConnector({
