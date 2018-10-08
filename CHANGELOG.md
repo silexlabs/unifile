@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## [Unreleased]
 
+## [2.0.4] - 2018-10-08
+### Fixed
+- [FTP] Handles FTP server that return an empty list on 404 (like OVH)
+
 ## [2.0.3] - 2018-03-25
 ### Fixed
 - [FTP] Prevents server crash when unable to connect to server (https://github.com/silexlabs/CloudExplorer2/issues/57)
