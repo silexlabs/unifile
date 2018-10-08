@@ -10,7 +10,7 @@
     "bluebird": "^3.0.5",
     "jsftp": "^2.1.2",
     "mime": "^2.0.3",
-    "request": "^2.72.0",
+    "request": "^2.88.0",
     "sftp-promises": "^1.4.1",
     "unifile-common-tools": "^1.0.0",
     "webfinger.js": "^2.4.2"
@@ -22,7 +22,7 @@
     "cross-env": "^5.1.1",
     "docdash": "^0.4.0",
     "eslint": "^4.1.1",
-    "ftp-srv": "^2.14.0",
+    "ftp-srv": "^2.19.5",
     "jsdoc": "^3.5.5",
     "mocha": "^4.0.1",
     "nyc": "^11.2.1",
