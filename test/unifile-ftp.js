@@ -9,6 +9,7 @@ const FtpSrv = require('ftp-srv');
 const FileSystem = require('../node_modules/ftp-srv/src/fs.js');
 
 const FtpConnector = require('../lib/unifile-ftp');
+const {UnifileError} = require('../lib/error');
 
 const expect = chai.expect;
 chai.should();
@@ -214,7 +215,10 @@ describe('FtpConnector', function() {
 		});
 
 		it('rejects the promise if the path does not exist', function() {
-			return expect(connector.readdir(session, '/home/test')).to.be.rejectedWith('ENOENT');
+
+			return expect(connector.readdir(session, '/home/test')).to.be.eventually.rejected
+			.and.be.an.instanceof(UnifileError)
+			.and.have.property('code', UnifileError.ENOENT);
 		});
 
 		it('reads root with empty path', function() {
@@ -260,7 +264,9 @@ describe('FtpConnector', function() {
 		});
 
 		it('rejects the promise if the path does not exist', function() {
-			return expect(connector.stat(session, '/home/test')).to.be.rejectedWith('ENOENT');
+			return expect(connector.stat(session, '/home/test')).to.be.eventually.rejected
+			.and.be.an.instanceof(UnifileError)
+			.and.have.property('code', UnifileError.ENOENT);
 		});
 
 		it('gives stats on a directory', function() {
@@ -279,11 +285,13 @@ describe('FtpConnector', function() {
 			return connector.stat(session, 'test/unifile-ftp.js')
 			.then((stat) => {
 				expect(stat).to.be.an.instanceof(Object);
-				const keys = Object.keys(stat);
-				['isDir', 'mime', 'modified', 'name', 'size'].every((key) => keys.includes(key))
-				.should.be.true;
+				expect(stat).to.have.keys(['isDir', 'mime', 'modified', 'name', 'size']);
+				expect(stat.size).to.be.a('number')
+				.and.to.be.finite;
 				expect(stat.name === 'unifile-ftp.js');
 				expect(stat.isDir).to.be.false;
+				expect(stat.mime).to.equal('application/javascript');
+				expect(new Date(stat.modified).getTime(), 'Invalid date').to.be.finite;
 			});
 		});
 	});
