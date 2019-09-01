@@ -24,13 +24,25 @@ const ftpDefaultInfos = {
 	description: 'Edit files on a web FTP server.'
 };
 
-describe('FtpConnector', function() {
+function checkFileStat(stat) {
+	expect(stat).to.be.an.instanceof(Object);
+	expect(stat).to.have.keys(['isDir', 'mime', 'modified', 'name', 'size']);
+	expect(stat.size).to.be.a('number')
+	.and.to.be.finite;
+	expect(stat.name).to.be.a('string');
+	expect(stat.isDir).to.be.a('boolean');
+	expect(stat.mime).to.satisfy((mime) => mime === null || mime.constructor === String);
+	expect(new Date(stat.modified).getTime(), 'Invalid date').to.be.finite;
+
+}
+
+describe.only('FtpConnector', function() {
 	let srv = null;
 	const session = {
 		host: '127.0.0.1',
 		port: '9876',
 		user: 'admin',
-		pass: 'admin'
+		password: 'admin'
 	};
 
 	before('Instanciation', function() {
@@ -238,20 +250,13 @@ describe('FtpConnector', function() {
 			.then((list) => {
 				expect(list).to.be.an.instanceof(Array);
 				expect(list.length).to.be.above(0);
-				list.every((file) => {
-					const keys = Object.keys(file);
-					return ['isDir', 'mime', 'modified', 'name', 'size'].every((key) => keys.includes(key));
-				}).should.be.true;
+				list.forEach(checkFileStat);
 				const libFolder = list.find((f) => f.name === 'lib');
 				expect(libFolder.isDir).to.be.true;
 				expect(libFolder.mime).to.equal('application/directory');
-				expect(libFolder.modified.constructor).to.equal(String);
-				expect(new Date(libFolder.modified).getFullYear()).to.be.above(2016);
 				const packageFile = list.find((f) => f.name === 'package.json');
 				expect(packageFile.isDir).to.be.false;
 				expect(packageFile.mime).to.equal('application/json');
-				expect(packageFile.modified.constructor).to.equal(String);
-				expect(new Date(packageFile.modified).getFullYear()).to.be.above(2016);
 				expect(packageFile.size).to.above(0);
 			});
 		});
@@ -272,26 +277,20 @@ describe('FtpConnector', function() {
 		it('gives stats on a directory', function() {
 			return connector.stat(session, 'test')
 			.then((stat) => {
-				expect(stat).to.be.an.instanceof(Object);
-				const keys = Object.keys(stat);
-				['isDir', 'mime', 'modified', 'name', 'size'].every((key) => keys.includes(key))
-				.should.be.true;
-				expect(stat.name === 'test');
+				checkFileStat(stat);
+				expect(stat.name).to.equal('test');
 				expect(stat.isDir).to.be.true;
+				expect(stat.mime).to.equal('application/directory');
 			});
 		});
 
 		it('gives stats on a file', function() {
 			return connector.stat(session, 'test/unifile-ftp.js')
 			.then((stat) => {
-				expect(stat).to.be.an.instanceof(Object);
-				expect(stat).to.have.keys(['isDir', 'mime', 'modified', 'name', 'size']);
-				expect(stat.size).to.be.a('number')
-				.and.to.be.finite;
-				expect(stat.name === 'unifile-ftp.js');
+				checkFileStat(stat);
+				expect(stat.name).to.equal('unifile-ftp.js');
 				expect(stat.isDir).to.be.false;
 				expect(stat.mime).to.equal('application/javascript');
-				expect(new Date(stat.modified).getTime(), 'Invalid date').to.be.finite;
 			});
 		});
 	});
@@ -363,8 +362,12 @@ describe('FtpConnector', function() {
 			expect(stream).to.be.an.instanceof(Writable);
 			// Wait for 'end' (not 'finish') to be sure it has been consumed
 			stream.on('end', () => {
-				return Fs.readFilePromised('tmp.test', 'utf8').should.become(data)
-				.then(() => done());
+				return Fs.readFilePromised('tmp.test', 'utf8')
+				.then((content) => {
+					expect(content).to.equal(data);
+					done();
+				})
+				.catch((err) => done(err));
 			});
 			stream.on('error', done);
 			stream.end(data);
@@ -389,22 +392,6 @@ describe('FtpConnector', function() {
 
 		it('rejects the promise if the path does not exist', function() {
 			return expect(connector.readFile(session, 'aouoeuoeu')).to.be.rejectedWith('ENOENT');
-		});
-
-		it('rejects the promise if an error occurs', function() {
-			const fakeFtpClient = {
-				get: function(path, callback) {
-					callback(null, new Readable({
-						read(size) {
-							this.emit('error', new Error('Something bad happened'));
-							return;
-						}
-					}));
-				},
-				end: function() {}
-			};
-			return expect(connector.readFile(session, '/home/test', fakeFtpClient))
-			.to.be.rejectedWith('Something bad happened');
 		});
 
 		it('returns the content of a file', function() {
