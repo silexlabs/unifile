@@ -1,6 +1,6 @@
 'use strict';
 
-const PassThrough = require('stream').PassThrough;
+const {Readable, Writable, Transform, PassThrough} = require('stream');
 const chai = require('chai');
 chai.use(require('chai-as-promised'));
 const Promise = require('bluebird');
@@ -79,6 +79,103 @@ describe('Unifile class', function() {
 			unifile.use(connector);
 			expect(unifile.listConnectors().length).to.equal(1);
 			expect(unifile.listConnectors()[0]).to.equal(connector.name);
+		});
+	});
+
+	describe('ext()', function() {
+		let unifile;
+		let inMemoryFile = '';
+		beforeEach('Instanciation', function() {
+			inMemoryFile = '';
+			unifile = new Unifile();
+			unifile.use({
+				name: 'memory',
+				getInfos: () => {return {isLoggedIn: true};},
+				readFile: (session, path) => Promise.resolve(inMemoryFile),
+				writeFile: (session, path, content) => {
+					inMemoryFile = content;
+					return Promise.resolve();
+				},
+				createReadStream: (session, path) => {
+					return new Readable({
+						read(size) {
+							this.push('hello');
+							this.push(null);
+						}
+					});
+				},
+				createWriteStream: (session, path) => {
+					//return require('fs').createWriteStream('./test.log');
+					return new Writable({
+						write(chunk, encoding, callback) {
+							inMemoryFile += chunk.toString();
+							callback(null);
+						}
+					});
+				}
+			});
+		});
+
+		it('registers an extension', function() {
+			unifile.ext({
+				onWrite: console.log,
+				onRead: console.log
+			});
+			expect(unifile.plugins.onRead).to.equal(console.log);
+			expect(unifile.plugins.onWrite).to.equal(console.log);
+		});
+
+		it('can modify the input on write action', function() {
+			unifile.ext({
+				onWrite: (input) => input.replace('a', 'b')
+			});
+			return unifile.writeFile({}, 'memory', '', 'ab')
+			.then(() => expect(inMemoryFile).to.equal('bb'));
+		});
+
+		it('can modify the input on read action', function() {
+			inMemoryFile = 'ab';
+			unifile.ext({
+				onRead: (input) => input.replace('b', 'a')
+			});
+			return unifile.readFile({}, 'memory', '')
+			.should.eventually.equal('aa');
+		});
+
+		it('can modify the input on write stream', function(done) {
+			unifile.ext({
+				onWriteStream: new Transform({
+					transform(chunk, encoding, callback) {
+						callback(null, chunk.toString().toUpperCase());
+					}
+				})
+			});
+			const stream = unifile.createWriteStream({}, 'memory', '');
+			stream.on('end', () => {
+				expect(inMemoryFile).to.equal('HELLO');
+				done();
+			});
+			stream.end('hello');
+		});
+
+		it('can modify the input on read stream', function(done) {
+			inMemoryFile = 'hello';
+			unifile.ext({
+				onReadStream: new Transform({
+					transform(chunk, encoding, callback) {
+						callback(null, chunk.toString().toUpperCase());
+					}
+				})
+			});
+			const stream = unifile.createReadStream({}, 'memory', '');
+			const chunks = [];
+			stream.on('data', (chunk) => {
+				chunks.push(chunk);
+			});
+			stream.on('end', () => {
+				expect(Buffer.concat(chunks).toString()).to.equal('HELLO');
+				done();
+			});
 		});
 	});
 
