@@ -36,7 +36,7 @@ function checkFileStat(stat) {
 
 }
 
-describe.only('FtpConnector', function() {
+describe('FtpConnector', function() {
 	let srv = null;
 	const session = {
 		host: '127.0.0.1',
@@ -46,7 +46,8 @@ describe.only('FtpConnector', function() {
 	};
 
 	before('Instanciation', function() {
-		srv = new FtpSrv(`ftp://${session.host}:${session.port}`, {
+		srv = new FtpSrv({
+			url: `ftp://${session.host}:${session.port}`,
 			pasv_range: '9000-9010'
 		});
 		// Shut up the FTP server

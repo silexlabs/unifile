@@ -61,16 +61,14 @@ describe('SFTPConnector', function() {
 							sftpStream.handle(reqid, new Buffer(filename));
 						})
 						.on('STAT', (reqid, path) => {
-							Fs.stat(path, (err, stats) => {
-								if(err) sftpStream.status(reqid, SFTP_STATUS_CODE.NO_SUCH_FILE);
-								else sftpStream.attrs(reqid, stats);
-							});
+							Fs.statPromised(path)
+							.catch((err) => sftpStream.status(reqid, SFTP_STATUS_CODE.NO_SUCH_FILE))
+							.then((stats) => sftpStream.attrs(reqid, stats));
 						})
 						.on('FSTAT', (reqid, handle) => {
-							Fs.stat(handle.toString(), (err, stats) => {
-								if(err) sftpStream.status(reqid, SFTP_STATUS_CODE.NO_SUCH_FILE);
-								else sftpStream.attrs(reqid, stats);
-							});
+							Fs.statPromised(handle.toString())
+							.catch((err) => sftpStream.status(reqid, SFTP_STATUS_CODE.NO_SUCH_FILE))
+							.then((stats) => sftpStream.attrs(reqid, stats));
 						})
 						.on('RENAME', (reqid, oldPath, newPath) => {
 							Fs.renamePromised(oldPath, newPath)
@@ -104,7 +102,6 @@ describe('SFTPConnector', function() {
 						})
 						.on('OPENDIR', (reqid, path) => {
 							sftpStream.handle(reqid, new Buffer(path));
-
 						})
 						.on('READDIR', (reqid, handle) => {
 							if(reading) {
@@ -687,7 +684,7 @@ describe('SFTPConnector', function() {
 		});
 
 		afterEach('Cleanup', function() {
-			return Fs.unlink('testReadStream.txt');
+			return Fs.unlinkPromised('testReadStream.txt');
 		});
 	});
 
@@ -709,7 +706,7 @@ describe('SFTPConnector', function() {
 			})
 			.then(() => {
 				return Fs.readFilePromised('testRename2.txt', 'utf8').should.become('lorem ipsum')
-				.then(() => Fs.unlink('testRename2.txt'));
+				.then(() => Fs.unlinkPromised('testRename2.txt'));
 			});
 		});
 	});
