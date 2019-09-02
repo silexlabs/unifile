@@ -22,12 +22,12 @@
     "cross-env": "^5.1.1",
     "docdash": "^0.4.0",
     "eslint": "^4.1.1",
-    "ftp-srv": "^2.19.5",
-    "jsdoc": "^3.5.5",
+    "ftp-srv": "^4.2.0",
+    "husky": "^3.0.5",
+    "jsdoc": "^3.6.3",
     "mocha": "^4.0.1",
-    "nyc": "^11.2.1",
-    "pem": "^1.9.7",
-    "precommit": "^1.2.2",
+    "nyc": "^14.1.1",
+    "pem": "^1.14.2",
     "ssh2": "^0.5.5"
   },
   "repository": {
@@ -41,7 +41,8 @@
     "storage",
     "webdav",
     "remotestorage",
-    "ftp"
+    "ftp",
+    "sftp"
   ],
   "main": "lib/index.js",
   "files": [
@@ -54,7 +55,7 @@
   },
   "license": "MIT",
   "engines": {
-    "node": "^6.2.2",
+    "node": "^8.16.1",
     "npm": "^3.9.5"
   },
   "scripts": {
@@ -74,8 +75,9 @@
     "url": "https://github.com/silexlabs/unifile/issues"
   },
   "homepage": "http://projects.silexlabs.org/unifile/",
-  "precommit": [
-    "npm run test:min",
-    "npm run lint"
-  ]
+  "husky": {
+		"hooks": {
+			"pre-commit": "npm run test:min && npm run lint"
+		}
+	}
 }
