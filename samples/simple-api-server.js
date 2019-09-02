@@ -32,7 +32,7 @@ const dbxconnector = new Unifile.DropboxConnector({
 	redirectUri: 'http://localhost:6805/dropbox/oauth-callback'
 });
 const ftpconnector = new Unifile.FtpConnector({redirectUri: 'http://localhost:6805/ftp/signin'});
-const wdconnector = new Unifile.WebDavConnector({redirectUri: 'http://localhost:6805/webdav/signin'});
+//const wdconnector = new Unifile.WebDavConnector({redirectUri: 'http://localhost:6805/webdav/signin'});
 const rsconnector = new Unifile.RemoteStorageConnector({redirectUri: 'http://localhost:6805/remotestorage/callback'});
 const fsconnector = new Unifile.FsConnector({showHiddenFile: true});
 const sftpconnector = new Unifile.SftpConnector({redirectUri: 'http://localhost:6805/sftp/signin'});
@@ -42,7 +42,7 @@ unifile.use(ghconnector);
 unifile.use(dbxconnector);
 unifile.use(ftpconnector);
 unifile.use(rsconnector);
-unifile.use(wdconnector);
+//unifile.use(wdconnector);
 unifile.use(fsconnector);
 unifile.use(sftpconnector);
 
