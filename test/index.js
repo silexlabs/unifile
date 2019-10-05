@@ -2,6 +2,7 @@
 
 const PassThrough = require('stream').PassThrough;
 const chai = require('chai');
+chai.use(require('chai-as-promised'));
 const Promise = require('bluebird');
 
 const Unifile = require('../lib');
@@ -70,8 +71,7 @@ describe('Unifile class', function() {
 		});
 
 		it('throws an error if connector does not have a name', function() {
-			const fn = function() { unifile.use({}); };
-			expect(fn).to.throw('Connector must have a name');
+			return expect(() => unifile.use({})).to.throw('Connector must have a name');
 		});
 
 		it('register a new connector', function() {
@@ -88,21 +88,18 @@ describe('Unifile class', function() {
 			unifile = new Unifile();
 		});
 
-		it('throws an error if connectorName is undefined', function() {
-			const fn = function() { unifile.getInfos({});};
-			expect(fn).to.throw(/You should specify a connector name!/);
+		it('rejects the promise if connectorName is undefined', function() {
+			return expect(unifile.getInfos({})).to.be.rejectedWith(/You should specify a connector name!/);
 		});
 
-		it('throws an error if connectorName is not registered', function() {
-			const fn = function() { unifile.getInfos({}, 'test');};
-			expect(fn).to.throw('Unknown connector');
+		it('rejects the promise if connectorName is not registered', function() {
+			expect(unifile.getInfos({}, 'test')).to.be.rejectedWith('Unknown connector');
 		});
 
-		it('throws an error if connector does not implement it', function() {
+		it('rejects the promise if connector does not implement it', function() {
 			const connector = {name: 'test'};
 			unifile.use(connector);
-			const fn = function() { unifile.getInfos({}, connector.name); };
-			expect(fn).to.throw('This connector does not implement');
+			expect(unifile.getInfos({}, connector.name)).to.be.rejectedWith('This connector does not implement');
 		});
 
 		it('returns an infos object', function() {
@@ -143,21 +140,18 @@ describe('Unifile class', function() {
 			unifile = new Unifile();
 		});
 
-		it('throws an error if connectorName is undefined', function() {
-			const fn = function() { unifile.getAuthorizeURL({});};
-			expect(fn).to.throw(/You should specify a connector name!/);
+		it('rejects the promise if connectorName is undefined', function() {
+			return expect(unifile.getAuthorizeURL({})).to.be.rejectedWith(/You should specify a connector name!/);
 		});
 
-		it('throws an error if connectorName is not registered', function() {
-			const fn = function() { unifile.getAuthorizeURL({}, 'test');};
-			expect(fn).to.throw('Unknown connector');
+		it('rejects the promise if connectorName is not registered', function() {
+			return expect(unifile.getAuthorizeURL({}, 'test')).to.be.rejectedWith('Unknown connector');
 		});
 
-		it('throws an error if connector does not implement it', function() {
+		it('rejects the promise if connector does not implement it', function() {
 			const connector = {name: 'test'};
 			unifile.use(connector);
-			const fn = function() { unifile.getAuthorizeURL({}, connector.name); };
-			expect(fn).to.throw('This connector does not implement');
+			return expect(unifile.getAuthorizeURL({}, connector.name)).to.be.rejectedWith('This connector does not implement');
 		});
 
 		it('returns a promise of the getAuthorizeURL function of the connector', function() {
@@ -173,21 +167,18 @@ describe('Unifile class', function() {
 			unifile = new Unifile();
 		});
 
-		it('throws an error if connectorName is undefined', function() {
-			const fn = function() { unifile.setAccessToken({});};
-			expect(fn).to.throw(/You should specify a connector name!/);
+		it('rejects the promise if connectorName is undefined', function() {
+			return expect(unifile.setAccessToken({})).to.be.rejectedWith(/You should specify a connector name!/);
 		});
 
-		it('throws an error if connectorName is not registered', function() {
-			const fn = function() { unifile.setAccessToken({}, 'test');};
-			expect(fn).to.throw('Unknown connector');
+		it('rejects the promise if connectorName is not registered', function() {
+			return expect(unifile.setAccessToken({}, 'test')).to.be.rejectedWith('Unknown connector');
 		});
 
-		it('throws an error if connector does not implement it', function() {
+		it('rejects the promise if connector does not implement it', function() {
 			const connector = {name: 'test'};
 			unifile.use(connector);
-			const fn = function() { unifile.setAccessToken({}, connector.name); };
-			expect(fn).to.throw('This connector does not implement');
+			return expect(unifile.setAccessToken({}, connector.name)).to.be.rejectedWith('This connector does not implement');
 		});
 
 		it('returns a promise of the setAccessToken function of the connector', function() {
@@ -203,21 +194,18 @@ describe('Unifile class', function() {
 			unifile = new Unifile();
 		});
 
-		it('throws an error if connectorName is undefined', function() {
-			const fn = function() { unifile.clearAccessToken({});};
-			expect(fn).to.throw(/You should specify a connector name!/);
+		it('rejects the promise if connectorName is undefined', function() {
+			return expect(unifile.clearAccessToken({})).to.be.rejectedWith(/You should specify a connector name!/);
 		});
 
-		it('throws an error if connectorName is not registered', function() {
-			const fn = function() { unifile.clearAccessToken({}, 'test');};
-			expect(fn).to.throw('Unknown connector');
+		it('rejects the promise if connectorName is not registered', function() {
+			return expect(unifile.clearAccessToken({}, 'test')).to.be.rejectedWith('Unknown connector');
 		});
 
-		it('throws an error if connector does not implement it', function() {
+		it('rejects the promise if connector does not implement it', function() {
 			const connector = {name: 'test'};
 			unifile.use(connector);
-			const fn = function() { unifile.clearAccessToken({}, connector.name); };
-			expect(fn).to.throw('This connector does not implement');
+			return expect(unifile.clearAccessToken({}, connector.name)).to.be.rejectedWith('This connector does not implement');
 		});
 
 		it('returns a promise of the clearAccessToken function of the connector', function() {
@@ -233,22 +221,20 @@ describe('Unifile class', function() {
 			unifile = new Unifile();
 		});
 
-		it('throws an error if connectorName is undefined', function() {
-			const fn = function() { unifile.login({});};
-			expect(fn).to.throw(/You should specify a connector name!/);
+		it('rejects the promise if connectorName is undefined', function() {
+			return expect(unifile.login({})).to.be.rejectedWith(/You should specify a connector name!/);
 		});
 
-		it('throws an error if connector does not implement it', function() {
+		it('rejects the promise if connector does not implement it', function() {
 			const connector = {name: 'test'};
 			unifile.use(connector);
-			const fn = function() { unifile.login({}, connector.name); };
-			expect(fn).to.throw('This connector does not implement');
+			return expect(unifile.login({}, connector.name)).to.be.rejectedWith('This connector does not implement');
 		});
 
-		it('throws an error if no session is given', function() {
+		it('rejects the promise if no session is given', function() {
 			const connector = {name: 'test', login: function() {return new Promise.resolve();}};
 			unifile.use(connector);
-			return expect(() => unifile.login(null, connector.name)).to.throw('No session');
+			return expect(unifile.login(null, connector.name)).to.be.rejectedWith('No session');
 		});
 
 		it('returns a promise of the login function of the connector', function() {
@@ -264,16 +250,14 @@ describe('Unifile class', function() {
 			unifile = new Unifile();
 		});
 
-		it('throws an error if connectorName is undefined', function() {
-			const fn = function() { unifile.readdir({});};
-			expect(fn).to.throw(/You should specify a connector name!/);
+		it('rejects the promise if connectorName is undefined', function() {
+			return expect(unifile.readdir({})).to.be.rejectedWith(/You should specify a connector name!/);
 		});
 
-		it('throws an error if connector does not implement it', function() {
+		it('rejects the promise if connector does not implement it', function() {
 			const connector = {name: 'test'};
 			unifile.use(connector);
-			const fn = function() { unifile.readdir({}, connector.name); };
-			expect(fn).to.throw('This connector does not implement');
+			return expect(unifile.readdir({}, connector.name)).to.be.rejectedWith('This connector does not implement');
 		});
 
 		it('returns a rejected promise if user is not authenticated', function() {
@@ -295,16 +279,14 @@ describe('Unifile class', function() {
 			unifile = new Unifile();
 		});
 
-		it('throws an error if connectorName is undefined', function() {
-			const fn = function() { unifile.mkdir({});};
-			expect(fn).to.throw(/You should specify a connector name!/);
+		it('rejects the promise if connectorName is undefined', function() {
+			return expect(unifile.mkdir({})).to.be.rejectedWith(/You should specify a connector name!/);
 		});
 
-		it('throws an error if connector does not implement it', function() {
+		it('rejects the promise if connector does not implement it', function() {
 			const connector = {name: 'test'};
 			unifile.use(connector);
-			const fn = function() { unifile.mkdir({}, connector.name); };
-			expect(fn).to.throw('This connector does not implement');
+			return expect(unifile.mkdir({}, connector.name)).to.be.rejectedWith('This connector does not implement');
 		});
 
 		it('returns a rejected promise if user is not authenticated', function() {
@@ -326,16 +308,14 @@ describe('Unifile class', function() {
 			unifile = new Unifile();
 		});
 
-		it('throws an error if connectorName is undefined', function() {
-			const fn = function() { unifile.writeFile({});};
-			expect(fn).to.throw(/You should specify a connector name!/);
+		it('rejects the promise if connectorName is undefined', function() {
+			return expect(unifile.writeFile({})).to.be.rejectedWith(/You should specify a connector name!/);
 		});
 
-		it('throws an error if connector does not implement it', function() {
+		it('rejects the promise if connector does not implement it', function() {
 			const connector = {name: 'test'};
 			unifile.use(connector);
-			const fn = function() { unifile.writeFile({}, connector.name); };
-			expect(fn).to.throw('This connector does not implement');
+			return expect(unifile.writeFile({}, connector.name)).to.be.rejectedWith('This connector does not implement');
 		});
 
 		it('returns a rejected promise if user is not authenticated', function() {
@@ -357,16 +337,14 @@ describe('Unifile class', function() {
 			unifile = new Unifile();
 		});
 
-		it('throws an error if connectorName is undefined', function() {
-			const fn = function() { unifile.createWriteStream({});};
-			expect(fn).to.throw(/You should specify a connector name!/);
+		it('rejects the promise if connectorName is undefined', function() {
+			return expect(unifile.createWriteStream({})).to.be.rejectedWith(/You should specify a connector name!/);
 		});
 
-		it('throws an error if connector does not implement it', function() {
+		it('rejects the promise if connector does not implement it', function() {
 			const connector = {name: 'test'};
 			unifile.use(connector);
-			const fn = function() { unifile.createWriteStream({}, connector.name); };
-			expect(fn).to.throw('This connector does not implement');
+			return expect(unifile.createWriteStream({}, connector.name)).to.be.rejectedWith('This connector does not implement');
 		});
 
 		it('returns a rejected promise if user is not authenticated', function() {
@@ -393,16 +371,14 @@ describe('Unifile class', function() {
 			unifile = new Unifile();
 		});
 
-		it('throws an error if connectorName is undefined', function() {
-			const fn = function() { unifile.readFile({});};
-			expect(fn).to.throw(/You should specify a connector name!/);
+		it('rejects the promise if connectorName is undefined', function() {
+			return expect(unifile.readFile({})).to.be.rejectedWith(/You should specify a connector name!/);
 		});
 
-		it('throws an error if connector does not implement it', function() {
+		it('rejects the promise if connector does not implement it', function() {
 			const connector = {name: 'test'};
 			unifile.use(connector);
-			const fn = function() { unifile.readFile({}, connector.name); };
-			expect(fn).to.throw('This connector does not implement');
+			return expect(unifile.readFile({}, connector.name)).to.be.rejectedWith('This connector does not implement');
 		});
 
 		it('returns a rejected promise if user is not authenticated', function() {
@@ -424,16 +400,14 @@ describe('Unifile class', function() {
 			unifile = new Unifile();
 		});
 
-		it('throws an error if connectorName is undefined', function() {
-			const fn = function() { unifile.stat({});};
-			expect(fn).to.throw(/You should specify a connector name!/);
+		it('rejects the promise if connectorName is undefined', function() {
+			return expect(unifile.stat({})).to.be.rejectedWith(/You should specify a connector name!/);
 		});
 
-		it('throws an error if connector does not implement it', function() {
+		it('rejects the promise if connector does not implement it', function() {
 			const connector = {name: 'test'};
 			unifile.use(connector);
-			const fn = function() { unifile.stat({}, connector.name); };
-			expect(fn).to.throw('This connector does not implement');
+			return expect(unifile.stat({}, connector.name)).to.be.rejectedWith('This connector does not implement');
 		});
 
 		it('returns a rejected promise if user is not authenticated', function() {
@@ -455,16 +429,14 @@ describe('Unifile class', function() {
 			unifile = new Unifile();
 		});
 
-		it('throws an error if connectorName is undefined', function() {
-			const fn = function() { unifile.createReadStream({});};
-			expect(fn).to.throw(/You should specify a connector name!/);
+		it('rejects the promise if connectorName is undefined', function() {
+			return expect(unifile.createReadStream({})).to.be.rejectedWith(/You should specify a connector name!/);
 		});
 
-		it('throws an error if connector does not implement it', function() {
+		it('rejects the promise if connector does not implement it', function() {
 			const connector = {name: 'test'};
 			unifile.use(connector);
-			const fn = function() { unifile.createReadStream({}, connector.name); };
-			expect(fn).to.throw('This connector does not implement');
+			return expect(unifile.createReadStream({}, connector.name)).to.be.rejectedWith('This connector does not implement');
 		});
 
 		it('returns a rejected promise if user is not authenticated', function() {
@@ -490,16 +462,14 @@ describe('Unifile class', function() {
 			unifile = new Unifile();
 		});
 
-		it('throws an error if connectorName is undefined', function() {
-			const fn = function() { unifile.rename({});};
-			expect(fn).to.throw(/You should specify a connector name!/);
+		it('rejects the promise if connectorName is undefined', function() {
+			return expect(unifile.rename({})).to.be.rejectedWith(/You should specify a connector name!/);
 		});
 
-		it('throws an error if connector does not implement it', function() {
+		it('rejects the promise if connector does not implement it', function() {
 			const connector = {name: 'test'};
 			unifile.use(connector);
-			const fn = function() { unifile.rename({}, connector.name); };
-			expect(fn).to.throw('This connector does not implement');
+			return expect(unifile.rename({}, connector.name)).to.be.rejectedWith('This connector does not implement');
 		});
 
 		it('returns a rejected promise if user is not authenticated', function() {
@@ -521,16 +491,14 @@ describe('Unifile class', function() {
 			unifile = new Unifile();
 		});
 
-		it('throws an error if connectorName is undefined', function() {
-			const fn = function() { unifile.unlink({});};
-			expect(fn).to.throw(/You should specify a connector name!/);
+		it('rejects the promise if connectorName is undefined', function() {
+			return expect(unifile.unlink({})).to.be.rejectedWith(/You should specify a connector name!/);
 		});
 
-		it('throws an error if connector does not implement it', function() {
+		it('rejects the promise if connector does not implement it', function() {
 			const connector = {name: 'test'};
 			unifile.use(connector);
-			const fn = function() { unifile.unlink({}, connector.name); };
-			expect(fn).to.throw('This connector does not implement');
+			return expect(unifile.unlink({}, connector.name)).to.be.rejectedWith('This connector does not implement');
 		});
 
 		it('returns a rejected promise if user is not authenticated', function() {
@@ -552,16 +520,14 @@ describe('Unifile class', function() {
 			unifile = new Unifile();
 		});
 
-		it('throws an error if connectorName is undefined', function() {
-			const fn = function() { unifile.rmdir({});};
-			expect(fn).to.throw(/You should specify a connector name!/);
+		it('rejects the promise if connectorName is undefined', function() {
+			return expect(unifile.rmdir({})).to.be.rejectedWith(/You should specify a connector name!/);
 		});
 
-		it('throws an error if connector does not implement it', function() {
+		it('rejects the promise if connector does not implement it', function() {
 			const connector = {name: 'test'};
 			unifile.use(connector);
-			const fn = function() { unifile.rmdir({}, connector.name); };
-			expect(fn).to.throw('This connector does not implement');
+			return expect(unifile.rmdir({}, connector.name)).to.be.rejectedWith('This connector does not implement');
 		});
 
 		it('returns a rejected promise if user is not authenticated', function() {
@@ -583,16 +549,14 @@ describe('Unifile class', function() {
 			unifile = new Unifile();
 		});
 
-		it('throws an error if connectorName is undefined', function() {
-			const fn = function() { unifile.batch({});};
-			expect(fn).to.throw(/You should specify a connector name!/);
+		it('rejects the promise if connectorName is undefined', function() {
+			return expect(unifile.batch({})).to.be.rejectedWith(/You should specify a connector name!/);
 		});
 
-		it('throws an error if connector does not implement it', function() {
+		it('rejects the promise if connector does not implement it', function() {
 			const connector = {name: 'test'};
 			unifile.use(connector);
-			const fn = function() { unifile.batch({}, connector.name); };
-			expect(fn).to.throw('This connector does not implement');
+			return expect(unifile.batch({}, connector.name)).to.be.rejectedWith('This connector does not implement');
 		});
 
 		it('returns a rejected promise if user is not authenticated', function() {
