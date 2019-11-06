@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Fixed
+- [FTP] FTP client has been replace, thus fixing multiple bugs like stat
+- [SFTP] Fix an issue when listing or stating with an empty path
+- [GitHub] Gracefully handle scopes and permissions
+- [Node] Update minimal version of Node to 8
 
 ## [2.0.4] - 2018-10-08
 ### Fixed
