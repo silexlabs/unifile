@@ -25,7 +25,7 @@
     "ftp-srv": "^4.2.0",
     "husky": "^3.0.5",
     "jsdoc": "^3.6.3",
-    "mocha": "^4.0.1",
+    "mocha": "^6.2.0",
     "nyc": "^14.1.1",
     "pem": "^1.14.2",
     "ssh2": "^0.5.5"
@@ -76,8 +76,8 @@
   },
   "homepage": "http://projects.silexlabs.org/unifile/",
   "husky": {
-		"hooks": {
-			"pre-commit": "npm run test:min && npm run lint"
-		}
-	}
+    "hooks": {
+      "pre-commit": "npm run test:min && npm run lint"
+    }
+  }
 }
