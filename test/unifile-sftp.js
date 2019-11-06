@@ -360,15 +360,19 @@ describe('SFTPConnector', function() {
 			return expect(connector.readdir(session, __filename)).to.be.rejectedWith('Target is not a directory');
 		});
 
+		it('lists files at root when provided with an empty path', function() {
+			return connector.readdir(session, '')
+			.then((list) => {
+				expect(list).to.be.an.instanceof(Array);
+			});
+		});
+
 		it('lists files in the directory with proper entry infomations', function() {
 			return connector.readdir(session, 'testReaddir')
 			.then((list) => {
 				expect(list).to.be.an.instanceof(Array);
 				expect(list.length).to.equal(3);
-				list.every((file) => {
-					const keys = Object.keys(file);
-					return ['isDir', 'mime', 'modified', 'name', 'size'].every((key) => keys.includes(key));
-				}).should.be.true;
+				list.forEach((file) => expect(file).to.have.all.keys(['isDir', 'mime', 'modified', 'name', 'size']));
 			});
 		});
 
@@ -378,10 +382,7 @@ describe('SFTPConnector', function() {
 			.then((list) => {
 				expect(list).to.be.an.instanceof(Array);
 				expect(list.length).to.equal(4);
-				list.every((file) => {
-					const keys = Object.keys(file);
-					return ['isDir', 'mime', 'modified', 'name', 'size'].every((key) => keys.includes(key));
-				}).should.be.true;
+				list.forEach((file) => expect(file).to.have.all.keys(['isDir', 'mime', 'modified', 'name', 'size']));
 			});
 		});
 
@@ -393,10 +394,7 @@ describe('SFTPConnector', function() {
 				.then((list) => {
 					expect(list).to.be.an.instanceof(Array);
 					expect(list.length).to.equal(3);
-					list.every((file) => {
-						const keys = Object.keys(file);
-						return ['isDir', 'mime', 'modified', 'name', 'size'].every((key) => keys.includes(key));
-					}).should.be.true;
+					list.forEach((file) => expect(file).to.have.all.keys(['isDir', 'mime', 'modified', 'name', 'size']));
 					sftpSession.end();
 				});
 			});
@@ -421,13 +419,19 @@ describe('SFTPConnector', function() {
 			return expect(connector.stat(session, '/home/test')).to.be.rejectedWith('path does not exist');
 		});
 
+		it('gives stats on root if provided with an empty path', function() {
+			return connector.stat(session, '')
+			.then((stat) => {
+				expect(stat).to.be.an.instanceof(Object);
+				expect(stat).to.have.all.keys(['isDir', 'mime', 'modified', 'name', 'size']);
+			});
+		});
+
 		it('gives stats on a directory', function() {
 			return connector.stat(session, __dirname)
 			.then((stat) => {
 				expect(stat).to.be.an.instanceof(Object);
-				const keys = Object.keys(stat);
-				['isDir', 'mime', 'modified', 'name', 'size'].every((key) => keys.includes(key))
-				.should.be.true;
+				expect(stat).to.have.all.keys(['isDir', 'mime', 'modified', 'name', 'size']);
 			});
 		});
 
@@ -435,9 +439,7 @@ describe('SFTPConnector', function() {
 			return connector.stat(session, __filename)
 			.then((stat) => {
 				expect(stat).to.be.an.instanceof(Object);
-				const keys = Object.keys(stat);
-				['isDir', 'mime', 'modified', 'name', 'size'].every((key) => keys.includes(key))
-				.should.be.true;
+				expect(stat).to.have.all.keys(['isDir', 'mime', 'modified', 'name', 'size']);
 			});
 		});
 
@@ -448,9 +450,7 @@ describe('SFTPConnector', function() {
 				return connector.stat(session, __filename, sftpSession)
 				.then((stat) => {
 					expect(stat).to.be.an.instanceof(Object);
-					const keys = Object.keys(stat);
-					['isDir', 'mime', 'modified', 'name', 'size']
-					.every((key) => keys.includes(key)).should.be.true;
+					expect(stat).to.have.all.keys(['isDir', 'mime', 'modified', 'name', 'size']);
 					sftpSession.end();
 				});
 			});
