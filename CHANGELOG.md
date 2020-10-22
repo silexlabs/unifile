@@ -3,36 +3,36 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [] - 2020-10-22
 
-## [2.0.8] - 2019-11-06
+## [2.0.8] - 2019-11-06 - 2020-10-22
 ### Fixed
 - [FTP] FTP client has been replace, thus fixing multiple bugs like stat
 - [SFTP] Fix an issue when listing or stating with an empty path
 - [GitHub] Gracefully handle scopes and permissions
 - [Node] Update minimal version of Node to 8
 
-## [2.0.4] - 2018-10-08
+## [2.0.4] - 2018-10-08 - 2020-10-22
 ### Fixed
 - [FTP] Handles FTP server that return an empty list on 404 (like OVH)
 
-## [2.0.3] - 2018-03-25
+## [2.0.3] - 2018-03-25 - 2020-10-22
 ### Fixed
 - [FTP] Prevents server crash when unable to connect to server (https://github.com/silexlabs/CloudExplorer2/issues/57)
 
-## [2.0.2] - 2018-03-10
+## [2.0.2] - 2018-03-10 - 2020-10-22
 ### Fixed
 - [GitHub] OAuth scopes are provided in request headers (https://github.com/silexlabs/unifile/issues/123)
 - [GitHub] Fix batch update with multi levels tree
 
-## [2.0.1] - 2017-12-11
+## [2.0.1] - 2017-12-11 - 2020-10-22
 ### Fixed
 - [Dropbox] Batch correctly overwrite existing files (https://github.com/silexlabs/unifile/issues/131)
 - [Dropbox] Batch now correctly rejects the promise if one action failed (https://github.com/silexlabs/unifile/issues/131)
 - [Dropbox] Batch upload uses `Buffer` for file content and supports UTF-8 (https://github.com/silexlabs/unifile/issues/130)
 - [Dropbox] All the methods support non-ASCII char in filename and content (https://github.com/silexlabs/unifile/issues/134)
 
-## [2.0.0] - 2017-11-25
+## [2.0.0] - 2017-11-25 - 2020-10-22
 ### Changed
 - GitHub batch fixes and optimization
 - Code factorization
@@ -54,7 +54,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 - WebDAV connector is now a separate plugin
 - `unifile.connectors` is now private
 
-## [1.2.0] - 2017-06-01
+## [1.2.0] - 2017-06-01 - 2020-10-22
 ### Added
 - SFTP support
 - `.stat()` method that return information abouth the given path
@@ -72,7 +72,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
   - Includes connector documentation to the global one
   - Includes README in documentation
 
-## [1.1.0] - 2017-04-26
+## [1.1.0] - 2017-04-26 - 2020-10-22
 ### Added
   - Local filesystem support
 
@@ -80,7 +80,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Changed
   - Total rework of the philosphy
 
-[Unreleased]: https://github.com/silexlabs/unifile/compare/v2.0.8...HEAD
+[]: https://github.com/silexlabs/unifile/compare/v2.0.8...v
 [2.0.8]: https://github.com/silexlabs/unifile/compare/v2.0.4...v2.0.8
 [2.0.4]: https://github.com/silexlabs/unifile/compare/v2.0.3...v2.0.4
 [2.0.3]: https://github.com/silexlabs/unifile/compare/v2.0.2...v2.0.3

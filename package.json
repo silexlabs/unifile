@@ -1,7 +1,7 @@
 {
   "name": "unifile",
   "description": "Library to provide a unified API, mirroring Fs, for cloud storage services. ",
-  "version": "2.0.9",
+  "version": "2.0.10",
   "author": "Jean-Baptiste Richardet <jeanbaptiste.richardet@gmail.com> (https://github.com/JbIPS)",
   "contributors": [
     "Alex Hoyau <a.hoyau@silexlabs.org> (https://lexoyo.me/)"
