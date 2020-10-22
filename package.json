@@ -55,8 +55,8 @@
   },
   "license": "MIT",
   "engines": {
-    "node": "^8.16.1",
-    "npm": "^3.9.5"
+    "node": ">8.16.1",
+    "npm": ">3.9.5"
   },
   "scripts": {
     "test": "mocha test/*.js -R nyan",
