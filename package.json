@@ -12,7 +12,7 @@
     "mime": "^2.0.3",
     "request": "^2.88.0",
     "sftp-promises": "^1.4.1",
-    "unifile-common-tools": "^1.0.0",
+    "unifile-common-tools": "silexlabs/unifile-common-tools#master",
     "webfinger.js": "^2.4.2"
   },
   "devDependencies": {
