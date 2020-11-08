@@ -15,7 +15,7 @@ chai.should();
 
 const fsDefaultInfos = {
 	name: 'fs',
-	displayName: 'Local',
+	displayName: 'Your Computer',
 	icon: '',
 	description: 'Edit files on your local drive.'
 };
