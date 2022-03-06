@@ -23,7 +23,6 @@
     "docdash": "^0.4.0",
     "eslint": "^4.1.1",
     "ftp-srv": "^4.2.0",
-    "husky": "^3.0.5",
     "jsdoc": "^3.6.3",
     "mocha": "^6.2.0",
     "nyc": "^14.1.1",
@@ -58,25 +57,17 @@
     "node": ">10.0.0"
   },
   "scripts": {
-    "test": "mocha test/*.js -R nyan",
-    "test:min": "mocha test/*.js -R min",
+    "test": "mocha test/*.js",
+    "test:cli": "mocha test/*.js -R nyan",
     "watch": "npm run test:min -- --watch",
     "lint": "eslint test/*.js lib/*.js",
     "cover": "nyc --reporter=lcov npm run test:min",
     "cover:check": "nyc check-coverage",
     "cover:export": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "gen:docs": "jsdoc -R README.md -c jsdoc.json",
-    "preversion": "npm run test:min && npm run lint && npm run gen:docs",
-    "version": "cross-env-shell LIB_VERSION=$(env | grep npm_package_version | grep -v script | cut -d= -f2); sed -e \"s/Unreleased/$LIB_VERSION/\" -e \"s/HEAD/v$LIB_VERSION/\" -e \"/^## \\[$LIB_VERSION/ s/$/ - $(date +%Y-%m-%d)/\" CHANGELOG.md -i && git add docs CHANGELOG.md package.json",
-    "postversion": "git push --follow-tags"
+    "gen:docs": "jsdoc -R README.md -c jsdoc.json"
   },
   "bugs": {
     "url": "https://github.com/silexlabs/unifile/issues"
   },
-  "homepage": "http://projects.silexlabs.org/unifile/",
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run test:min && npm run lint"
-    }
-  }
+  "homepage": "http://projects.silexlabs.org/unifile/"
 }

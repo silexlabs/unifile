@@ -1,7 +1,5 @@
 # Unifile, unified access to cloud storage services.
 
-[![Build Status](https://travis-ci.org/silexlabs/unifile.png?branch=master)](https://travis-ci.org/silexlabs/unifile) [![Coverage Status](https://coveralls.io/repos/github/silexlabs/unifile/badge.svg?branch=master)](https://coveralls.io/github/silexlabs/unifile?branch=master) [![Known Vulnerabilities](https://snyk.io/test/github/silexlabs/unifile/badge.svg)](https://snyk.io/test/github/silexlabs/unifile) [![bitHound Overall Score](https://www.bithound.io/github/silexlabs/unifile/badges/score.svg)](https://www.bithound.io/github/silexlabs/unifile)
-
 Nodejs library to access cloud storage services with a common API.
 
 [![NPM](https://nodei.co/npm/unifile.png)](https://npmjs.org/package/unifile)
