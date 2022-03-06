@@ -58,6 +58,7 @@
   },
   "scripts": {
     "test": "mocha test/*.js",
+    "build": "NO BUILD STEP",
     "test:cli": "mocha test/*.js -R nyan",
     "watch": "npm run test:min -- --watch",
     "lint": "eslint test/*.js lib/*.js",
