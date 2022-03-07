@@ -57,6 +57,7 @@
     "node": ">10.0.0"
   },
   "scripts": {
+    "release": "",
     "test": "mocha test/*.js",
     "build": "echo NO BUILD STEP",
     "test:cli": "mocha test/*.js -R nyan",
